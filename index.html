@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>El Piso Asturiano</title>
+<!--
+  ============================================================
+  EL PISO ASTURIANO — living spec / v0.7
+  ============================================================
+  Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
+  -> each object learned in Spanish (image-first) -> room = memory palace.
+  SRS (Leitner 1-5): 10min/1d/3d/7d/21d. Reviews also earn hammers.
+  v0.7: FX animation layer, chrome-less tiles, rocket finale,
+  goal-seeking planes, droppers (empanada), orbayu jelly, cocina room.
+  See SPEC.md for the full design record.
+  ============================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pizarra:#2E3A44; --verde:#3E7C4F; --sidra:#E8A93C; --crema:#F5F0E4;
+    --teja:#C0563B; --azul:#3E6E8E; --linea:#D8CFBB;
+    --sombra:0 2px 10px rgba(46,58,68,.12);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:'Nunito',system-ui,sans-serif; color:var(--pizarra); background:var(--crema);
+    background-image:linear-gradient(180deg,#EDF2EC 0%,var(--crema) 240px);
+    min-height:100vh; padding-bottom:84px;
+  }
+  header{display:flex; align-items:baseline; justify-content:space-between; padding:14px 18px 6px; max-width:820px; margin:0 auto;}
+  h1{font-family:'Fraunces',serif; font-weight:800; font-size:26px; margin:0;}
+  h1 small{font-family:'Nunito'; font-weight:700; font-size:12px; color:#7d8a7f; display:block;}
+  .hud{display:flex; gap:10px; align-items:center;}
+  .pill{background:#fff; border:1px solid var(--linea); border-radius:999px; padding:5px 12px; font-weight:800; font-size:15px; box-shadow:var(--sombra); display:flex; gap:5px; align-items:center;}
+  .pill .star{color:var(--sidra);}
+  .due-badge{background:var(--teja); color:#fff; border:none;}
+  main{max-width:820px; margin:0 auto; padding:6px 14px;}
+  .tab{display:none;}
+  .tab.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important;} }
+
+  nav{position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--linea); display:flex; justify-content:center; gap:6px; padding:8px 10px calc(8px + env(safe-area-inset-bottom)); z-index:40;}
+  nav button{font-family:'Nunito'; font-weight:800; font-size:15px; border:none; background:none; color:#8a948d; padding:10px 22px; border-radius:14px; cursor:pointer; position:relative;}
+  nav button.active{background:var(--verde); color:#fff;}
+  nav button .nbadge{position:absolute; top:2px; right:8px; background:var(--teja); color:#fff; border-radius:999px; font-size:11px; padding:1px 6px; font-weight:800;}
+
+  /* ---------- CASA ---------- */
+  .room-tabs{display:flex; gap:8px; margin:0 0 10px;}
+  .room-tabs button{font-family:'Nunito'; font-weight:800; font-size:14px; border:1px solid var(--linea); background:#fff; border-radius:999px; padding:7px 16px; cursor:pointer; box-shadow:var(--sombra); color:#7d8a7f;}
+  .room-tabs button.active{background:var(--verde); color:#fff; border-color:var(--verde);}
+  .room-wrap{background:#fff; border:1px solid var(--linea); border-radius:18px; padding:10px; box-shadow:var(--sombra);}
+  .room-wrap svg{width:100%; height:auto; display:block; border-radius:12px;}
+  .slot-empty{opacity:.35; cursor:default;}
+  .slot-item{cursor:pointer;}
+  .room-note{font-size:13px; color:#7d8a7f; margin:8px 4px 2px; font-weight:700;}
+  .shop{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:14px;}
+  .shop-card{background:#fff; border:1px solid var(--linea); border-radius:14px; padding:12px; text-align:center; box-shadow:var(--sombra);}
+  .shop-card .em{font-size:38px; line-height:1.1;}
+  .shop-card .nm{font-weight:800; font-size:15px; margin:4px 0 8px;}
+  .shop-card button{font-family:'Nunito'; font-weight:800; font-size:14px; border:none; border-radius:10px; padding:8px 14px; cursor:pointer; background:var(--sidra); color:#4a3608; width:100%;}
+  .shop-card button:disabled{background:#eee7d6; color:#b3a888; cursor:default;}
+  .shop-card.owned{opacity:.55;}
+  .shop-card.owned button{background:var(--verde); color:#fff;}
+  .g-el{color:var(--azul);} .g-la{color:var(--teja);}
+  .tasks{background:#fff; border:1px solid var(--linea); border-radius:16px; padding:12px 14px; margin-top:14px; box-shadow:var(--sombra);}
+  .tasks-h{font-family:'Fraunces',serif; font-weight:800; font-size:17px; margin-bottom:4px;}
+  .task{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 4px; border-top:1px dashed var(--linea); font-weight:700; font-size:14px;}
+  .task.locked{color:#b3b8ad;}
+  .task.done{color:var(--verde);}
+  .task .cen{display:block; font-size:11px; color:#9aa49c; font-weight:700;}
+  .task button{font-family:'Nunito'; font-weight:800; border:none; border-radius:10px; padding:6px 12px; cursor:pointer; background:var(--sidra); color:#4a3608;}
+  .task button:disabled{background:#eee7d6; color:#b3a888; cursor:default;}
+  .task .tk-audio{background:#fff; border:1px solid var(--linea);}
+  .cooper{background:#fff; border:1px solid var(--linea); border-radius:14px; padding:8px 12px; font-weight:700; font-size:14px; margin:10px 0; text-align:left;}
+  .cooper .cen{font-size:11px; color:#9aa49c;}
+
+  /* ---------- JUEGO ---------- */
+  .game-top{display:flex; justify-content:space-between; align-items:center; margin:4px 2px 8px; font-weight:800;}
+  .game-top .lvl{font-family:'Fraunces',serif; font-size:20px;}
+  .goals{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:0 0 10px;}
+  .goal-chip{background:#fff; border:1px solid var(--linea); border-radius:999px; padding:4px 10px; font-weight:800; font-size:14px; box-shadow:var(--sombra); display:inline-flex; gap:5px; align-items:center;}
+  .goal-chip.done{background:var(--verde); color:#fff; border-color:var(--verde);}
+  .pill.hammer{cursor:pointer; border:1px solid var(--linea); font-family:'Nunito'; font-size:15px;}
+  .pill.hammer.armed{background:var(--sidra);}
+  .pill.hammer:disabled{opacity:.45; cursor:default;}
+  #board{
+    position:relative; display:grid; grid-template-columns:repeat(9,1fr); gap:3px;
+    background:var(--pizarra); padding:10px; border-radius:16px; box-shadow:var(--sombra);
+    touch-action:manipulation; user-select:none; overflow:hidden;
+  }
+  .cell{
+    position:relative; aspect-ratio:1; background:transparent; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(18px,4.6vw,31px); cursor:pointer;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .cell.hole,.cell.static{cursor:default;}
+  .cell.sel{background:rgba(232,169,60,.32); transform:scale(1.15);}
+  .cell.pop{animation:pop .22s ease forwards;}
+  @keyframes pop{to{transform:scale(.1); opacity:0;}}
+  .cell.hint{animation:hintPulse 1s ease infinite;}
+  @keyframes hintPulse{0%,100%{background:transparent; transform:scale(1);}50%{background:rgba(232,169,60,.35); transform:scale(1.12);}}
+  .cell.spc{filter:drop-shadow(0 0 6px rgba(232,169,60,.95));}
+  .cell.dmg{animation:shake .25s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
+  .ob-chain{position:absolute; top:0; right:1px; font-size:11px; filter:drop-shadow(0 1px 1px rgba(0,0,0,.6));}
+  .ob-hp{position:absolute; bottom:0; right:2px; font-size:10px; font-weight:800; color:#fff; background:rgba(0,0,0,.5); border-radius:6px; padding:0 4px;}
+  .jelly{position:absolute; inset:6%; border-radius:26%; background:rgba(126,158,178,.42); box-shadow:inset 0 0 8px rgba(126,158,178,.6); pointer-events:none;}
+  .legend{display:flex; flex-wrap:wrap; gap:6px 14px; justify-content:center; margin-top:10px; font-size:13px; font-weight:700; color:#5c6a63;}
+  .float-word{position:absolute; font-family:'Fraunces',serif; font-weight:800; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.4); font-size:20px; pointer-events:none; animation:rise .9s ease forwards; z-index:5;}
+  @keyframes rise{from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(-40px);}}
+  .praise{position:absolute; left:50%; top:45%; font-family:'Fraunces',serif; font-weight:800; font-size:36px; color:#fff; text-shadow:0 3px 12px rgba(0,0,0,.55); animation:praiseAnim .95s ease forwards; pointer-events:none; z-index:6;}
+  @keyframes praiseAnim{0%{opacity:0; transform:translate(-50%,-50%) scale(.6);}30%{opacity:1; transform:translate(-50%,-50%) scale(1.15);}100%{opacity:0; transform:translate(-50%,-50%) scale(1);}}
+
+  /* ---------- FX layer (special-piece animations) ---------- */
+  .fx{position:absolute; pointer-events:none; z-index:8; transform:translate(-50%,-50%); will-change:transform;}
+  .fx-rocket{font-size:26px; transition:transform .38s linear; filter:drop-shadow(0 0 6px rgba(255,220,120,.9));}
+  .fx-plane{font-size:26px; transition:transform .5s ease-in; filter:drop-shadow(0 0 6px rgba(255,255,255,.8));}
+  .fx-boom{font-size:30px; animation:boomA .34s ease-out forwards;}
+  @keyframes boomA{0%{transform:translate(-50%,-50%) scale(.3); opacity:1;}70%{opacity:1;}100%{transform:translate(-50%,-50%) scale(var(--boom-scale,2.4)); opacity:0;}}
+  .fx-ring{width:20px; height:20px; border:3px solid var(--sidra); border-radius:50%; animation:ringA .5s ease-out forwards;}
+  @keyframes ringA{0%{transform:translate(-50%,-50%) scale(.4); opacity:1;}100%{transform:translate(-50%,-50%) scale(var(--ring-scale,14)); opacity:0;}}
+  .fx-laser{font-size:28px; animation:laserA .45s ease-out forwards;}
+  @keyframes laserA{0%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.8);}100%{transform:translate(-50%,-50%) scale(.2); opacity:0;}}
+
+  /* ---------- REPASO ---------- */
+  .rev-empty{background:#fff; border:1px dashed var(--linea); border-radius:16px; padding:34px 20px; text-align:center; color:#7d8a7f; font-weight:700;}
+  .card{background:#fff; border:1px solid var(--linea); border-radius:20px; padding:28px 20px 22px; text-align:center; box-shadow:var(--sombra); max-width:440px; margin:0 auto;}
+  .card .em{font-size:86px; line-height:1.1;}
+  .card .q{font-weight:800; color:#7d8a7f; margin-top:10px;}
+  .card .word{font-family:'Fraunces',serif; font-weight:800; font-size:34px; margin:10px 0 2px;}
+  .card .en{font-size:13px; color:#9aa49c; font-weight:700;}
+  .card .row{display:flex; gap:10px; justify-content:center; margin-top:18px;}
+  .btn{font-family:'Nunito'; font-weight:800; font-size:16px; border:none; border-radius:12px; padding:12px 22px; cursor:pointer; box-shadow:var(--sombra);}
+  .btn-show{background:var(--pizarra); color:#fff; width:70%;}
+  .btn-otra{background:#fff; border:2px solid var(--teja); color:var(--teja);}
+  .btn-bien{background:var(--verde); color:#fff; padding:12px 34px;}
+  .btn-audio{background:#fff; border:1px solid var(--linea); font-size:20px; padding:8px 14px;}
+  .rev-progress{text-align:center; font-weight:800; color:#7d8a7f; margin:10px 0 14px;}
+
+  /* ---------- MODALES ---------- */
+  .overlay{position:fixed; inset:0; background:rgba(46,58,68,.55); display:none; align-items:center; justify-content:center; z-index:60; padding:20px;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--crema); border-radius:22px; padding:26px 22px; max-width:400px; width:100%; text-align:center; box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  .modal h2{font-family:'Fraunces',serif; font-weight:800; margin:0 0 6px; font-size:24px;}
+  .modal p{margin:6px 0 16px; font-weight:700; color:#5c6a63;}
+  .modal .em{font-size:74px;}
+  footer{max-width:820px; margin:18px auto 0; padding:0 18px; font-size:12px; color:#a5ad9e; font-weight:700; display:flex; justify-content:space-between;}
+  footer button{border:none; background:none; color:#a5ad9e; font-weight:800; cursor:pointer; font-size:12px; text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>El Piso Asturiano<small>Amuebla tu casa, palabra a palabra</small></h1>
+  <div class="hud">
+    <div class="pill"><span class="star">★</span><span id="hud-stars">0</span></div>
+    <div class="pill due-badge" id="hud-due" style="display:none">📖 <span id="hud-due-n">0</span></div>
+    <div class="pill" id="btn-sound" style="cursor:pointer" title="sonido">🔊</div>
+  </div>
+</header>
+
+<main>
+  <!-- ================= CASA ================= -->
+  <section id="tab-casa" class="tab active">
+    <div class="room-tabs" id="room-tabs"></div>
+    <div class="room-wrap">
+      <svg id="room" viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" aria-label="La casa">
+        <g id="room-bg"></g>
+        <g id="room-items"></g>
+        <g id="room-bubble" style="display:none">
+          <rect id="rb-rect" rx="10" fill="#2E3A44"/>
+          <text id="rb-text" fill="#fff" font-size="20" font-weight="bold" font-family="Nunito, sans-serif"></text>
+        </g>
+      </svg>
+    </div>
+    <p class="room-note">Toca un objeto para oír su nombre · <span style="color:var(--azul)">el</span> / <span style="color:var(--teja)">la</span></p>
+    <div class="tasks" id="tasks"></div>
+    <div class="shop" id="shop"></div>
+  </section>
+
+  <!-- ================= JUEGO ================= -->
+  <section id="tab-juego" class="tab">
+    <div class="game-top">
+      <span class="lvl">Nivel <span id="g-level">1</span></span>
+      <button class="pill hammer" id="btn-hammer" title="martillo">🔨 <span id="h-n">0</span></button>
+      <span id="g-moves">20 mov.</span>
+    </div>
+    <div class="goals" id="g-goals"></div>
+    <div id="board"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <!-- ================= REPASO ================= -->
+  <section id="tab-repaso" class="tab">
+    <div id="rev-area"></div>
+  </section>
+</main>
+
+<footer>
+  <span><strong>v0.9</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <button id="btn-reset">reiniciar todo</button>
+</footer>
+
+<nav>
+  <button data-tab="casa" class="active">🏠 Casa</button>
+  <button data-tab="juego">🍎 Juego</button>
+  <button data-tab="repaso">📖 Repaso<span class="nbadge" id="nav-due" style="display:none">0</span></button>
+</nav>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+/* ============================================================
+   GAME CORE — pure logic, no DOM (portable to Swift)
+   ============================================================ */
+/*CORE-START*/
+const COLS = 9, ROWS = 9, NTYPES = 5;
+const SP = { R:'R', B:'B', P:'P', L:'L' };
+
+function randType(){ return Math.floor(Math.random() * NTYPES); }
+function isSpecial(v){ return v !== null && typeof v === 'object' && !!v.sp; }
+function isNormal(v){ return typeof v === 'number'; }
+function isStatic(v){ return v !== null && typeof v === 'object' && !!v.ob; }
+function isDrop(v){ return v !== null && typeof v === 'object' && !!v.dr; }
+function isMovable(v){ return isNormal(v) || isSpecial(v) || isDrop(v); }
+function colorOf(v){
+  if (typeof v === 'number') return v;
+  if (v && v.ob === 'cad') return v.tile;
+  return null;
+}
+function key(r, c){ return r + ',' + c; }
+function inB(r, c){ return r >= 0 && r < ROWS && c >= 0 && c < COLS; }
+function getC(b, r, c){ return inB(r, c) ? b[r][c] : null; }
+
+function swapCells(b, a, d){
+  const t = b[a.r][a.c]; b[a.r][a.c] = b[d.r][d.c]; b[d.r][d.c] = t;
+}
+
+/* Map chars: '.' free '#' hole 'B' caja 'X' caja hp2 'C' chained
+   'D' dropper (empanada) 'J' jelly overlay (orbayu) */
+function parseMap(map){
+  const mask = new Set(), statics = [], drops = [], jelly = [];
+  for (let r = 0; r < ROWS; r++){
+    for (let c = 0; c < COLS; c++){
+      const ch = map[r][c];
+      if (ch === '#') mask.add(key(r, c));
+      else if (ch === 'B') statics.push({ r, c, cell:{ ob:'caja', hp:1 } });
+      else if (ch === 'X') statics.push({ r, c, cell:{ ob:'caja', hp:2 } });
+      else if (ch === 'C') statics.push({ r, c, cell:{ ob:'cad' } });
+      else if (ch === 'D') drops.push({ r, c });
+      else if (ch === 'J') jelly.push(key(r, c));
+    }
+  }
+  return { mask, statics, drops, jelly };
+}
+
+function buildBoard(mask, statics, drops){
+  const staticAt = {};
+  statics.forEach(sd => staticAt[key(sd.r, sd.c)] = sd.cell);
+  const dropAt = new Set((drops || []).map(d => key(d.r, d.c)));
+  let b, guard = 0;
+  do {
+    b = Array.from({length: ROWS}, () => new Array(COLS).fill(null));
+    for (let r = 0; r < ROWS; r++){
+      for (let c = 0; c < COLS; c++){
+        const k = key(r, c);
+        if (mask.has(k)) continue;
+        if (dropAt.has(k)){ b[r][c] = { dr:1 }; continue; }
+        const st = staticAt[k];
+        if (st && st.ob === 'caja'){ b[r][c] = { ob:'caja', hp: st.hp }; continue; }
+        let t, tries = 0;
+        do { t = randType(); tries++; }
+        while (tries < 60 && (
+          (colorOf(getC(b, r, c-1)) === t && colorOf(getC(b, r, c-2)) === t) ||
+          (colorOf(getC(b, r-1, c)) === t && colorOf(getC(b, r-2, c)) === t) ||
+          (colorOf(getC(b, r-1, c)) === t && colorOf(getC(b, r-1, c-1)) === t && colorOf(getC(b, r, c-1)) === t)
+        ));
+        b[r][c] = (st && st.ob === 'cad') ? { ob:'cad', tile:t } : t;
+      }
+    }
+  } while (!moveExists(b, mask) && ++guard < 60);
+  return b;
+}
+
+function findRuns(b){
+  const runs = [];
+  for (let r = 0; r < ROWS; r++){
+    let start = 0;
+    for (let c = 1; c <= COLS; c++){
+      const same = c < COLS && colorOf(b[r][c]) !== null && colorOf(b[r][c]) === colorOf(b[r][c-1]);
+      if (!same){
+        const len = c - start;
+        if (len >= 3 && colorOf(b[r][start]) !== null)
+          runs.push({ dir:'h', len, cells: Array.from({length:len}, (_,i) => ({r, c:start+i})) });
+        start = c;
+      }
+    }
+  }
+  for (let c = 0; c < COLS; c++){
+    let start = 0;
+    for (let r = 1; r <= ROWS; r++){
+      const same = r < ROWS && colorOf(b[r][c]) !== null && colorOf(b[r][c]) === colorOf(b[r-1][c]);
+      if (!same){
+        const len = r - start;
+        if (len >= 3 && colorOf(b[start][c]) !== null)
+          runs.push({ dir:'v', len, cells: Array.from({length:len}, (_,i) => ({r:start+i, c})) });
+        start = r;
+      }
+    }
+  }
+  return runs;
+}
+
+function findSquares(b){
+  const sq = [];
+  for (let r = 0; r < ROWS - 1; r++){
+    for (let c = 0; c < COLS - 1; c++){
+      const v = colorOf(b[r][c]);
+      if (v !== null && colorOf(b[r][c+1]) === v && colorOf(b[r+1][c]) === v && colorOf(b[r+1][c+1]) === v)
+        sq.push({r, c});
+    }
+  }
+  return sq;
+}
+
+/* 5+ line -> Laser, L/T -> Bomb, 4 line -> Rocket, 2x2 -> Plane */
+function analyzeMatches(b, swapPos){
+  const runs = findRuns(b);
+  const clear = new Set();
+  const spawns = [];
+  runs.forEach(run => run.cells.forEach(p => clear.add(key(p.r, p.c))));
+
+  const spawnAt = (cells) => {
+    if (swapPos){
+      const hit = cells.find(p => p.r === swapPos.r && p.c === swapPos.c);
+      if (hit) return hit;
+    }
+    return cells[Math.floor(cells.length / 2)];
+  };
+
+  const consumed = new Set();
+  for (let i = 0; i < runs.length; i++){
+    for (let j = i + 1; j < runs.length; j++){
+      if (runs[i].dir === runs[j].dir || consumed.has(i) || consumed.has(j)) continue;
+      const shared = runs[i].cells.find(p => runs[j].cells.some(q => q.r === p.r && q.c === p.c));
+      if (shared){
+        spawns.push({ r:shared.r, c:shared.c, piece:{ sp:SP.B } });
+        consumed.add(i); consumed.add(j);
+      }
+    }
+  }
+  runs.forEach((run, i) => {
+    if (consumed.has(i)) return;
+    if (run.len >= 5){
+      const p = spawnAt(run.cells);
+      spawns.push({ r:p.r, c:p.c, piece:{ sp:SP.L } });
+    } else if (run.len === 4){
+      const p = spawnAt(run.cells);
+      spawns.push({ r:p.r, c:p.c, piece:{ sp:SP.R, dir: run.dir === 'h' ? 'v' : 'h' } });
+    }
+  });
+
+  for (const s of findSquares(b)){
+    const cells = [{r:s.r,c:s.c},{r:s.r,c:s.c+1},{r:s.r+1,c:s.c},{r:s.r+1,c:s.c+1}];
+    if (cells.some(p => clear.has(key(p.r, p.c)))) continue;
+    cells.forEach(p => clear.add(key(p.r, p.c)));
+    const p = spawnAt(cells);
+    spawns.push({ r:p.r, c:p.c, piece:{ sp:SP.P } });
+  }
+
+  const seen = new Set();
+  const uniq = spawns.filter(s => {
+    const k = key(s.r, s.c);
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+  return { clear, spawns: uniq };
+}
+
+/* Gravity: reachability physics with cascading diagonal infill.
+   Straight falls pass through holes; statics block; starved cells
+   rescue diagonally; unreachable (fully roofed) cells stay empty. */
+function applyGravity(b, mask){
+  const masked = (r, c) => mask && mask.has(key(r, c));
+  const playable = (r, c) => inB(r, c) && !masked(r, c);
+  const feederRow = (r, c) => {
+    let fr = r - 1;
+    while (fr >= 0 && masked(fr, c)) fr--;
+    return fr;
+  };
+  const verticalSweep = () => {
+    let moved = false;
+    for (let r = ROWS - 1; r >= 0; r--){
+      for (let c = 0; c < COLS; c++){
+        if (!playable(r, c) || b[r][c] !== null) continue;
+        const fr = feederRow(r, c);
+        if (fr < 0){ b[r][c] = randType(); moved = true; }
+        else if (isMovable(b[fr][c])){ b[r][c] = b[fr][c]; b[fr][c] = null; moved = true; }
+      }
+    }
+    return moved;
+  };
+  const starved = (r, c) => {
+    let fr = feederRow(r, c);
+    while (fr >= 0 && b[fr][c] === null) fr = feederRow(fr, c);
+    return fr >= 0 && isStatic(b[fr][c]);
+  };
+  let guard = 0;
+  while (++guard < 800){
+    let vguard = 0;
+    while (verticalSweep() && ++vguard < 200){}
+    let rescued = false;
+    outer:
+    for (let r = 0; r < ROWS; r++){
+      for (let c = 0; c < COLS; c++){
+        if (!playable(r, c) || b[r][c] !== null || !starved(r, c)) continue;
+        const dirs = Math.random() < 0.5 ? [-1, 1] : [1, -1];
+        for (const dc of dirs){
+          const dr = feederRow(r, c + dc);
+          if (dr >= 0 && playable(dr, c + dc) && isMovable(b[dr][c + dc])){
+            b[r][c] = b[dr][c + dc];
+            b[dr][c + dc] = null;
+            rescued = true;
+            break outer;
+          }
+        }
+      }
+    }
+    if (!rescued) break;
+  }
+}
+
+function mostCommonColor(b){
+  const counts = new Array(NTYPES).fill(0);
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (isNormal(b[r][c])) counts[b[r][c]]++;
+  let best = 0;
+  counts.forEach((n, i) => { if (n > counts[best]) best = i; });
+  return best;
+}
+
+/* Blast engine. Returns {clear, events} — events describe the visual
+   timeline (rocket streaks, plane flights, booms, rings) in chain order.
+   pickTarget(cands) chooses plane destinations (goal-aware in the UI).
+   Droppers are indestructible: blasts pass over them.
+   Effect types: cell, row, col, rect, color, board, fire, sink, anim. */
+function runEffects(b, seeds, pickTarget){
+  const pick = pickTarget || (cands => cands[(Math.random() * cands.length) | 0]);
+  const clear = new Set(), enq = new Set(), done = new Set(), events = [];
+  const q = seeds.slice();
+  for (const e of q){ if (e.type === 'fire' || e.type === 'sink') enq.add(key(e.r, e.c)); }
+
+  const hit = (r, c) => {
+    if (!inB(r, c) || b[r][c] === null || isDrop(b[r][c])) return;
+    const k = key(r, c);
+    clear.add(k);
+    if (isSpecial(b[r][c]) && !enq.has(k)){ enq.add(k); q.push({ type:'fire', r, c }); }
+  };
+  const planeCands = (excl) => {
+    const cands = [];
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (b[r][c] !== null && !isDrop(b[r][c]) && !clear.has(key(r, c)) &&
+            !(excl && excl.some(p => p.r === r && p.c === c))) cands.push({r, c});
+    return cands;
+  };
+
+  let guard = 0;
+  while (q.length && ++guard < 600){
+    const e = q.shift();
+    if (e.type === 'anim') events.push(e.ev);
+    else if (e.type === 'cell') hit(e.r, e.c);
+    else if (e.type === 'sink'){
+      if (inB(e.r, e.c) && b[e.r][e.c] !== null){ clear.add(key(e.r, e.c)); done.add(key(e.r, e.c)); }
+    }
+    else if (e.type === 'row'){
+      events.push({ t:'streak', axis:'h', line:e.r, o:e.o || { r:e.r, c:(COLS/2)|0 } });
+      for (let c = 0; c < COLS; c++) hit(e.r, c);
+    }
+    else if (e.type === 'col'){
+      events.push({ t:'streak', axis:'v', line:e.c, o:e.o || { r:(ROWS/2)|0, c:e.c } });
+      for (let r = 0; r < ROWS; r++) hit(r, e.c);
+    }
+    else if (e.type === 'rect'){
+      events.push({ t:'boom', r:e.r, c:e.c, rad:e.rad });
+      for (let dr = -e.rad; dr <= e.rad; dr++)
+        for (let dc = -e.rad; dc <= e.rad; dc++) hit(e.r + dr, e.c + dc);
+    }
+    else if (e.type === 'color'){
+      events.push({ t:'ring', r: e.o ? e.o.r : (ROWS/2)|0, c: e.o ? e.o.c : (COLS/2)|0, big:false });
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++)
+          if (b[r][c] === e.color) hit(r, c);
+    }
+    else if (e.type === 'board'){
+      events.push({ t:'ring', r:(ROWS/2)|0, c:(COLS/2)|0, big:true });
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++) hit(r, c);
+    }
+    else if (e.type === 'fire'){
+      const k = key(e.r, e.c);
+      if (done.has(k)) continue;
+      done.add(k);
+      if (!inB(e.r, e.c)) continue;
+      const v = b[e.r][e.c];
+      if (v !== null) clear.add(k);
+      if (!isSpecial(v)) continue;
+      if (v.sp === SP.R) q.push(v.dir === 'h' ? { type:'row', r:e.r, o:{r:e.r,c:e.c} } : { type:'col', c:e.c, o:{r:e.r,c:e.c} });
+      else if (v.sp === SP.B) q.push({ type:'rect', r:e.r, c:e.c, rad:1 });
+      else if (v.sp === SP.P){
+        [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr, dc]) => hit(e.r + dr, e.c + dc));
+        const cands = planeCands();
+        if (cands.length){
+          const t = pick(cands);
+          events.push({ t:'plane', fr:{r:e.r, c:e.c}, to:t });
+          hit(t.r, t.c);
+        }
+      }
+      else if (v.sp === SP.L){
+        events.push({ t:'laser', r:e.r, c:e.c });
+        q.push({ type:'color', color: mostCommonColor(b), o:{r:e.r, c:e.c} });
+      }
+    }
+  }
+  return { clear, events };
+}
+
+/* Seeds for a swap involving at least one special (positions POST-swap). */
+function buildSwapSeeds(b, aPos, dPos, pickTarget){
+  const pick = pickTarget || (cands => cands[(Math.random() * cands.length) | 0]);
+  const A = b[aPos.r][aPos.c], D = b[dPos.r][dPos.c];
+  const bothSp = isSpecial(A) && isSpecial(D);
+
+  if (!bothSp){
+    const sPos = isSpecial(A) ? aPos : dPos;
+    const oPos = isSpecial(A) ? dPos : aPos;
+    const Spc = b[sPos.r][sPos.c], O = b[oPos.r][oPos.c];
+    if (Spc.sp === SP.L){
+      return [
+        { type:'anim', ev:{ t:'laser', r:sPos.r, c:sPos.c } },
+        { type:'sink', r:sPos.r, c:sPos.c },
+        { type:'color', color: isNormal(O) ? O : mostCommonColor(b), o:{r:sPos.r, c:sPos.c} }
+      ];
+    }
+    return [{ type:'fire', r:sPos.r, c:sPos.c }];
+  }
+
+  const seeds = [
+    { type:'sink', r:aPos.r, c:aPos.c },
+    { type:'sink', r:dPos.r, c:dPos.c }
+  ];
+  const has = x => A.sp === x || D.sp === x;
+  const R0 = dPos.r, C0 = dPos.c;
+  const cross = (p) => [[0,0],[-1,0],[1,0],[0,-1],[0,1]]
+    .forEach(([dr, dc]) => seeds.push({ type:'cell', r:p.r + dr, c:p.c + dc }));
+
+  if (A.sp === SP.L && D.sp === SP.L) return [{ type:'board' }];
+  if (has(SP.L)){
+    const otherPos = A.sp === SP.L ? dPos : aPos;
+    const laserPos = A.sp === SP.L ? aPos : dPos;
+    seeds.push({ type:'anim', ev:{ t:'laser', r:laserPos.r, c:laserPos.c } });
+    seeds.push({ type:'color', color: mostCommonColor(b), o:laserPos });
+    seeds.push({ type:'fire', r:otherPos.r, c:otherPos.c });
+    return seeds;
+  }
+  if (A.sp === SP.R && D.sp === SP.R){
+    seeds.push({ type:'row', r:R0, o:{r:R0,c:C0} }, { type:'col', c:C0, o:{r:R0,c:C0} });
+    return seeds;
+  }
+  if (has(SP.R) && has(SP.B)){
+    for (let d = -1; d <= 1; d++)
+      seeds.push({ type:'row', r:R0 + d, o:{r:R0+d,c:C0} }, { type:'col', c:C0 + d, o:{r:R0,c:C0+d} });
+    return seeds;
+  }
+  if (A.sp === SP.B && D.sp === SP.B){
+    seeds.push({ type:'rect', r:R0, c:C0, rad:2 });
+    return seeds;
+  }
+  if (has(SP.P)){
+    const planePos = A.sp === SP.P ? aPos : dPos;
+    const otherPos = A.sp === SP.P ? dPos : aPos;
+    const other = b[otherPos.r][otherPos.c];
+    cross(planePos);
+    const cands = [];
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (b[r][c] !== null && !isDrop(b[r][c]) &&
+            !(r === aPos.r && c === aPos.c) &&
+            !(r === dPos.r && c === dPos.c)) cands.push({r, c});
+    const pickT = () => cands.length ? pick(cands) : dPos;
+    const t = pickT();
+    seeds.push({ type:'anim', ev:{ t:'plane', fr:planePos, to:t } });
+    if (other.sp === SP.P){
+      cross(otherPos);
+      const t2 = pickT();
+      seeds.push({ type:'anim', ev:{ t:'plane', fr:otherPos, to:t2 } });
+      cross(t); cross(t2);
+    } else if (other.sp === SP.R){
+      seeds.push({ type:'row', r:t.r, o:t }, { type:'col', c:t.c, o:t });
+    } else if (other.sp === SP.B){
+      seeds.push({ type:'rect', r:t.r, c:t.c, rad:1 });
+    }
+    return seeds;
+  }
+  seeds.push({ type:'fire', r:aPos.r, c:aPos.c }, { type:'fire', r:dPos.r, c:dPos.c });
+  return seeds;
+}
+
+function findAnyMove(b, mask){
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (isSpecial(b[r][c])) return { a:{r, c}, d:{r, c} };
+  const moves = [];
+  for (let r = 0; r < ROWS; r++){
+    for (let c = 0; c < COLS; c++){
+      if (!isMovable(b[r][c])) continue;
+      for (const d of [{r, c:c+1}, {r:r+1, c}]){
+        if (d.r >= ROWS || d.c >= COLS) continue;
+        if (!isMovable(b[d.r][d.c])) continue;
+        swapCells(b, {r, c}, d);
+        const ok = analyzeMatches(b, null).clear.size > 0;
+        swapCells(b, {r, c}, d);
+        if (ok) moves.push({ a:{r, c}, d });
+      }
+    }
+  }
+  return moves.length ? moves[(Math.random() * moves.length) | 0] : null;
+}
+function moveExists(b, mask){ return findAnyMove(b, mask) !== null; }
+/*CORE-END*/
+
+/* ============================================================
+   DATA — vocab
+   ============================================================ */
+const TILES = [
+  { em:'🍎', es:'la manzana',  g:'la' },
+  { em:'🧀', es:'el queso',    g:'el' },
+  { em:'🌰', es:'la castaña',  g:'la' },
+  { em:'🍾', es:'la sidra',    g:'la' },
+  { em:'☔', es:'el paraguas', g:'el' },
+];
+
+const ROOMS = {
+  sala:   { label:'Sala' },
+  cocina: { label:'Cocina' },
+};
+
+const CATALOG = [
+  // ---- la sala de estar ----
+  { id:'ventana',    room:'sala', es:'la ventana',        en:'window',    g:'la', em:'🪟', cost:2, x:150, y:130, fs:64 },
+  { id:'tele',       room:'sala', es:'la televisión',     en:'TV',        g:'la', em:'📺', cost:3, x:290, y:165, fs:56 },
+  { id:'cuadro',     room:'sala', es:'el cuadro',         en:'painting',  g:'el', em:'🖼️', cost:2, x:420, y:120, fs:52 },
+  { id:'espejo',     room:'sala', es:'el espejo',         en:'mirror',    g:'el', em:'🪞', cost:2, x:530, y:122, fs:46 },
+  { id:'reloj',      room:'sala', es:'el reloj',          en:'clock',     g:'el', em:'🕰️', cost:2, x:640, y:112, fs:42 },
+  { id:'estanteria', room:'sala', es:'la estantería',     en:'bookshelf', g:'la', em:'📚', cost:3, x:75,  y:290, fs:58 },
+  { id:'piano',      room:'sala', es:'el piano',          en:'piano',     g:'el', em:'🎹', cost:4, x:185, y:292, fs:62 },
+  { id:'sofa',       room:'sala', es:'el sofá',           en:'sofa',      g:'el', em:'🛋️', cost:3, x:350, y:295, fs:74 },
+  { id:'silla',      room:'sala', es:'la silla',          en:'chair',     g:'la', em:'🪑', cost:2, x:462, y:292, fs:52 },
+  { id:'lampara',    room:'sala', es:'la lámpara',        en:'lamp',      g:'la', em:'💡', cost:2, x:543, y:275, fs:44 },
+  { id:'guitarra',   room:'sala', es:'la guitarra',       en:'guitar',    g:'la', em:'🎸', cost:3, x:612, y:292, fs:50 },
+  { id:'planta',     room:'sala', es:'la planta',         en:'plant',     g:'la', em:'🪴', cost:2, x:692, y:290, fs:48 },
+  { id:'camaperro',  room:'sala', es:'la cama del perro', en:'dog bed',   g:'la', em:'🐶', cost:3, x:262, y:355, fs:44 },
+  // ---- la cocina ----
+  { id:'jarra',    room:'cocina', es:'la jarra',    en:'jug',      g:'la', em:'🏺', cost:2, x:70,  y:236, fs:48 },
+  { id:'sarten',   room:'cocina', es:'la sartén',   en:'pan',      g:'la', em:'🍳', cost:3, x:160, y:236, fs:54 },
+  { id:'olla',     room:'cocina', es:'la olla',     en:'pot',      g:'la', em:'🍲', cost:3, x:255, y:234, fs:56 },
+  { id:'tetera',   room:'cocina', es:'la tetera',   en:'teapot',   g:'la', em:'🫖', cost:2, x:345, y:236, fs:48 },
+  { id:'cuchillo', room:'cocina', es:'el cuchillo', en:'knife',    g:'el', em:'🔪', cost:2, x:420, y:236, fs:42 },
+  { id:'cuchara',  room:'cocina', es:'la cuchara',  en:'spoon',    g:'la', em:'🥄', cost:2, x:475, y:236, fs:38 },
+  { id:'plato',    room:'cocina', es:'el plato',    en:'plate',    g:'el', em:'🍽️', cost:2, x:545, y:238, fs:48 },
+  { id:'taza',     room:'cocina', es:'la taza',     en:'cup',      g:'la', em:'☕', cost:2, x:615, y:236, fs:40 },
+  { id:'vaso',     room:'cocina', es:'el vaso',     en:'glass',    g:'el', em:'🥛', cost:2, x:672, y:234, fs:40 },
+  { id:'pan',      room:'cocina', es:'el pan',      en:'bread',    g:'el', em:'🥖', cost:3, x:140, y:152, fs:46 },
+  { id:'huevo',    room:'cocina', es:'el huevo',    en:'egg',      g:'el', em:'🥚', cost:2, x:230, y:150, fs:34 },
+  { id:'salero',   room:'cocina', es:'el salero',   en:'salt shaker', g:'el', em:'🧂', cost:2, x:300, y:150, fs:34 },
+];
+
+/* Action phrases: one per object. Task completion teaches these. */
+const PHRASES = {
+  lampara:   { es:'Enciende la lámpara',    en:'turn on the lamp' },
+  tele:      { es:'Apaga la televisión',    en:'turn off the TV' },
+  ventana:   { es:'Abre la ventana',        en:'open the window' },
+  sofa:      { es:'Siéntate en el sofá',    en:'sit on the sofa' },
+  piano:     { es:'Toca el piano',          en:'play the piano' },
+  guitarra:  { es:'Afina la guitarra',      en:'tune the guitar' },
+  planta:    { es:'Riega la planta',        en:'water the plant' },
+  cuadro:    { es:'Cuelga el cuadro',       en:'hang the painting' },
+  espejo:    { es:'Mírate en el espejo',    en:'look at yourself in the mirror' },
+  reloj:     { es:'Da cuerda al reloj',     en:'wind the clock' },
+  estanteria:{ es:'Ordena la estantería',   en:'tidy the bookshelf' },
+  silla:     { es:'Acerca la silla',        en:'pull up the chair' },
+  camaperro: { es:'Llama a Cooper',         en:'call Cooper' },
+  jarra:     { es:'Escancia la sidra',      en:'pour the cider, Asturian style' },
+  sarten:    { es:'Calienta la sartén',     en:'heat the pan' },
+  olla:      { es:'Remueve la olla',        en:'stir the pot' },
+  tetera:    { es:'Hierve el agua',         en:'boil the water' },
+  cuchillo:  { es:'Corta el pan',           en:'cut the bread' },
+  cuchara:   { es:'Coge la cuchara',        en:'grab the spoon' },
+  plato:     { es:'Lava el plato',          en:'wash the plate' },
+  taza:      { es:'Llena la taza',          en:'fill the cup' },
+  vaso:      { es:'Bebe un vaso de agua',   en:'drink a glass of water' },
+  pan:       { es:'Tuesta el pan',          en:'toast the bread' },
+  huevo:     { es:'Bate el huevo',          en:'beat the egg' },
+  salero:    { es:'Pasa el salero',         en:'pass the salt' },
+};
+function phraseHTML(p){
+  return p.es.replace(/\b(el|la)\b/, m => '<span class="g-' + m + '">' + m + '</span>');
+}
+
+/* Cooper — the Austin of this house. ES lines with EN subtitles. */
+const COOPER = {
+  welcome: { es:'¡Guau! Bienvenido a nuestro piso en Oviedo. Está vacío… ¡a trabajar!', en:"Welcome to our flat in Oviedo. It's empty… let's get to work!" },
+  preview: [
+    { es:'¡Este nivel huele a queso!', en:'This level smells like cheese!' },
+    { es:'Si ganamos, quiero una siesta en el sofá.', en:'If we win, I want a nap on the sofa.' },
+    { es:'¡Cuidado con el orbayu!', en:'Watch out for the drizzle!' },
+    { es:'Una estrella más y vamos de compras.', en:'One more star and we go shopping.' },
+    { es:'¡Yo excavo, tú combinas!', en:'I dig, you match!' }
+  ],
+  win: [
+    { es:'¡Guau guau! ¡Eres un crack!', en:"You're a star!" },
+    { es:'¡Otra estrella para la casa!', en:'Another star for the house!' },
+    { es:'¡Casi puedo oler la fabada!', en:'I can almost smell the fabada!' }
+  ],
+  task: [
+    { es:'¡La casa está cada vez mejor!', en:'The house keeps getting better!' },
+    { es:'¡Muy bien dicho!', en:'Well said!' },
+    { es:'¡Guau! Eso sonó muy asturiano.', en:'That sounded very Asturian.' }
+  ]
+};
+function cooperLine(arr, idx){
+  const l = arr[idx % arr.length];
+  return '<p class="cooper">🐕 <b>Cooper:</b> ' + l.es + '<br><span class="cen">' + l.en + '</span></p>';
+}
+
+/* ============================================================
+   SRS — FSRS-5 scheduler (retention target 0.9)
+   Two-grade UI: Otra vez -> Again(1), Bien -> Good(3).
+   New cards get a 10-min learning step; the closing Bien of a
+   session assigns the real interval (= stability in days).
+   ============================================================ */
+/*SRS-START*/
+const MIN = 60000, DAY = 86400000;
+const FW = [0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
+const F_FACTOR = 19/81, F_DECAY = -0.5;
+const clampN = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+
+function fsrsR(tDays, stab){ return Math.pow(1 + F_FACTOR * tDays / stab, F_DECAY); }
+function fsrsS0(g){ return Math.max(FW[g-1], 0.01); }
+function fsrsD0(g){ return clampN(FW[4] - Math.exp(FW[5]*(g-1)) + 1, 1, 10); }
+function fsrsNextD(D, g){
+  const Dp = D + (-FW[6]*(g-3)) * (10 - D) / 9;
+  return clampN(FW[7]*fsrsD0(4) + (1-FW[7])*Dp, 1, 10);
+}
+function fsrsSuccess(D, stab, R, g){
+  const hard = g === 2 ? FW[15] : 1;
+  const easy = g === 4 ? FW[16] : 1;
+  return stab * (1 + Math.exp(FW[8]) * (11-D) * Math.pow(stab, -FW[9]) * (Math.exp(FW[10]*(1-R)) - 1) * hard * easy);
+}
+function fsrsLapse(D, stab, R){
+  return Math.min(stab, FW[11] * Math.pow(D, -FW[12]) * (Math.pow(stab+1, FW[13]) - 1) * Math.exp(FW[14]*(1-R)));
+}
+/* g: 1 = Again (Otra vez), 3 = Good (Bien) */
+function fsrsReview(card, g){
+  const now = Date.now();
+  if (card.S === undefined){
+    card.S = fsrsS0(g);
+    card.D = fsrsD0(g);
+  } else {
+    const t = Math.max(1/1440, (now - (card.last || now)) / DAY);
+    const R = fsrsR(t, card.S);
+    card.D = fsrsNextD(card.D, g);
+    card.S = g === 1 ? fsrsLapse(card.D, card.S, R) : fsrsSuccess(card.D, card.S, R, g);
+  }
+  card.last = now;
+  card.reps = (card.reps || 0) + 1;
+  if (g === 1){
+    card.lapses = (card.lapses || 0) + 1;
+    card.due = now + MIN;                 // learning step within the session
+  } else {
+    card.due = now + Math.round(Math.max(card.S, 10/1440) * DAY);
+  }
+}
+function newCard(item, kind){
+  return { id:item.id, kind: kind || 'obj', due: Date.now() + 10*MIN, reps:0 };
+}
+/*SRS-END*/
+function dueCards(){
+  const now = Date.now();
+  return S.deck.filter(c => c.due <= now);
+}
+
+/* ============================================================
+   STATE + persistence
+   ============================================================ */
+const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, room:'sala', tasks:[], welcomed:false };
+let S;
+let memoryOnly = false;
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem('piso-asturiano');
+    S = raw ? JSON.parse(raw) : structuredClone(DEFAULT_STATE);
+  } catch(e){
+    memoryOnly = true;
+    S = structuredClone(DEFAULT_STATE);
+  }
+  if (S.sound === undefined) S.sound = true;
+  if (S.hammers === undefined) S.hammers = 1;
+  if (S.room === undefined) S.room = 'sala';
+  if (S.room === 'cocina' && !roomUnlocked('cocina')) S.room = 'sala';
+  if (S.tasks === undefined) S.tasks = [];
+  if (S.welcomed === undefined) S.welcomed = false;
+  // migrate Leitner-era cards to FSRS
+  const boxToS = { 1:0.4, 2:1, 3:3, 4:7, 5:21 };
+  S.deck.forEach(c => {
+    if (c.kind === undefined) c.kind = 'obj';
+    if (c.S === undefined && c.box !== undefined){
+      c.S = boxToS[c.box] || 1;
+      c.D = 5;
+      c.last = c.due - c.S * DAY;
+      delete c.box;
+    }
+  });
+  if (memoryOnly) document.getElementById('save-note').textContent = 'sesión sin guardar (abre el archivo en Safari para guardar)';
+}
+function save(){
+  if (memoryOnly) return;
+  try { localStorage.setItem('piso-asturiano', JSON.stringify(S)); } catch(e){ memoryOnly = true; }
+}
+function roomUnlocked(room){
+  if (room === 'sala') return true;
+  return CATALOG.filter(i => i.room === 'sala').every(i => S.owned.includes(i.id));
+}
+
+/* ============================================================
+   AUDIO — es-ES speech + synthesized SFX
+   ============================================================ */
+function speak(text){
+  if (S && S.sound === false) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'es-ES';
+    const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('es'));
+    if (v) u.voice = v;
+    u.rate = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch(e){}
+}
+if ('speechSynthesis' in window) speechSynthesis.getVoices();
+
+let AC = null;
+function audioCtx(){
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(freq, dur, type, vol, delay, slideTo){
+  if (S && S.sound === false) return;
+  try {
+    const ac = audioCtx();
+    const t = ac.currentTime + (delay || 0);
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(vol || 0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.03);
+  } catch(e){}
+}
+const SFX = {
+  select(){ tone(660, .05, 'triangle', .07); },
+  swap(){ tone(430, .09, 'sine', .1, 0, 540); },
+  bad(){ tone(190, .16, 'sawtooth', .07, 0, 120); },
+  pop(cascade){
+    const base = 520 + Math.min(cascade, 6) * 90;
+    tone(base, .1, 'triangle', .13);
+    tone(base * 1.5, .08, 'sine', .07, .045);
+  },
+  win(){ [523, 659, 784, 1047].forEach((f, i) => tone(f, .18, 'triangle', .13, i * .12)); },
+  lose(){ [392, 330, 262].forEach((f, i) => tone(f, .2, 'sine', .09, i * .15)); },
+  star(){ tone(880, .12, 'sine', .12); tone(1320, .18, 'sine', .09, .08); },
+  buy(){ tone(659, .1, 'triangle', .12); tone(880, .12, 'triangle', .1, .07); },
+  boom(){ tone(110, .3, 'sawtooth', .13, 0, 55); tone(320, .22, 'triangle', .1, .03, 90); },
+  whoosh(){ tone(900, .3, 'sine', .07, 0, 250); },
+  bien(){ tone(784, .09, 'sine', .1); tone(988, .12, 'sine', .08, .06); },
+  otra(){ tone(330, .14, 'sine', .08); },
+  drop(){ tone(520, .12, 'triangle', .12, 0, 780); },
+  hint(){
+    if (AC && AC.state === 'running') tone(587, .09, 'sine', .05);
+  }
+};
+
+/* ============================================================
+   UI helpers
+   ============================================================ */
+const $ = id => document.getElementById(id);
+function esHTML(item){
+  const [art, ...rest] = item.es.split(' ');
+  return '<span class="g-' + item.g + '">' + art + '</span> ' + rest.join(' ');
+}
+function refreshHUD(){
+  $('hud-stars').textContent = S.stars;
+  const n = dueCards().length;
+  $('hud-due').style.display = n ? 'flex' : 'none';
+  $('hud-due-n').textContent = n;
+  $('nav-due').style.display = n ? 'inline' : 'none';
+  $('nav-due').textContent = n;
+}
+function showModal(html){
+  $('modal').innerHTML = html;
+  $('overlay').classList.add('open');
+}
+function closeModal(){
+  $('overlay').classList.remove('open');
+  if (typeof levelDone !== 'undefined' && levelDone) startLevel();
+}
+$('overlay').addEventListener('click', e => { if (e.target === $('overlay')) closeModal(); });
+
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+function switchTab(name){
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
+  if (name === 'repaso') renderReview();
+  if (name === 'casa'){ renderRoomTabs(); renderRoom(); renderTasks(); renderShop(); }
+  if (name === 'juego') onEnterJuego();
+}
+
+/* ============================================================
+   CASA — rooms, shop
+   ============================================================ */
+function renderRoomTabs(){
+  const el = $('room-tabs');
+  el.innerHTML = '';
+  for (const [id, r] of Object.entries(ROOMS)){
+    const b = document.createElement('button');
+    const unlocked = roomUnlocked(id);
+    b.textContent = r.label + (unlocked ? '' : ' 🔒');
+    b.classList.toggle('active', S.room === id);
+    b.addEventListener('click', () => {
+      if (!unlocked){
+        const left = CATALOG.filter(i => i.room === 'sala' && !S.owned.includes(i.id)).length;
+        showModal('<div class="em">🔒</div><h2>La cocina espera</h2><p>Termina la sala primero — faltan ' + left + ' objetos.</p><button class="btn btn-bien" onclick="closeModal()">Vale</button>');
+        return;
+      }
+      S.room = id; save();
+      renderRoomTabs(); renderRoom(); renderShop();
+    });
+    el.appendChild(b);
+  }
+}
+
+function roomBgSVG(room){
+  if (room === 'cocina'){
+    let tiles = '';
+    for (let x = 0; x <= 780; x += 60) tiles += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="240" stroke="#CDD9DC" stroke-width="2"/>';
+    for (let y = 40; y < 240; y += 40) tiles += '<line x1="0" y1="' + y + '" x2="780" y2="' + y + '" stroke="#CDD9DC" stroke-width="2"/>';
+    return '<rect width="780" height="310" fill="#E9EFF1"/>' + tiles +
+      '<rect x="60" y="128" width="300" height="10" rx="3" fill="#8A6544"/>' +
+      '<rect y="240" width="780" height="14" fill="#9AA7AB"/>' +
+      '<rect y="254" width="780" height="126" fill="#C9D2D5"/>' +
+      '<rect y="380" width="780" height="20" fill="#B98A5C"/>';
+  }
+  return '<rect width="780" height="310" fill="#EAE3D0"/>' +
+    '<rect y="310" width="780" height="90" fill="#B98A5C"/>' +
+    '<line y1="310" x2="780" y2="310" stroke="#96683F" stroke-width="3"/>' +
+    '<rect width="780" height="16" fill="#8A6544"/>' +
+    '<rect x="60" y="16" width="14" height="294" fill="#8A6544" opacity=".25"/>' +
+    '<rect x="706" y="16" width="14" height="294" fill="#8A6544" opacity=".25"/>';
+}
+
+function renderRoom(){
+  $('room-bg').innerHTML = roomBgSVG(S.room);
+  const g = $('room-items');
+  g.innerHTML = '';
+  for (const item of CATALOG.filter(i => i.room === S.room)){
+    const owned = S.owned.includes(item.id);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', item.x); t.setAttribute('y', item.y);
+    t.setAttribute('font-size', item.fs);
+    t.setAttribute('text-anchor', 'middle');
+    if (owned){
+      t.textContent = item.em;
+      t.setAttribute('class','slot-item');
+      t.addEventListener('click', () => { roomBubble(item); speak(item.es); });
+    } else {
+      t.textContent = '·';
+      t.setAttribute('class','slot-empty');
+      t.setAttribute('font-size', 30);
+      t.setAttribute('fill', '#8A6544');
+    }
+    g.appendChild(t);
+  }
+}
+let bubbleTimer = null;
+function roomBubble(item){
+  const g = $('room-bubble'), txt = $('rb-text'), rect = $('rb-rect');
+  txt.textContent = item.es;
+  g.style.display = 'block';
+  const w = item.es.length * 11 + 24;
+  const bx = Math.max(8, Math.min(780 - w - 8, item.x - w/2));
+  const by = Math.max(24, item.y - item.fs - 34);
+  rect.setAttribute('x', bx); rect.setAttribute('y', by);
+  rect.setAttribute('width', w); rect.setAttribute('height', 32);
+  txt.setAttribute('x', bx + w/2); txt.setAttribute('y', by + 22);
+  txt.setAttribute('text-anchor','middle');
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => g.style.display = 'none', 1800);
+}
+
+function renderTasks(){
+  const el = $('tasks');
+  const items = CATALOG.filter(i => i.room === S.room && PHRASES[i.id]);
+  let html = '<div class="tasks-h">📋 La lista de Cooper</div>';
+  for (const item of items){
+    const ph = PHRASES[item.id];
+    const owned = S.owned.includes(item.id);
+    const done = S.tasks.includes(item.id);
+    if (done){
+      html += '<div class="task done"><span>✓ ' + item.em + ' ' + phraseHTML(ph) + '</span>' +
+              '<button class="tk-audio" data-say="' + ph.es + '">🔊</button></div>';
+    } else if (owned){
+      html += '<div class="task"><span>' + item.em + ' ' + phraseHTML(ph) +
+              ' <span class="cen">' + ph.en + '</span></span>' +
+              '<button class="tk-do" data-id="' + item.id + '" ' + (S.stars < 1 ? 'disabled' : '') + '>★ 1</button></div>';
+    } else {
+      html += '<div class="task locked"><span>' + item.em + ' — compra ' + esHTML(item) + ' primero</span></div>';
+    }
+  }
+  el.innerHTML = html;
+  el.querySelectorAll('.tk-do').forEach(b => b.addEventListener('click', () => completeTask(b.dataset.id)));
+  el.querySelectorAll('.tk-audio').forEach(b => b.addEventListener('click', () => speak(b.dataset.say)));
+}
+function completeTask(id){
+  if (S.tasks.includes(id) || S.stars < 1) return;
+  const item = CATALOG.find(i => i.id === id), ph = PHRASES[id];
+  S.stars--;
+  S.tasks.push(id);
+  S.deck.push(newCard(item, 'phr'));
+  save(); refreshHUD(); renderTasks(); renderShop();
+  SFX.buy();
+  speak(ph.es);
+  showModal(
+    '<div class="em">' + item.em + '⚡</div>' +
+    '<h2>' + phraseHTML(ph) + '</h2>' +
+    '<p>' + ph.en + ' · nueva frase en tu repaso</p>' +
+    cooperLine(COOPER.task, S.tasks.length) +
+    '<button class="btn btn-audio" onclick="speak(\'' + ph.es + '\')">🔊</button> ' +
+    '<button class="btn btn-bien" onclick="closeModal()">¡Hecho!</button>'
+  );
+}
+
+function renderShop(){
+  const el = $('shop');
+  el.innerHTML = '';
+  for (const item of CATALOG.filter(i => i.room === S.room)){
+    const owned = S.owned.includes(item.id);
+    const div = document.createElement('div');
+    div.className = 'shop-card' + (owned ? ' owned' : '');
+    div.innerHTML =
+      '<div class="em">' + item.em + '</div>' +
+      '<div class="nm">' + esHTML(item) + '</div>' +
+      (owned
+        ? '<button disabled>en casa ✓</button>'
+        : '<button ' + (S.stars < item.cost ? 'disabled' : '') + '>★ ' + item.cost + '</button>');
+    if (!owned){
+      div.querySelector('button').addEventListener('click', () => buy(item));
+    }
+    el.appendChild(div);
+  }
+}
+
+function buy(item){
+  if (S.stars < item.cost || S.owned.includes(item.id)) return;
+  S.stars -= item.cost;
+  S.owned.push(item.id);
+  S.deck.push(newCard(item));
+  save(); refreshHUD(); renderRoomTabs(); renderRoom(); renderTasks(); renderShop();
+  SFX.buy();
+  speak(item.es);
+  showModal(
+    '<div class="em">' + item.em + '</div>' +
+    '<h2>' + esHTML(item) + '</h2>' +
+    '<p>' + item.en + ' · nueva palabra en tu repaso</p>' +
+    '<button class="btn btn-audio" onclick="speak(\'' + item.es + '\')">🔊</button> ' +
+    '<button class="btn btn-bien" onclick="closeModal()">Colocado</button>'
+  );
+}
+
+/* ============================================================
+   JUEGO — levels, goals, obstacles, boosters, FX
+   ============================================================ */
+const LEVELS = [
+  { moves:20, goals:[{t:'tile',tile:0,n:20},{t:'tile',tile:1,n:15}], map:[
+    '.........','.........','.........','.........','.........',
+    '.........','.........','.........','.........' ]},
+  { moves:20, goals:[{t:'tile',tile:2,n:18},{t:'tile',tile:3,n:18}], map:[
+    '##.....##','#.......#','.........','.........','.........',
+    '.........','.........','#.......#','##.....##' ]},
+  { moves:24, goals:[{t:'tile',tile:4,n:15}], map:[
+    '.........','.........','..BBBBB..','..B...B..','..B...B..',
+    '..B...B..','..BBBBB..','.........','.........' ]},
+  { moves:22, goals:[{t:'tile',tile:0,n:15}], map:[
+    '.........','.CCC.CCC.','.........','.........','.........',
+    '.........','.........','.CCC.CCC.','.........' ]},
+  { moves:24, goals:[{t:'tile',tile:1,n:12}], map:[
+    '.D..D..D.','.........','.........','..B...B..','....X....',
+    '.........','.........','.........','.........' ]},
+  { moves:20, goals:[{t:'tile',tile:1,n:20},{t:'tile',tile:3,n:20}], map:[
+    '###...###','##.....##','#.......#','.........','.........',
+    '.........','#.......#','##.....##','###...###' ]},
+  { moves:22, goals:[{t:'tile',tile:2,n:12}], map:[
+    '.........','.........','...JJJ...','...JJJ...','...JJJ...',
+    '.........','.........','.........','.........' ]},
+  { moves:24, goals:[{t:'tile',tile:2,n:15}], map:[
+    'X.......X','.........','..C...C..','.........','....B....',
+    '.........','..C...C..','.........','X.......X' ]},
+  { moves:28, goals:[], map:[
+    '.........','.BBBBBBB.','.B#####B.','.B#####B.','.B#####B.',
+    '.B#####B.','.B#####B.','.BBBBBBB.','.........' ]},
+  { moves:28, goals:[{t:'tile',tile:0,n:20},{t:'tile',tile:4,n:20}], map:[
+    '#..CCC..#','..X...X..','.B.....B.','.........','....X....',
+    '.........','.B.....B.','..X...X..','#..CCC..#' ]},
+];
+
+function levelSpec(n){
+  const base = LEVELS[(n - 1) % LEVELS.length];
+  const cycle = Math.floor((n - 1) / LEVELS.length);
+  const goals = base.goals.map(g => ({ ...g, n: g.n + (g.t === 'tile' ? 5 * cycle : 0) }));
+  const parsed = parseMap(base.map);
+  const nCaja = parsed.statics.filter(x => x.cell.ob === 'caja').length;
+  const nCad  = parsed.statics.filter(x => x.cell.ob === 'cad').length;
+  if (nCaja) goals.push({ t:'caja', n:nCaja });
+  if (nCad)  goals.push({ t:'cadena', n:nCad });
+  if (parsed.drops.length) goals.push({ t:'drop', n:parsed.drops.length });
+  if (parsed.jelly.length) goals.push({ t:'orbayu', n:parsed.jelly.length });
+  return { moves: base.moves, map: base.map, goals };
+}
+
+let board = null, sel = null, moves = 0, busy = false, levelDone = false;
+let LVL = { mask:new Set(), goals:[], moves:0, jelly:new Set() };
+let goalsLeft = {};
+let hammerMode = false, pendingPreview = false, jellyClearedThisTurn = false;
+let hintTimer = null, hintCells = null;
+const HINT_DELAY = 120000;
+
+/* ---------- goals ---------- */
+function goalKey(g){ return g.t === 'tile' ? 'tile-' + g.tile : g.t; }
+function goalEmoji(k){
+  if (k === 'caja') return '📦';
+  if (k === 'cadena') return '⛓️';
+  if (k === 'drop') return '🥧';
+  if (k === 'orbayu') return '🌫️';
+  return TILES[+k.split('-')[1]].em;
+}
+function renderGoals(){
+  $('g-goals').innerHTML = Object.entries(goalsLeft).map(([k, n]) =>
+    '<span class="goal-chip' + (n <= 0 ? ' done' : '') + '">' +
+    goalEmoji(k) + ' ' + (n <= 0 ? '✓' : n) + '</span>'
+  ).join('');
+}
+function goalsMet(){ return Object.values(goalsLeft).every(n => n <= 0); }
+function dec(k){ if (goalsLeft[k] !== undefined && goalsLeft[k] > 0) goalsLeft[k]--; }
+function creditClear(v){
+  if (typeof v === 'number') dec('tile-' + v);
+  else if (v && v.ob === 'cad'){ dec('cadena'); dec('tile-' + v.tile); }
+  else if (v && v.ob === 'caja') dec('caja');
+}
+
+/* goal-aware plane targeting: prefer cells that advance open goals */
+function pickPlaneTarget(cands){
+  const wanted = cands.filter(p => {
+    const v = board[p.r][p.c];
+    const k = key(p.r, p.c);
+    if (goalsLeft['caja'] > 0 && v && v.ob === 'caja') return true;
+    if (goalsLeft['cadena'] > 0 && v && v.ob === 'cad') return true;
+    if (goalsLeft['orbayu'] > 0 && LVL.jelly.has(k)) return true;
+    const col = colorOf(v);
+    if (col !== null && goalsLeft['tile-' + col] > 0) return true;
+    return false;
+  });
+  const pool = wanted.length ? wanted : cands;
+  return pool[(Math.random() * pool.length) | 0];
+}
+
+/* ---------- hints ---------- */
+function scheduleHint(){
+  clearTimeout(hintTimer);
+  hintCells = null;
+  hintTimer = setTimeout(() => {
+    if (busy || moves <= 0 || levelDone) return;
+    const mv = findAnyMove(board, LVL.mask);
+    if (!mv) return;
+    hintCells = [mv.a.r + ',' + mv.a.c, mv.d.r + ',' + mv.d.c];
+    SFX.hint();
+    renderBoard();
+  }, HINT_DELAY);
+}
+
+/* ---------- level lifecycle ---------- */
+function startLevel(){
+  const spec = levelSpec(S.level);
+  const parsed = parseMap(spec.map);
+  LVL = { mask: parsed.mask, goals: spec.goals, moves: spec.moves, jelly: new Set(parsed.jelly) };
+  board = buildBoard(parsed.mask, parsed.statics, parsed.drops);
+  moves = spec.moves;
+  goalsLeft = {};
+  spec.goals.forEach(g => goalsLeft[goalKey(g)] = g.n);
+  sel = null; busy = false; levelDone = false; hammerMode = false;
+  renderGameHUD(); renderGoals(); renderBoard(); updateHammer();
+  scheduleHint();
+  pendingPreview = true;
+  if ($('tab-juego').classList.contains('active') && dueCards().length === 0) showPreview();
+}
+function showPreview(){
+  pendingPreview = false;
+  const chips = Object.entries(goalsLeft).map(([k, n]) =>
+    '<span class="goal-chip">' + goalEmoji(k) + ' ' + n + '</span>').join('');
+  showModal(
+    '<h2>Nivel ' + S.level + '</h2>' +
+    cooperLine(COOPER.preview, S.level) +
+    '<div class="goals" style="margin:12px 0; justify-content:center">' + chips + '</div>' +
+    '<p>' + moves + ' movimientos</p>' +
+    '<button class="btn btn-bien" onclick="closeModal()">¡A jugar!</button>'
+  );
+}
+function winLevel(){
+  levelDone = true; busy = false;
+  S.stars++; S.level++;
+  save(); refreshHUD();
+  SFX.win();
+  showModal(
+    '<div class="em">⭐</div><h2>¡Nivel superado!</h2>' +
+    cooperLine(COOPER.win, S.level) +
+    '<p>+1 estrella · ' + S.stars + ' en total</p>' +
+    '<button class="btn btn-bien" onclick="closeModal()">Siguiente nivel</button> ' +
+    '<button class="btn btn-audio" onclick="closeModal(); switchTab(\'casa\');">🏠 Ir de compras</button>'
+  );
+}
+function loseLevel(){
+  SFX.lose();
+  const chips = Object.entries(goalsLeft).filter(([k, n]) => n > 0).map(([k, n]) =>
+    '<span class="goal-chip">' + goalEmoji(k) + ' ' + n + '</span>').join('');
+  showModal(
+    '<div class="em">🌧️</div><h2>Sin movimientos</h2>' +
+    '<p>Faltaba:</p><div class="goals" style="justify-content:center">' + chips + '</div>' +
+    '<p>Orbayu pasa, tú sigues.</p>' +
+    '<button class="btn btn-bien" onclick="closeModal(); startLevel();">Otra vez</button>'
+  );
+}
+
+/* ---------- rendering ---------- */
+function renderGameHUD(){
+  $('g-level').textContent = S.level;
+  $('g-moves').textContent = moves + ' mov.';
+  $('h-n').textContent = S.hammers || 0;
+}
+function updateHammer(){
+  const b = $('btn-hammer');
+  $('h-n').textContent = S.hammers || 0;
+  b.classList.toggle('armed', hammerMode);
+  b.disabled = !(S.hammers > 0);
+}
+function renderBoard(popSet, dmgSet){
+  const el = $('board');
+  el.innerHTML = '';
+  for (let r = 0; r < ROWS; r++){
+    for (let c = 0; c < COLS; c++){
+      const d = document.createElement('div');
+      d.className = 'cell';
+      const k = r + ',' + c;
+      if (LVL.mask.has(k)){
+        d.classList.add('hole');
+        el.appendChild(d);
+        continue;
+      }
+      if (LVL.jelly.has(k)){
+        const j = document.createElement('span');
+        j.className = 'jelly';
+        d.appendChild(j);
+      }
+      const v = board[r][c];
+      if (sel && sel.r === r && sel.c === c) d.classList.add('sel');
+      if (popSet && popSet.has(k)) d.classList.add('pop');
+      if (dmgSet && dmgSet.has(k) && !(popSet && popSet.has(k))) d.classList.add('dmg');
+      if (hintCells && hintCells.includes(k)) d.classList.add('hint');
+      if (v === null){
+        // empty
+      } else if (isSpecial(v)){
+        d.classList.add('spc');
+        if (v.sp === SP.R){
+          const sp = document.createElement('span');
+          sp.textContent = '🚀';
+          sp.style.display = 'inline-block';
+          sp.style.transform = v.dir === 'h' ? 'rotate(45deg)' : 'rotate(-45deg)';
+          d.appendChild(sp);
+        } else {
+          d.appendChild(document.createTextNode(v.sp === SP.B ? '💣' : v.sp === SP.P ? '✈️' : '🔮'));
+        }
+      } else if (isDrop(v)){
+        d.appendChild(document.createTextNode('🥧'));
+      } else if (isStatic(v)){
+        d.classList.add('static');
+        if (v.ob === 'caja'){
+          d.appendChild(document.createTextNode('📦'));
+          if (v.hp > 1){
+            const hp = document.createElement('span');
+            hp.className = 'ob-hp'; hp.textContent = v.hp;
+            d.appendChild(hp);
+          }
+        } else {
+          d.appendChild(document.createTextNode(TILES[v.tile].em));
+          const ch = document.createElement('span');
+          ch.className = 'ob-chain'; ch.textContent = '⛓️';
+          d.appendChild(ch);
+        }
+      } else {
+        d.appendChild(document.createTextNode(TILES[v].em));
+      }
+      d.addEventListener('click', () => tapCell(r, c));
+      el.appendChild(d);
+    }
+  }
+}
+function floatWord(text){
+  const el = $('board');
+  const s = document.createElement('span');
+  s.className = 'float-word';
+  s.textContent = '¡' + text.replace(/^(el|la|las)\s+/, '') + '!';
+  s.style.left = (20 + Math.random() * 60) + '%';
+  s.style.top = (25 + Math.random() * 40) + '%';
+  el.appendChild(s);
+  setTimeout(() => s.remove(), 900);
+}
+function floatPraise(cascade){
+  const words = ['¡Bien!', '¡Genial!', '¡Increíble!', '¡Espectacular!'];
+  const s = document.createElement('span');
+  s.className = 'praise';
+  s.textContent = words[Math.min(cascade - 2, 3)];
+  $('board').appendChild(s);
+  setTimeout(() => s.remove(), 950);
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---------- FX layer: special-piece animations ---------- */
+function cellCenter(r, c){
+  const el = $('board').children[r * COLS + c];
+  return { x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2, s: el.offsetWidth };
+}
+function fxEl(text, x, y, cls){
+  const s = document.createElement('span');
+  s.className = 'fx ' + (cls || '');
+  s.textContent = text;
+  s.style.left = x + 'px';
+  s.style.top = y + 'px';
+  $('board').appendChild(s);
+  return s;
+}
+function fxRocketPair(o, axis){
+  const oc = cellCenter(o.r, o.c);
+  const ends = axis === 'h'
+    ? [cellCenter(o.r, 0), cellCenter(o.r, COLS - 1)]
+    : [cellCenter(0, o.c), cellCenter(ROWS - 1, o.c)];
+  SFX.whoosh();
+  ends.forEach(end => {
+    const dx = end.x - oc.x, dy = end.y - oc.y;
+    let deg;
+    if (axis === 'h') deg = dx >= 0 ? 45 : 225;
+    else deg = dy >= 0 ? 135 : -45;
+    const el = fxEl('🚀', oc.x, oc.y, 'fx-rocket');
+    el.style.transform = 'translate(-50%,-50%) rotate(' + deg + 'deg)';
+    el.offsetWidth; // reflow so the transition runs
+    el.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) rotate(' + deg + 'deg)';
+    setTimeout(() => el.remove(), 480);
+  });
+}
+function fxBoom(r, c, rad){
+  const o = cellCenter(r, c);
+  const el = fxEl('💥', o.x, o.y, 'fx-boom');
+  el.style.setProperty('--boom-scale', (1.6 + rad * 1.6).toFixed(1));
+  SFX.boom();
+  setTimeout(() => el.remove(), 420);
+}
+function fxPlane(fr, to){
+  const a = cellCenter(fr.r, fr.c), b = cellCenter(to.r, to.c);
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const deg = Math.atan2(dy, dx) * 180 / Math.PI;
+  const el = fxEl('✈️', a.x, a.y, 'fx-plane');
+  el.style.transform = 'translate(-50%,-50%) rotate(' + deg + 'deg)';
+  el.offsetWidth;
+  SFX.whoosh();
+  el.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) rotate(' + deg + 'deg)';
+  setTimeout(() => { el.remove(); fxBoom(to.r, to.c, 0); }, 500);
+}
+function fxRing(r, c, big){
+  const o = cellCenter(r, c);
+  const el = fxEl('', o.x, o.y, 'fx-ring');
+  el.style.setProperty('--ring-scale', big ? 26 : 16);
+  setTimeout(() => el.remove(), 550);
+}
+function fxLaser(r, c){
+  const o = cellCenter(r, c);
+  const el = fxEl('🔮', o.x, o.y, 'fx-laser');
+  setTimeout(() => el.remove(), 480);
+}
+async function playEffects(events){
+  if (!events || !events.length) return;
+  let delay = 0;
+  for (const ev of events){
+    const d = delay;
+    setTimeout(() => {
+      try {
+        if (ev.t === 'streak') fxRocketPair(ev.o, ev.axis);
+        else if (ev.t === 'boom') fxBoom(ev.r, ev.c, ev.rad);
+        else if (ev.t === 'plane') fxPlane(ev.fr, ev.to);
+        else if (ev.t === 'laser'){ fxLaser(ev.r, ev.c); fxRing(ev.r, ev.c, false); }
+        else if (ev.t === 'ring') fxRing(ev.r, ev.c, ev.big);
+      } catch(e){}
+    }, d);
+    delay += 140;
+  }
+  await sleep(Math.min(delay + 480, 2200));
+}
+
+/* ---------- clearing & goal credit ---------- */
+async function clearAndDrop(hits, spawns, popDelay, adjDamage){
+  const clearSet = new Set(), dmgSet = new Set();
+  const damage = (rr, cc) => {
+    const nk = key(rr, cc);
+    const nv = getC(board, rr, cc);
+    if (nv && nv.ob === 'caja' && !dmgSet.has(nk)){
+      dmgSet.add(nk);
+      nv.hp--;
+      if (nv.hp <= 0){ clearSet.add(nk); creditClear(nv); }
+    }
+  };
+  for (const k of hits){
+    const [r, c] = k.split(',').map(Number);
+    const v = board[r][c];
+    if (v === null) continue;
+    if (v.ob === 'caja') damage(r, c);
+    else { clearSet.add(k); creditClear(v); }
+  }
+  if (adjDamage){
+    for (const k of [...clearSet]){
+      const [r, c] = k.split(',').map(Number);
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr, dc]) => damage(r + dr, c + dc));
+    }
+  }
+  // orbayu: any clear on a jelly cell removes the jelly
+  for (const k of clearSet){
+    if (LVL.jelly.has(k)){
+      LVL.jelly.delete(k);
+      jellyClearedThisTurn = true;
+    }
+  }
+  if (goalsLeft['orbayu'] !== undefined) goalsLeft['orbayu'] = LVL.jelly.size;
+
+  renderBoard(clearSet, dmgSet);
+  await sleep(popDelay || 230);
+  for (const k of clearSet){
+    const [r, c] = k.split(',');
+    board[r][c] = null;
+  }
+  if (spawns) for (const sp of spawns) board[sp.r][sp.c] = sp.piece;
+  applyGravity(board, LVL.mask);
+  collectDrops();
+  renderBoard(); renderGameHUD(); renderGoals();
+  await sleep(160);
+}
+
+/* droppers reaching the floor of their column are collected */
+function collectDrops(){
+  let again = true, guard = 0;
+  while (again && ++guard < 20){
+    again = false;
+    for (let r = 0; r < ROWS; r++){
+      for (let c = 0; c < COLS; c++){
+        if (!isDrop(board[r][c])) continue;
+        let below = false;
+        for (let rr = r + 1; rr < ROWS; rr++)
+          if (!LVL.mask.has(key(rr, c))){ below = true; break; }
+        if (!below){
+          board[r][c] = null;
+          dec('drop');
+          SFX.drop();
+          again = true;
+        }
+      }
+    }
+    if (again) applyGravity(board, LVL.mask);
+  }
+}
+
+async function resolveCascades(swapPos){
+  let cascade = 1;
+  while (true){
+    const { clear, spawns } = analyzeMatches(board, cascade === 1 ? swapPos : null);
+    if (clear.size === 0) break;
+    const first = clear.values().next().value.split(',');
+    const col = colorOf(board[first[0]][first[1]]);
+    if (col !== null) floatWord(TILES[col].es);
+    if (cascade >= 2) floatPraise(cascade);
+    SFX.pop(cascade);
+    await clearAndDrop(clear, spawns, 230, true);
+    cascade++;
+  }
+}
+
+async function detonate(seeds){
+  const { clear, events } = runEffects(board, seeds, pickPlaneTarget);
+  await playEffects(events);
+  await clearAndDrop(clear, null, 150, false);
+  await resolveCascades(null);
+}
+
+/* leftover moves become rockets that auto-fire (Homescapes finale).
+   Paced for savoring: rockets land one by one, then fire one at a time,
+   each with its full streak animation and board settle. */
+async function finale(){
+  const n = Math.min(moves, 6);
+  if (n <= 0) return;
+  moves = 0;
+  renderGameHUD();
+  const placed = [];
+  const frees = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (isNormal(board[r][c])) frees.push({r, c});
+  for (let i = 0; i < n && frees.length; i++){
+    const idx = (Math.random() * frees.length) | 0;
+    const p = frees.splice(idx, 1)[0];
+    board[p.r][p.c] = { sp:SP.R, dir: Math.random() < 0.5 ? 'h' : 'v' };
+    placed.push(p);
+    renderBoard();
+    SFX.select();
+    await sleep(220);
+  }
+  if (!placed.length) return;
+  floatPraise(5);
+  await sleep(700);
+  for (const p of placed){
+    // a previous rocket may have already swept this one away (it fired as a chain)
+    if (isSpecial(board[p.r][p.c])){
+      await detonate([{ type:'fire', r:p.r, c:p.c }]);
+      await sleep(300);
+    }
+  }
+}
+
+/* ---------- input ---------- */
+async function tapCell(r, c){
+  if (busy || levelDone) return;
+  const k = key(r, c);
+  if (LVL.mask.has(k)) return;
+  const v = board[r][c];
+
+  if (hammerMode){
+    hammerMode = false; updateHammer();
+    if (v === null){ renderBoard(); return; }
+    S.hammers--; save();
+    busy = true;
+    hintCells = null; clearTimeout(hintTimer);
+    jellyClearedThisTurn = false;
+    await detonate([{ type:'cell', r, c }]);
+    await finishTurn(false);
+    return;
+  }
+
+  if (moves <= 0 || v === null) return;
+  hintCells = null; clearTimeout(hintTimer);
+
+  if (!isMovable(v)){ sel = null; SFX.bad(); renderBoard(); scheduleHint(); return; }
+
+  if (!sel){ sel = {r, c}; SFX.select(); renderBoard(); scheduleHint(); return; }
+
+  if (sel.r === r && sel.c === c){
+    if (isSpecial(v)){
+      busy = true; sel = null;
+      moves--; renderGameHUD();
+      jellyClearedThisTurn = false;
+      await detonate([{ type:'fire', r, c }]);
+      await finishTurn(true);
+      return;
+    }
+    sel = null; renderBoard(); scheduleHint(); return;
+  }
+
+  const adj = Math.abs(sel.r - r) + Math.abs(sel.c - c) === 1;
+  if (!adj){ sel = {r, c}; SFX.select(); renderBoard(); scheduleHint(); return; }
+
+  busy = true;
+  const a = sel; sel = null;
+  swapCells(board, a, {r, c});
+  SFX.swap();
+  renderBoard();
+
+  if (isSpecial(board[a.r][a.c]) || isSpecial(board[r][c])){
+    moves--; renderGameHUD();
+    jellyClearedThisTurn = false;
+    await sleep(150);
+    await detonate(buildSwapSeeds(board, a, {r, c}, pickPlaneTarget));
+    await finishTurn(true);
+    return;
+  }
+
+  const probe = analyzeMatches(board, {r, c});
+  if (probe.clear.size === 0){
+    await sleep(180);
+    swapCells(board, a, {r, c});
+    SFX.bad();
+    renderBoard(); busy = false; scheduleHint(); return;
+  }
+  moves--;
+  jellyClearedThisTurn = false;
+  await resolveCascades({r, c});
+  await finishTurn(true);
+}
+
+function reshuffleFree(){
+  const statics = [], drops = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++){
+      const v = board[r][c];
+      if (isStatic(v)) statics.push({ r, c, cell: v.ob === 'caja' ? { ob:'caja', hp:v.hp } : { ob:'cad' } });
+      else if (isDrop(v)) drops.push({ r, c });
+    }
+  board = buildBoard(LVL.mask, statics, drops);
+}
+
+/* orbayu spreads when a move passes without clearing any */
+function spreadJelly(){
+  if (LVL.jelly.size === 0 || goalsLeft['orbayu'] === undefined) return;
+  const cands = [];
+  for (const k of LVL.jelly){
+    const [r, c] = k.split(',').map(Number);
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr, dc]) => {
+      const nr = r + dr, nc = c + dc, nk = key(nr, nc);
+      if (inB(nr, nc) && !LVL.mask.has(nk) && !LVL.jelly.has(nk) &&
+          isMovable(board[nr][nc]) && !isDrop(board[nr][nc])) cands.push(nk);
+    });
+  }
+  if (cands.length){
+    LVL.jelly.add(cands[(Math.random() * cands.length) | 0]);
+    goalsLeft['orbayu'] = LVL.jelly.size;
+  }
+}
+
+async function finishTurn(usedMove){
+  if (usedMove && !jellyClearedThisTurn) spreadJelly();
+  renderGoals();
+  if (goalsMet()){
+    if (moves > 0) await finale();
+    winLevel();
+    renderBoard();
+    return;
+  }
+  if (!moveExists(board, LVL.mask)) reshuffleFree();
+  renderBoard(); renderGameHUD();
+  busy = false;
+  scheduleHint();
+  if (moves <= 0) loseLevel();
+}
+
+$('btn-hammer').addEventListener('click', () => {
+  if (busy || levelDone || !(S.hammers > 0)) return;
+  hammerMode = !hammerMode;
+  updateHammer();
+});
+
+function onEnterJuego(){
+  if (dueCards().length > 0) maybeGate();
+  else if (pendingPreview) showPreview();
+}
+
+/* SRS gate before play */
+function maybeGate(){
+  const n = dueCards().length;
+  if (n >= 3){
+    showModal(
+      '<div class="em">📖</div><h2>Repasa primero</h2>' +
+      '<p>' + n + ' palabras te esperan. Repásalas y gana ★1 + 🔨.</p>' +
+      '<button class="btn btn-bien" onclick="closeModal(); switchTab(\'repaso\');">Repasar ahora</button>'
+    );
+  } else if (n > 0){
+    showModal(
+      '<div class="em">📖</div><h2>' + n + (n === 1 ? ' palabra espera' : ' palabras esperan') + '</h2>' +
+      '<p>Un repaso corto vale ★1 + 🔨.</p>' +
+      '<button class="btn btn-bien" onclick="closeModal(); switchTab(\'repaso\');">Repasar</button> ' +
+      '<button class="btn btn-audio" onclick="closeModal()">Jugar igual</button>'
+    );
+  }
+}
+
+/* ============================================================
+   REPASO — session runner
+   ============================================================ */
+let queue = [], revealed = false, sessionSize = 0;
+
+function renderReview(){
+  const area = $('rev-area');
+  const due = dueCards();
+  if (queue.length === 0){
+    if (due.length === 0){
+      const total = S.deck.length;
+      area.innerHTML =
+        '<div class="rev-empty">' +
+        (total === 0
+          ? 'Todavía no tienes palabras.<br>Compra algo para la casa y empieza. 🛋️'
+          : '¡Todo repasado! ' + total + (total === 1 ? ' palabra' : ' palabras') + ' en tu piso.<br>Vuelve cuando toque.') +
+        '</div>';
+      return;
+    }
+    queue = due.slice().sort(() => Math.random() - 0.5);
+    sessionSize = queue.length;
+  }
+  revealed = false;
+  renderCard();
+}
+
+function renderCard(){
+  const area = $('rev-area');
+  const card = queue[0];
+  const item = CATALOG.find(i => i.id === card.id);
+  const isPhr = card.kind === 'phr';
+  const ph = isPhr ? PHRASES[card.id] : null;
+  const sayText = isPhr ? ph.es : item.es;
+  const done = sessionSize - queue.length;
+  area.innerHTML =
+    '<div class="rev-progress">' + (done + 1) + ' / ' + sessionSize + '</div>' +
+    '<div class="card">' +
+      '<div class="em">' + item.em + (isPhr ? '⚡' : '') + '</div>' +
+      '<div class="q">' + (isPhr ? '¿Qué haces con esto?' : '¿Cómo se llama?') + '</div>' +
+      (revealed
+        ? '<div class="word">' + (isPhr ? phraseHTML(ph) : esHTML(item)) + '</div>' +
+          '<div class="en">' + (isPhr ? ph.en : item.en) + '</div>' +
+          '<div class="row">' +
+            '<button class="btn btn-audio" id="rv-audio">🔊</button>' +
+            '<button class="btn btn-otra" id="rv-otra">Otra vez</button>' +
+            '<button class="btn btn-bien" id="rv-bien">Bien</button>' +
+          '</div>'
+        : '<div class="row"><button class="btn btn-show" id="rv-show">Mostrar</button></div>') +
+    '</div>';
+  if (revealed){
+    $('rv-audio').addEventListener('click', () => speak(sayText));
+    $('rv-otra').addEventListener('click', () => answer(false));
+    $('rv-bien').addEventListener('click', () => answer(true));
+    speak(sayText);
+  } else {
+    $('rv-show').addEventListener('click', () => { revealed = true; renderCard(); });
+  }
+}
+
+function answer(bien){
+  const card = queue.shift();
+  fsrsReview(card, bien ? 3 : 1);
+  if (bien){ SFX.bien(); }
+  else { queue.push(card); SFX.otra(); }
+  save();
+  if (queue.length === 0){
+    S.stars++;
+    S.hammers = (S.hammers || 0) + 1;
+    save(); refreshHUD();
+    if (typeof updateHammer === 'function') updateHammer();
+    SFX.star();
+    showModal(
+      '<div class="em">🌟</div><h2>Repaso completado</h2>' +
+      '<p>+1 estrella · +1 🔨 martillo. Tu memoria amuebla la casa.</p>' +
+      '<button class="btn btn-bien" onclick="closeModal(); switchTab(\'casa\');">🏠 A la tienda</button> ' +
+      '<button class="btn btn-audio" onclick="closeModal(); switchTab(\'juego\');">🍎 A jugar</button>'
+    );
+    renderReview();
+  } else {
+    revealed = false;
+    renderCard();
+  }
+  refreshHUD();
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+$('btn-reset').addEventListener('click', () => {
+  if (confirm('¿Borrar todo el progreso?')){
+    S = structuredClone(DEFAULT_STATE);
+    save(); refreshHUD(); renderRoomTabs(); renderRoom(); renderTasks(); renderShop(); startLevel(); renderReview();
+  }
+});
+
+$('btn-sound').addEventListener('click', () => {
+  S.sound = !S.sound;
+  $('btn-sound').textContent = S.sound ? '🔊' : '🔇';
+  if (!S.sound){ try { speechSynthesis.cancel(); } catch(e){} }
+  else SFX.select();
+  save();
+});
+
+const lg = $('legend');
+lg.innerHTML = TILES.map(t => '<span>' + t.em + ' ' + t.es + '</span>').join('') +
+  '<span style="flex-basis:100%; height:0"></span>' +
+  '<span>4 en línea → 🚀</span><span>en L o T → 💣</span>' +
+  '<span>2×2 → ✈️</span><span>5 en línea → 🔮</span>' +
+  '<span style="flex-basis:100%; height:0"></span>' +
+  '<span>toca dos veces un especial para activarlo · o cámbialo con un vecino · combínalos entre sí</span>' +
+  '<span style="flex-basis:100%; height:0"></span>' +
+  '<span>📦 matches al lado o explosiones · ⛓️ inclúyela en un match · 🥧 llévala abajo · 🌫️ orbayu: haz un match encima (se extiende) · 🔨 se gana repasando</span>';
+
+loadState();
+$('btn-sound').textContent = S.sound ? '🔊' : '🔇';
+refreshHUD();
+renderRoomTabs();
+renderRoom();
+renderTasks();
+renderShop();
+startLevel();
+if (!S.welcomed){
+  S.welcomed = true;
+  save();
+  showModal(
+    '<div class="em">🐕</div><h2>El Piso Asturiano</h2>' +
+    cooperLine([COOPER.welcome], 0) +
+    '<p>Gana estrellas jugando y repasando · amuebla la casa · aprende cada palabra.</p>' +
+    '<button class="btn btn-bien" onclick="closeModal()">¡Vamos!</button>'
+  );
+}
+</script>
+</body>
+</html>
