@@ -262,6 +262,14 @@ tú imperatives → plurals → reflexives → usted.
 - **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping one of four
   icons; distractors are drawn from the same category — segunda vs. tercera salida,
   derecha vs. izquierda — the real exam confusions.
+- **Junction surface (v0.18)**: when `cmd.cat === 'dir'`, the icon pad is
+  replaced with an inline SVG crossroads (viewBox 300×300): four arms
+  radiating from a central intersection block with yellow entry arrow at
+  the bottom. Each of the four direction commands (recto/der/izq/sentido)
+  sits on its geometrically natural arm end (N/E/W/S respectively) as a
+  native-SVG group carrying the original command's arrow emoji. Same
+  `answerCmd` flow and `.right`/`.wrong` classing as the roundabout
+  surface. Non-dir, non-rot categories keep the 2×2 icon pad.
 - **Roundabout surface (v0.16)**: when `cmd.cat === 'rot'`, the icon pad is replaced
   with an inline SVG roundabout (viewBox 300×300): ring with exits at 12/3/6/9
   o'clock, yellow entry arrow at the bottom, and four tappable exits labeled 1ª–4ª

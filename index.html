@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.17
+  EL PISO ASTURIANO — living spec / v0.18
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -146,6 +146,13 @@
   .rot-exit:active .hit{opacity:.7;}
   .rot-exit.right .hit{fill:#E4F2E7; stroke:var(--verde); stroke-width:4;}
   .rot-exit.wrong .hit{fill:#F8E5DF; stroke:var(--teja); stroke-width:4; animation:shake .25s ease;}
+  .dir-svg{width:100%; height:auto; aspect-ratio:1/1; display:block; margin:0 auto; user-select:none; -webkit-tap-highlight-color:transparent;}
+  .dir-exit{cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;}
+  .dir-exit .hit{fill:#FBF8F0; stroke:#9aa69a; stroke-width:3; transition:fill .15s ease, stroke .15s ease;}
+  .dir-exit .lbl{font-size:34px; pointer-events:none; text-anchor:middle; dominant-baseline:central;}
+  .dir-exit:active .hit{opacity:.7;}
+  .dir-exit.right .hit{fill:#E4F2E7; stroke:var(--verde); stroke-width:4;}
+  .dir-exit.wrong .hit{fill:#F8E5DF; stroke:var(--teja); stroke-width:4; animation:shake .25s ease;}
   .drill-reveal{margin-top:12px; font-weight:800;}
   .drill-reveal .es{font-family:'Fraunces',serif; font-size:20px;}
   .drill-reveal .en{font-size:12px; color:#9aa49c;}
@@ -247,7 +254,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.17</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.18</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -2170,6 +2177,44 @@ function roundaboutSVG(exits){
   return `<svg class="rot-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">${roads}${ring}${circ}${entry}${buttons}</svg>`;
 }
 
+function junctionSVG(exits){
+  // Junction/crossroads for the dir category. Layout: viewBox 300x300, center
+  // (150,150). Four arms of road at N/E/W/S ending in tappable <g> groups.
+  // Same geometry as roundabout so they match visually side-by-side.
+  // exits: [{id, icon, x, y}] — each placed at its natural arm endpoint:
+  // c-recto → North, c-der → East, c-izq → West, c-sentido → South.
+  const CX = 150, CY = 150;
+  const roadW = 22;            // road half-width
+  const roadL = 110;           // arm length from center edge
+  const blockW = roadW * 2;    // 44 — central intersection block
+  // Four arms (N/S/E/W) radiating from center intersection
+  const roads =
+    `<rect x="${CX - roadW}" y="${CY - roadL}" width="${roadW*2}" height="${roadL}" fill="#535a53"/>` +    // North arm
+    `<rect x="${CX - roadW}" y="${CY}"         width="${roadW*2}" height="${roadL}" fill="#535a53"/>` +    // South arm
+    `<rect x="${CX}"          y="${CY - roadW}" width="${roadL}" height="${roadW*2}" fill="#535a53"/>` +   // East arm
+    `<rect x="${CX - roadL}"  y="${CY - roadW}" width="${roadL}" height="${roadW*2}" fill="#535a53"/>`;   // West arm
+  // Central intersection block (where roads cross)
+  const cross = `<rect x="${CX - roadW}" y="${CY - roadW}" width="${blockW}" height="${blockW}" fill="#535a53"/>`;
+  // Dashed center lines on each arm (lane markings) — purely decorative
+  const markings =
+    `<line x1="${CX}" y1="${CY}" x2="${CX}" y2="${CY - roadL + 10}" stroke="#e8e3c8" stroke-width="2" stroke-dasharray="8 6"/>` +
+    `<line x1="${CX}" y1="${CY}" x2="${CX}" y2="${CY + roadL - 10}" stroke="#e8e3c8" stroke-width="2" stroke-dasharray="8 6"/>` +
+    `<line x1="${CX}" y1="${CY}" x2="${CX + roadL - 10}" y2="${CY}" stroke="#e8e3c8" stroke-width="2" stroke-dasharray="8 6"/>` +
+    `<line x1="${CX}" y1="${CY}" x2="${CX - roadL + 10}" y2="${CY}" stroke="#e8e3c8" stroke-width="2" stroke-dasharray="8 6"/>`;
+  // Entry arrow at the bottom: yellow triangle + shaft pointing up toward center
+  const entry =
+    `<path d="M ${CX - 10} 285 L ${CX + 10} 285 L ${CX} 270 Z" fill="#e8c547"/>` +
+    `<path d="M ${CX} 285 L ${CX} 275" stroke="#e8c547" stroke-width="4" stroke-linecap="round"/>`;
+  // Tap-target groups for each arm end. .opt kept so answerCmd flow works.
+  const buttons = exits.map(e =>
+    `<g class="opt dir-exit" data-id="${e.id}">` +
+      `<circle cx="${e.x}" cy="${e.y}" r="44" class="hit"/>` +
+      `<text x="${e.x}" y="${e.y}" class="lbl">${e.icon}</text>` +
+    `</g>`
+  ).join('');
+  return `<svg class="dir-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">${roads}${cross}${markings}${entry}${buttons}</svg>`;
+}
+
 function renderDrillCard(){
   const el = $('drill');
   const card = drillQueue[0];
@@ -2178,6 +2223,7 @@ function renderDrillCard(){
   const done = drillSize - drillQueue.length;
   drillLock = false;
   // Roundabout branch: replace the 2x2 icon pad with a tappable SVG.
+  // Junction (dir) branch: same idea, crossroads with 4 arms.
   let optionsHtml;
   if (cmd.cat === 'rot'){
     // Spanish convention: enter at bottom, counterclockwise on clock.
@@ -2194,6 +2240,23 @@ function renderDrillCard(){
     };
     const rotOpts = opts.map(o => ({ id: o.id, label: positions[o.id].label, x: positions[o.id].x, y: positions[o.id].y }));
     optionsHtml = roundaboutSVG(rotOpts);
+  } else if (cmd.cat === 'dir'){
+    // Four-arm junction. Entry arrow at bottom (6 o'clock).
+    // Each command maps to its natural arm endpoint:
+    //   recto (straight) → North arm end, 12 o'clock
+    //   der (turn right) → East arm end,   3 o'clock
+    //   izq (turn left)  → West arm end,   9 o'clock
+    //   sentido (U-turn) → South arm end,  6 o'clock (where the entry is)
+    const CX = 150, CY = 150, roadL = 110;
+    const d = roadL - 20;        // 90 — distance from center to button center
+    const positions = {
+      'c-recto':   { x: CX,     y: CY - d, icon: '⬆️' },
+      'c-der':     { x: CX + d, y: CY,     icon: '➡️' },
+      'c-izq':     { x: CX - d, y: CY,     icon: '⬅️' },
+      'c-sentido': { x: CX,     y: CY + d, icon: '🔄' }
+    };
+    const dirOpts = opts.map(o => ({ id: o.id, icon: positions[o.id].icon, x: positions[o.id].x, y: positions[o.id].y }));
+    optionsHtml = junctionSVG(dirOpts);
   } else {
     optionsHtml = '<div class="opts">' +
       opts.map(o => '<button class="opt" data-id="' + o.id + '">' + o.icon + '</button>').join('') +

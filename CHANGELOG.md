@@ -4,10 +4,18 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
-## v0.17
-Roundabout rendering fixed for iPad Safari — replaced foreignObject with native SVG groups. Tap targets now use `<circle>` elements with 44px-equivalent radius for reliable interaction. Click events attach directly to `<g>` groups, eliminating iOS rendering quirks with mixed HTML/SVG content.
+## v0.18 — Cruce en el examen
+The direction drill (cat === 'dir') now replaces the 2×2 icon pad with a
+crossroads SVG (300×300 viewBox): four arms radiating from a central
+intersection with yellow entry arrow at the bottom, each arm end being a
+tappable native-SVG group (r=44) carrying the command's icon. Each command
+maps to its geometrically natural arm end — c-recto (➡️) at 12 o'clock,
+c-der (➡️) at 3 o'clock, c-izq (⬅️) at 9 o'clock, c-sentido (🔄) at 6
+o'clock — so the icon's direction visually matches the arm it sits on.
+Same answerCmd flow and .right/.wrong feedback as the roundabout surface;
+other categories keep the icon pad.
 
-## v0.16 — Rotonda en el examen
+## v0.17 — Rotonda en el examen
 The roundabout drill (cat === 'rot') now replaces the 2x2 icon pad with an
 inline SVG roundabout (~300×300 viewBox): a ring with four exit roads at
 12/3/6/9 o'clock, entry arrow at the bottom, and four tappable exits labeled
