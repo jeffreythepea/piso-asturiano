@@ -284,6 +284,12 @@ tú imperatives → plurals → reflexives → usted.
   apply unchanged. Non-rot categories keep the 2×2 icon pad.
 - **Auto-graded FSRS**: correct → Good, wrong → Again (no self-grading), wrong answers
   requeue until answered right, and the score reports first-attempt successes.
+- **Timed-response mode (v0.20)**: opt-in toggle on the drill start panel ("⏱️ Modo
+  contrarreloj"). Once active, each card has **8 seconds** before time-up counts as a
+  miss (grade 1 Again, requeues). A color-shifting countdown badge appears next to the
+  progress indicator: green (8s) → amber (≤4s) → red (≤2s); badge shake at ≤2s. Timer
+  is stopped on answer, re-render, session end, and room-change. Per-session opt-in
+  only — not persisted in `S`. 🔊 re-listen does not reset the timer.
 - Command cards seed immediately on first garage visit (no stars needed) and live on
   their **own review track**: excluded from the game's SRS gate and the main Repaso,
   so exam volume never blocks the match-3 loop. Due-session completion pays ★1 + 🔨;

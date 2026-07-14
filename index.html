@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.19
+  EL PISO ASTURIANO — living spec / v0.20
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -153,6 +153,12 @@
   .dir-exit:active .hit{opacity:.7;}
   .dir-exit.right .hit{fill:#E4F2E7; stroke:var(--verde); stroke-width:4;}
   .dir-exit.wrong .hit{fill:#F8E5DF; stroke:var(--teja); stroke-width:4; animation:shake .25s ease;}
+  .drill-timer{display:inline-block; font-family:'Fraunces',serif; font-weight:800; font-size:16px; padding:3px 10px; border-radius:999px; background:#E4F2E7; color:var(--verde); margin-left:8px; min-width:42px; text-align:center;}
+  .drill-timer.warn{background:#FDEBCF; color:#8a5a0c;}
+  .drill-timer.crit{background:#F8E5DF; color:var(--teja); animation:shake .3s ease;}
+  .drill-mode-toggle{display:inline-block; font-weight:800; font-size:13px; padding:6px 14px; border-radius:999px; border:1.5px solid var(--linea); background:#FBF8F0; color:#5c6a63; cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease;}
+  .drill-mode-toggle.on{background:var(--verde); color:#fff; border-color:var(--verde);}
+  .drill-mode-toggle-row{margin:6px 0 10px; text-align:center;}
   .drill-reveal{margin-top:12px; font-weight:800;}
   .drill-reveal .es{font-family:'Fraunces',serif; font-size:20px;}
   .drill-reveal .en{font-size:12px; color:#9aa49c;}
@@ -254,7 +260,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.19</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.20</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -2130,6 +2136,9 @@ function answer(bien){
    EL EXAMEN DE COOPER — audio-first command drill
    ============================================================ */
 let drillQueue = [], drillMode = null, drillSize = 0, drillRight = 0, drillLock = false, drillMissed = new Set();
+let drillTimed = false;          // per-session opt-in toggle (not persisted)
+const DRILL_TIME_MS = 8000;      // 8 seconds per card in timed mode
+let drillTimerId = null, drillTimerTick = null;
 
 function seedCommands(){
   const have = new Set(S.deck.filter(c => c.kind === 'cmd').map(c => c.id));
@@ -2168,15 +2177,55 @@ function renderDrill(){
   el.innerHTML =
     '<div class="drill-panel">' +
       '<h3>🚦 El examen de Cooper 🦺</h3>' +
-      '<p style="font-weight:700; color:#5c6a63; margin:4px 0">Escucha la orden del examinador y toca la respuesta.</p>' +
+      '<div class="drill-mode-toggle-row">' +
+        '<button class="drill-mode-toggle' + (drillTimed ? ' on' : '') + '" id="dr-timed-toggle">⏱️ Modo contrarreloj</button>' +
+      '</div>' +
+      '<p style="font-weight:700; color:#5c6a63; margin:4px 0">' +
+        (drillTimed ? '8 segundos por orden. Si no respondes, cuenta como error.' : 'Escucha la orden del examinador y toca la respuesta.') +
+      '</p>' +
       '<div class="drill-warn">⚠️ Lista provisional (' + total + ' órdenes) — confírmala con tu profesor de la autoescuela.</div>' +
       (nd > 0
         ? '<button class="btn btn-bien" id="dr-due">Repasar ' + nd + ' órdenes · ★1</button> '
         : '<p style="font-weight:800; color:var(--verde); margin:6px 0">✓ Nada pendiente ahora</p>') +
       '<button class="btn btn-audio" id="dr-free" style="font-size:15px">Práctica libre</button>' +
     '</div>';
+  $('dr-timed-toggle').addEventListener('click', () => {
+    drillTimed = !drillTimed;
+    renderDrill();
+  });
   const d = $('dr-due'); if (d) d.addEventListener('click', () => startDrill(false));
   $('dr-free').addEventListener('click', () => startDrill(true));
+}
+
+function stopDrillTimer(){
+  if (drillTimerId){ clearInterval(drillTimerId); drillTimerId = null; }
+  if (drillTimerTick){ clearTimeout(drillTimerTick); drillTimerTick = null; }
+}
+function timerBadgeHtml(sec){
+  const cls = sec <= 2 ? 'crit' : sec <= 4 ? 'warn' : '';
+  return '<span class="drill-timer ' + cls + '" id="dr-timer">' + sec + 's</span>';
+}
+function startDrillTimer(card, cmd){
+  stopDrillTimer();
+  let remaining = Math.ceil(DRILL_TIME_MS / 1000);
+  const badge = $('dr-timer');
+  if (badge) badge.textContent = remaining + 's';
+  const finish = () => {
+    stopDrillTimer();
+    // Treat time-up exactly like a wrong answer, using answerCmd's shared path.
+    const rightBtn = document.querySelector('.opt[data-id="' + cmd.id + '"]');
+    if (rightBtn) answerCmdTimedExpired(rightBtn, cmd, card);
+  };
+  drillTimerId = setInterval(() => {
+    remaining--;
+    const badge = $('dr-timer');
+    if (!badge) return;
+    badge.textContent = remaining + 's';
+    badge.classList.remove('warn','crit');
+    if (remaining <= 2) badge.classList.add('crit');
+    else if (remaining <= 4) badge.classList.add('warn');
+  }, 1000);
+  drillTimerTick = setTimeout(finish, DRILL_TIME_MS);
 }
 
 function startDrill(practice){
@@ -2277,15 +2326,11 @@ function renderDrillCard(){
   const opts = drillOptions(cmd);
   const done = drillSize - drillQueue.length;
   drillLock = false;
+  stopDrillTimer();
   // Roundabout branch: replace the 2x2 icon pad with a tappable SVG.
   // Junction (dir) branch: same idea, crossroads with 4 arms.
   let optionsHtml;
   if (cmd.cat === 'rot'){
-    // Spanish convention: enter at bottom, counterclockwise on clock.
-    // 1ª = first right (3 o'clock), 2ª = straight through (12 o'clock),
-    // 3ª = left (9 o'clock), 4ª = U-turn (6 o'clock).
-    // Each command id (c-rotN) places at its fixed geographic position so
-    // labels and spatial meaning line up regardless of opts order.
     const CX = 150, CY = 150, R = 70, roadL = 110;
     const positions = {
       'c-rot1': { x: CX + R + roadL - 20, y: CY,                label: '1ª' },
@@ -2296,14 +2341,8 @@ function renderDrillCard(){
     const rotOpts = opts.map(o => ({ id: o.id, label: positions[o.id].label, x: positions[o.id].x, y: positions[o.id].y }));
     optionsHtml = roundaboutSVG(rotOpts);
   } else if (cmd.cat === 'dir'){
-    // Four-arm junction. Entry arrow at bottom (6 o'clock).
-    // Each command maps to its natural arm endpoint:
-    //   recto (straight) → North arm end, 12 o'clock
-    //   der (turn right) → East arm end,   3 o'clock
-    //   izq (turn left)  → West arm end,   9 o'clock
-    //   sentido (U-turn) → South arm end,  6 o'clock (where the entry is)
     const CX = 150, CY = 150, roadL = 110;
-    const d = roadL - 20;        // 90 — distance from center to button center
+    const d = roadL - 20;
     const positions = {
       'c-recto':   { x: CX,     y: CY - d, icon: '⬆️' },
       'c-der':     { x: CX + d, y: CY,     icon: '➡️' },
@@ -2317,9 +2356,10 @@ function renderDrillCard(){
       opts.map(o => '<button class="opt" data-id="' + o.id + '">' + o.icon + '</button>').join('') +
     '</div>';
   }
+  const timerHtml = drillTimed ? timerBadgeHtml(Math.ceil(DRILL_TIME_MS / 1000)) : '';
   el.innerHTML =
     '<div class="drill-panel">' +
-      '<div class="rev-progress">' + Math.min(done + 1, drillSize) + ' / ' + drillSize + '</div>' +
+      '<div class="rev-progress">' + Math.min(done + 1, drillSize) + ' / ' + drillSize + timerHtml + '</div>' +
       '<button class="btn-ear" id="dr-say">🔊</button>' +
       '<div class="drill-q">Escucha la orden…</div>' +
       optionsHtml +
@@ -2328,11 +2368,13 @@ function renderDrillCard(){
   $('dr-say').addEventListener('click', () => speak(cmd.es));
   el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => answerCmd(b, cmd, card)));
   speak(cmd.es);
+  if (drillTimed) startDrillTimer(card, cmd);
 }
 
 function answerCmd(btn, cmd, card){
   if (drillLock) return;
   drillLock = true;
+  stopDrillTimer();
   const right = btn.dataset.id === cmd.id;
   fsrsReview(card, right ? 3 : 1);
   S.log.push({ t: Date.now(), id: card.id, k:'cmd', g: right ? 3 : 1, S: +card.S.toFixed(2) });
@@ -2359,8 +2401,33 @@ function answerCmd(btn, cmd, card){
   }
 }
 
+// Shared handler when the timer expires without an answer — mirrors the
+// wrong-answer path of answerCmd but locates the right button by data-id.
+function answerCmdTimedExpired(rightBtn, cmd, card){
+  if (drillLock) return;
+  drillLock = true;
+  stopDrillTimer();
+  fsrsReview(card, 1);   // Again — time up is a miss
+  S.log.push({ t: Date.now(), id: card.id, k:'cmd', g:1, S: +card.S.toFixed(2) });
+  if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  save();
+  drillMissed.add(card.id);
+  if (rightBtn) rightBtn.classList.add('right');
+  const reveal = $('dr-reveal');
+  SFX.otra();
+  reveal.innerHTML =
+    '<div class="es">¡Se acabó el tiempo!</div>' +
+    '<div class="es" style="margin-top:4px">' + cmd.es + '</div>' +
+    '<div class="en">' + cmd.en + '</div>' +
+    '<button class="btn btn-bien" id="dr-next" style="margin-top:10px">Continuar</button>';
+  speak(cmd.es);
+  drillQueue.push(drillQueue.shift());     // requeue
+  $('dr-next').addEventListener('click', nextDrill);
+}
+
 function nextDrill(){
   if (drillQueue.length){ renderDrillCard(); return; }
+  stopDrillTimer();
   // session complete
   let rewardTxt = '';
   if (drillMode === 'due'){

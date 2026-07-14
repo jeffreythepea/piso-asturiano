@@ -4,6 +4,9 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.20 — Timed exam drill
+Added opt-in timed mode to Cooper's exam drill. Toggle "⏱️ Modo contrarreloj" on the start panel: 8 seconds per card, color-shifting countdown badge (green → amber → red), time-up counts as wrong (FSRS Again grade, requeue). Timer clears on answer or session end.
+
 ## v0.19 — La terraza
 Fifth purchasable room: *la terraza*, an outdoor balcony/patio scene in Oviedo.
 Backdrop: Asturian sky, Picos de Europa silhouette in the distance, stone sill,
