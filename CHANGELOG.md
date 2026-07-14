@@ -4,6 +4,12 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.15 — Copia de seguridad
+Export/import of the full save (progress, FSRS deck, review log) as JSON via a
+footer button — protects localStorage-only data and gets `S.log` out for FSRS
+parameter fitting (BACKLOG #3). Restore validates and reloads through the
+normal migration path.
+
 ## v0.14 — El garaje & El examen de Cooper
 Garage room (always unlocked, exempt from room chain), 12 items with usted-register
 tasks. Exam drill mini-game: 22-command provisional DGT set, audio-first cards,
