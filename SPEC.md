@@ -262,6 +262,13 @@ tú imperatives → plurals → reflexives → usted.
 - **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping one of four
   icons; distractors are drawn from the same category — segunda vs. tercera salida,
   derecha vs. izquierda — the real exam confusions.
+- **Roundabout surface (v0.16)**: when `cmd.cat === 'rot'`, the icon pad is replaced
+  with an inline SVG roundabout (viewBox 300×300): ring with exits at 12/3/6/9
+  o'clock, yellow entry arrow at the bottom, and four tappable exits labeled 1ª–4ª
+  placed per Spanish convention (1ª = right at 3 o'clock, counterclockwise from
+  entry). Each exit is a `<button class="opt rot-exit" data-id="c-rotN">` via
+  `foreignObject`, so the existing `answerCmd` flow and `.right`/`.wrong` classing
+  apply unchanged. Non-rot categories keep the 2×2 icon pad.
 - **Auto-graded FSRS**: correct → Good, wrong → Again (no self-grading), wrong answers
   requeue until answered right, and the score reports first-attempt successes.
 - Command cards seed immediately on first garage visit (no stars needed) and live on

@@ -4,6 +4,15 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.16 — Rotonda en el examen
+The roundabout drill (cat === 'rot') now replaces the 2x2 icon pad with an
+inline SVG roundabout (~300×300 viewBox): a ring with four exit roads at
+12/3/6/9 o'clock, entry arrow at the bottom, and four tappable exits labeled
+1ª–4ª positioned per Spanish convention (1ª = right at 3 o'clock,
+counterclockwise from entry). Tapping an exit flows through the existing
+answerCmd → right/wrong classing; new `.opt.rot-exit` CSS keeps feedback
+visually consistent with icon buttons. Non-rot categories keep the icon pad.
+
 ## v0.15 — Copia de seguridad
 Export/import of the full save (progress, FSRS deck, review log) as JSON via a
 footer button — protects localStorage-only data and gets `S.log` out for FSRS
