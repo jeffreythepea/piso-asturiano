@@ -4,6 +4,9 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.17
+Roundabout rendering fixed for iPad Safari — replaced foreignObject with native SVG groups. Tap targets now use `<circle>` elements with 44px-equivalent radius for reliable interaction. Click events attach directly to `<g>` groups, eliminating iOS rendering quirks with mixed HTML/SVG content.
+
 ## v0.16 — Rotonda en el examen
 The roundabout drill (cat === 'rot') now replaces the 2x2 icon pad with an
 inline SVG roundabout (~300×300 viewBox): a ring with four exit roads at

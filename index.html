@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.16
+  EL PISO ASTURIANO — living spec / v0.17
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -139,14 +139,13 @@
   .opt:active{transform:scale(.96);}
   .opt.right{background:#E4F2E7; border-color:var(--verde);}
   .opt.wrong{background:#F8E5DF; border-color:var(--teja); animation:shake .25s ease;}
-  .rot-svg{width:100%; max-width:320px; aspect-ratio:1/1; display:block; margin:0 auto; user-select:none; -webkit-tap-highlight-color:transparent;}
-  .rot-exit{cursor:pointer;}
-  .rot-exit .hit{fill:#FBF8F0; stroke:#9aa69a; stroke-width:2; transition:fill .15s ease, stroke .15s ease;}
+  .rot-svg{width:100%; height:auto; aspect-ratio:1/1; display:block; margin:0 auto; user-select:none; -webkit-tap-highlight-color:transparent;}
+  .rot-exit{cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;}
+  .rot-exit .hit{fill:#FBF8F0; stroke:#9aa69a; stroke-width:3; transition:fill .15s ease, stroke .15s ease;}
   .rot-exit .lbl{font-family:'Fraunces',serif; font-size:26px; font-weight:800; fill:#2b2f2b; pointer-events:none; text-anchor:middle; dominant-baseline:central;}
-  .opt.rot-exit{background:none; border:none; padding:0; border-radius:0; font-size:inherit; transition:transform .1s ease;}
-  .opt.rot-exit:active{transform:scale(.96);}
-  .rot-exit.right .hit{fill:#E4F2E7; stroke:var(--verde); stroke-width:3;}
-  .rot-exit.wrong .hit{fill:#F8E5DF; stroke:var(--teja); stroke-width:3; animation:shake .25s ease;}
+  .rot-exit:active .hit{opacity:.7;}
+  .rot-exit.right .hit{fill:#E4F2E7; stroke:var(--verde); stroke-width:4;}
+  .rot-exit.wrong .hit{fill:#F8E5DF; stroke:var(--teja); stroke-width:4; animation:shake .25s ease;}
   .drill-reveal{margin-top:12px; font-weight:800;}
   .drill-reveal .es{font-family:'Fraunces',serif; font-size:20px;}
   .drill-reveal .en{font-size:12px; color:#9aa49c;}
@@ -248,7 +247,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.16</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.17</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -2133,11 +2132,11 @@ function startDrill(practice){
 function roundaboutSVG(exits){
   // exits: array of {id, label, x, y} — four exits, each placed at its
   // geographic position. Layout: viewBox 300x300, center (150,150).
-  // Ring radius 70. Each exit is a <button class="opt rot-exit"> rendered
-  // as a foreignObject so the existing answerCmd(btn, cmd, card) flow
-  // works unchanged (dataset.id, .right/.wrong classing, etc.).
+  // Ring radius 70. Each exit is a native SVG <g> with a <circle> tap
+  // target (44 viewBox units radius ≈ 44px equivalent on iPad) and a
+  // <text> label. Click listeners attached to the groups in renderDrillCard.
   const R = 70, CX = 150, CY = 150;
-  const exitHit = 58;          // tappable hit-circle diameter in viewBox units
+  const hitR = 44;             // tap target radius (viewBox units)
   const roadW = 22;            // road rectangle half-width
   const roadL = 110;           // road length from ring edge outward
   // Road rectangles: top/bottom/left/right
@@ -2160,18 +2159,13 @@ function roundaboutSVG(exits){
   const entry =
     `<path d="M ${CX} 295 L ${CX - 10} 275 L ${CX + 10} 275 Z" fill="#e8c547"/>` +
     `<path d="M ${CX} 280 L ${CX} 262" stroke="#e8c547" stroke-width="4" stroke-linecap="round"/>`;
-  // Exit buttons via foreignObject (real <button> elements with dataset.id)
+  // Exit groups: real SVG, classed so CSS .right/.wrong feedback applies.
+  // .opt class kept so answerCmd's querySelectorAll('.opt') reveals still hit.
   const buttons = exits.map(e =>
-    `<foreignObject x="${e.x - exitHit/2}" y="${e.y - exitHit/2}" width="${exitHit}" height="${exitHit}">` +
-      `<button xmlns="http://www.w3.org/1999/xhtml" ` +
-        `class="opt rot-exit" data-id="${e.id}" ` +
-        `style="width:100%;height:100%;margin:0;padding:0;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">` +
-        `<svg viewBox="0 0 ${exitHit} ${exitHit}" width="${exitHit}" height="${exitHit}" style="display:block;">` +
-          `<circle cx="${exitHit/2}" cy="${exitHit/2}" r="${exitHit/2 - 2}" class="hit"/>` +
-          `<text x="${exitHit/2}" y="${exitHit/2}" class="lbl">${e.label}</text>` +
-        `</svg>` +
-      `</button>` +
-    `</foreignObject>`
+    `<g class="opt rot-exit" data-id="${e.id}">` +
+      `<circle cx="${e.x}" cy="${e.y}" r="${hitR}" class="hit"/>` +
+      `<text x="${e.x}" y="${e.y}" class="lbl">${e.label}</text>` +
+    `</g>`
   ).join('');
   return `<svg class="rot-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">${roads}${ring}${circ}${entry}${buttons}</svg>`;
 }
