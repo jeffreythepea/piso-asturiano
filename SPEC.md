@@ -242,6 +242,36 @@ board; selection/hint are soft golden circles, specials glow via drop-shadow.
   stock) — camera integration is the killer feature the HTML can't do well: photograph
   *your own* sofa in Calle Magdalena, attach it to `el sofá`.
 
+## El garaje & El examen de Cooper (v0.14)
+
+**Purpose**: Jeffrey's DGT practical driving exam. The exam skill is the inverse of the
+rest of the game — *hear Spanish under pressure → act instantly* — so it gets its own
+card type and its own mini-game rather than more production cards.
+
+**El garaje** is exempt from the room unlock chain — always accessible. Its 12 objects
+(coche, moto, volante, semáforo, señal de stop, triángulo…) follow the normal buy/learn
+loop, and its tasks introduce the **usted-form imperative register** (suba, sujete,
+deténgase, compruebe) — the examiner's register, completing the grammar ramp:
+tú imperatives → plurals → reflexives → usted.
+
+**El examen de Cooper** (drill mini-game, in the garage panel):
+- 22-command starter set in `COMMANDS` — ⚠️ **provisional**: exact phrasing must be
+  verified with the autoescuela instructor and edited to match verbatim. Categories:
+  dirección, rotonda (primera–cuarta salida), velocidad/detención, maniobras,
+  pre-arranque.
+- **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping one of four
+  icons; distractors are drawn from the same category — segunda vs. tercera salida,
+  derecha vs. izquierda — the real exam confusions.
+- **Auto-graded FSRS**: correct → Good, wrong → Again (no self-grading), wrong answers
+  requeue until answered right, and the score reports first-attempt successes.
+- Command cards seed immediately on first garage visit (no stars needed) and live on
+  their **own review track**: excluded from the game's SRS gate and the main Repaso,
+  so exam volume never blocks the match-3 loop. Due-session completion pays ★1 + 🔨;
+  unlimited free practice pays nothing (no farming).
+- Stats tab gains: órdenes del examen count + "aciertos al volante" (last-50 accuracy).
+- Port note: this drill is the strongest candidate for real recorded audio (multiple
+  voices, road noise) on iPad — TTS is the v1 shortcut.
+
 ## Progreso & review log (v0.10)
 
 📊 tab: streak (consecutive review days), words+phrases learned, due now / next 24 h,
@@ -257,6 +287,8 @@ future FSRS parameter fitting. Cooper appears at streaks ≥3.
 - Typing or speech-input recall instead of self-graded reveal (honesty vs. friction).
 - FSRS scheduling; stats screen (streak, retention).
 - Typing/speech recall input (deferred by design).
+- Exam drill v2: instructor-verified command list; junction/roundabout SVG diagrams as
+  answer surfaces instead of icon pads; timed-response mode; multiple TTS voices.
 - More phrases per object (rotating verbs); past-tense variants at B1.
 - FSRS parameter optimization from real review logs (needs the stats layer first).
 - Gender imagery per full Fluent Forever method (color is the v1 shortcut).

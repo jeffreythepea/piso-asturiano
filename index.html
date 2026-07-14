@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.13
+  EL PISO ASTURIANO — living spec / v0.14
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -128,6 +128,21 @@
   .fx-laser{font-size:28px; animation:laserA .45s ease-out forwards;}
   @keyframes laserA{0%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.8);}100%{transform:translate(-50%,-50%) scale(.2); opacity:0;}}
 
+  /* ---------- EXAMEN (drill) ---------- */
+  .drill-panel{background:#fff; border:1px solid var(--linea); border-radius:16px; padding:14px; margin-top:14px; box-shadow:var(--sombra); text-align:center;}
+  .drill-panel h3{font-family:'Fraunces',serif; font-weight:800; margin:0 0 4px; font-size:18px;}
+  .drill-warn{font-size:12px; font-weight:800; color:#a06a1f; background:#FBF3E1; border:1px solid #EAD9B0; border-radius:10px; padding:6px 10px; margin:8px 0;}
+  .drill-q{font-weight:800; color:#7d8a7f; margin:8px 0 12px;}
+  .btn-ear{font-size:44px; background:#fff; border:1px solid var(--linea); border-radius:50%; width:84px; height:84px; cursor:pointer; box-shadow:var(--sombra); margin:4px auto 14px; display:block;}
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:340px; margin:0 auto;}
+  .opt{font-size:42px; padding:16px 0; background:#FBF8F0; border:2px solid var(--linea); border-radius:16px; cursor:pointer; transition:transform .1s ease;}
+  .opt:active{transform:scale(.96);}
+  .opt.right{background:#E4F2E7; border-color:var(--verde);}
+  .opt.wrong{background:#F8E5DF; border-color:var(--teja); animation:shake .25s ease;}
+  .drill-reveal{margin-top:12px; font-weight:800;}
+  .drill-reveal .es{font-family:'Fraunces',serif; font-size:20px;}
+  .drill-reveal .en{font-size:12px; color:#9aa49c;}
+
   /* ---------- PROGRESO ---------- */
   .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
   .stat{background:#fff; border:1px solid var(--linea); border-radius:14px; padding:14px; text-align:center; box-shadow:var(--sombra);}
@@ -193,6 +208,7 @@
       </svg>
     </div>
     <p class="room-note">Toca un objeto para oír su nombre · <span style="color:var(--azul)">el</span> / <span style="color:var(--teja)">la</span></p>
+    <div id="drill"></div>
     <div class="tasks" id="tasks"></div>
     <div class="shop" id="shop"></div>
   </section>
@@ -224,7 +240,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.13</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.14</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <button id="btn-reset">reiniciar todo</button>
 </footer>
 
@@ -674,9 +690,10 @@ const ROOMS = {
   cocina:     { label:'Cocina' },
   dormitorio: { label:'Dormitorio' },
   bano:       { label:'Baño' },
+  garaje:     { label:'Garaje 🚦' },
 };
-const ROOM_ORDER = ['sala', 'cocina', 'dormitorio', 'bano'];
-const ROOM_ES = { sala:'la sala', cocina:'la cocina', dormitorio:'el dormitorio', bano:'el baño' };
+const ROOM_ORDER = ['sala', 'cocina', 'dormitorio', 'bano', 'garaje'];
+const ROOM_ES = { sala:'la sala', cocina:'la cocina', dormitorio:'el dormitorio', bano:'el baño', garaje:'el garaje' };
 
 const CATALOG = [
   // ---- la sala de estar ----
@@ -732,6 +749,19 @@ const CATALOG = [
   { id:'peine',      room:'bano', es:'el peine',             en:'comb',         g:'el', em:'🪮', cost:2, x:505, y:150, fs:32 },
   { id:'cesta',      room:'bano', es:'la cesta',             en:'laundry basket', g:'la', em:'🧺', cost:3, x:640, y:305, fs:56 },
   { id:'patito',     room:'bano', es:'el patito de goma',    en:'rubber duck',  g:'el', em:'🦆', cost:2, x:140, y:258, fs:28 },
+  // ---- el garaje ----
+  { id:'coche',        room:'garaje', es:'el coche',               en:'car',            g:'el', em:'🚗', cost:4, x:250, y:295, fs:96 },
+  { id:'moto',         room:'garaje', es:'la moto',                en:'motorbike',      g:'la', em:'🛵', cost:3, x:430, y:300, fs:60 },
+  { id:'bicicleta',    room:'garaje', es:'la bicicleta',           en:'bicycle',        g:'la', em:'🚲', cost:2, x:535, y:298, fs:56 },
+  { id:'volante',      room:'garaje', es:'el volante',             en:'steering wheel', g:'el', em:'🛞', cost:2, x:400, y:145, fs:44 },
+  { id:'semaforo',     room:'garaje', es:'el semáforo',            en:'traffic light',  g:'el', em:'🚦', cost:2, x:705, y:255, fs:56 },
+  { id:'stop',         room:'garaje', es:'la señal de stop',       en:'stop sign',      g:'la', em:'🛑', cost:2, x:640, y:125, fs:42 },
+  { id:'triangulo',    room:'garaje', es:'el triángulo',           en:'warning triangle', g:'el', em:'🔺', cost:2, x:150, y:300, fs:34 },
+  { id:'extintor',     room:'garaje', es:'el extintor',            en:'fire extinguisher', g:'el', em:'🧯', cost:2, x:62, y:225, fs:42 },
+  { id:'gasolina',     room:'garaje', es:'la gasolina',            en:'petrol',         g:'la', em:'⛽', cost:2, x:62, y:300, fs:48 },
+  { id:'herramientas', room:'garaje', es:'la caja de herramientas', en:'toolbox',       g:'la', em:'🧰', cost:3, x:130, y:152, fs:44 },
+  { id:'llaveinglesa', room:'garaje', es:'la llave inglesa',       en:'wrench',         g:'la', em:'🔧', cost:2, x:205, y:150, fs:36 },
+  { id:'bateria',      room:'garaje', es:'la batería',             en:'battery',        g:'la', em:'🔋', cost:2, x:268, y:150, fs:36 },
 ];
 
 /* Action phrases: one per object. Task completion teaches these. */
@@ -785,7 +815,56 @@ const PHRASES = {
   peine:      { es:'Péinate el pelo',            en:'comb your hair' },
   cesta:      { es:'Pon la ropa en la cesta',    en:'put the clothes in the basket' },
   patito:     { es:'Aprieta el patito',          en:'squeeze the ducky' },
+  coche:        { es:'Suba al coche',            en:'get into the car' },
+  moto:         { es:'Cuidado con la moto',      en:'watch out for the motorbike' },
+  bicicleta:    { es:'Deje espacio a la bicicleta', en:'leave room for the bicycle' },
+  volante:      { es:'Sujete el volante',        en:'hold the steering wheel' },
+  semaforo:     { es:'Pare en el semáforo',      en:'stop at the traffic light' },
+  stop:         { es:'Deténgase en el stop',     en:'come to a complete stop at the stop sign' },
+  triangulo:    { es:'Coloque el triángulo',     en:'place the warning triangle' },
+  extintor:     { es:'Compruebe el extintor',    en:'check the extinguisher' },
+  gasolina:     { es:'Compruebe la gasolina',    en:'check the fuel' },
+  herramientas: { es:'Guarde las herramientas',  en:'put away the tools' },
+  llaveinglesa: { es:'Coja la llave inglesa',    en:'grab the wrench' },
+  bateria:      { es:'Revise la batería',        en:'check the battery' },
 };
+
+/* ============================================================
+   EL EXAMEN DE COOPER — DGT practical-exam command drill.
+   ⚠️ STARTER SET, provisional: verify exact phrasing with the
+   autoescuela instructor and edit this list to match verbatim.
+   Audio-first cards: hear the command, tap the matching icon.
+   Distractors come from the same category (the real confusions).
+   ============================================================ */
+const COMMANDS = [
+  // dirección
+  { id:'c-recto',   cat:'dir', icon:'⬆️', es:'Siga todo recto',                            en:'go straight on' },
+  { id:'c-der',     cat:'dir', icon:'➡️', es:'Gire a la derecha en la próxima calle',      en:'turn right at the next street' },
+  { id:'c-izq',     cat:'dir', icon:'⬅️', es:'Gire a la izquierda cuando pueda',           en:'turn left when you can' },
+  { id:'c-sentido', cat:'dir', icon:'🔄', es:'Cambie de sentido cuando le sea posible',    en:'make a U-turn when possible' },
+  // rotonda
+  { id:'c-rot1', cat:'rot', icon:'1️⃣', es:'En la rotonda, tome la primera salida',  en:'at the roundabout, take the first exit' },
+  { id:'c-rot2', cat:'rot', icon:'2️⃣', es:'En la rotonda, tome la segunda salida',  en:'at the roundabout, take the second exit' },
+  { id:'c-rot3', cat:'rot', icon:'3️⃣', es:'En la rotonda, tome la tercera salida',  en:'at the roundabout, take the third exit' },
+  { id:'c-rot4', cat:'rot', icon:'4️⃣', es:'En la rotonda, tome la cuarta salida',   en:'at the roundabout, take the fourth exit' },
+  // velocidad y detención
+  { id:'c-det',  cat:'spd', icon:'🛑', es:'Deténgase donde esté permitido',   en:'stop where permitted' },
+  { id:'c-red',  cat:'spd', icon:'⏬', es:'Reduzca la velocidad',             en:'reduce your speed' },
+  { id:'c-acel', cat:'spd', icon:'⏫', es:'Acelere para incorporarse',        en:'accelerate to merge' },
+  { id:'c-cont', cat:'spd', icon:'▶️', es:'Continúe la marcha',               en:'continue driving' },
+  // maniobras
+  { id:'c-est',  cat:'man', icon:'🅿️', es:'Estacione donde esté permitido',           en:'park where permitted' },
+  { id:'c-atras',cat:'man', icon:'🔙', es:'Dé marcha atrás en línea recta',            en:'reverse in a straight line' },
+  { id:'c-adel', cat:'man', icon:'⏩', es:'Adelante al vehículo cuando sea seguro',    en:'overtake the vehicle when safe' },
+  { id:'c-inc',  cat:'man', icon:'↗️', es:'Incorpórese a la autovía',                  en:'merge onto the motorway' },
+  { id:'c-sal',  cat:'man', icon:'↘️', es:'Salga de la autovía en la próxima salida', en:'leave the motorway at the next exit' },
+  // antes de arrancar
+  { id:'c-retro', cat:'pre', icon:'🪞', es:'Ajuste los retrovisores',  en:'adjust the mirrors' },
+  { id:'c-cint',  cat:'pre', icon:'💺', es:'Póngase el cinturón',      en:'put on your seatbelt' },
+  { id:'c-arr',   cat:'pre', icon:'🔑', es:'Arranque el motor',        en:'start the engine' },
+  { id:'c-freno', cat:'pre', icon:'✋', es:'Quite el freno de mano',   en:'release the handbrake' },
+  { id:'c-luces', cat:'pre', icon:'💡', es:'Encienda las luces',       en:'turn on the lights' },
+];
 function phraseHTML(p){
   return p.es.replace(/\b(el|la|los|las)\b/, m => '<span class="g-' + m + '">' + m + '</span>');
 }
@@ -870,7 +949,11 @@ function newCard(item, kind){
 /*SRS-END*/
 function dueCards(){
   const now = Date.now();
-  return S.deck.filter(c => c.due <= now);
+  return S.deck.filter(c => c.kind !== 'cmd' && c.due <= now);   // exam drill has its own track
+}
+function dueCmds(){
+  const now = Date.now();
+  return S.deck.filter(c => c.kind === 'cmd' && c.due <= now);
 }
 
 /* ============================================================
@@ -914,6 +997,7 @@ function save(){
   try { localStorage.setItem('piso-asturiano', JSON.stringify(S)); } catch(e){ memoryOnly = true; }
 }
 function roomUnlocked(room){
+  if (room === 'garaje') return true;   // driving school waits for no sofa
   const idx = ROOM_ORDER.indexOf(room);
   if (idx <= 0) return true;
   const prev = ROOM_ORDER[idx - 1];
@@ -1015,7 +1099,7 @@ function switchTab(name){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
   if (name === 'repaso') renderReview();
   if (name === 'stats') renderStats();
-  if (name === 'casa'){ renderRoomTabs(); renderRoom(); renderTasks(); renderShop(); }
+  if (name === 'casa'){ renderRoomTabs(); renderRoom(); renderDrill(); renderTasks(); renderShop(); }
   if (name === 'juego') onEnterJuego();
 }
 
@@ -1038,7 +1122,8 @@ function renderRoomTabs(){
         return;
       }
       S.room = id; save();
-      renderRoomTabs(); renderRoom(); renderShop();
+      drillQueue = []; drillMode = null;
+      renderRoomTabs(); renderRoom(); renderDrill(); renderTasks(); renderShop();
     });
     el.appendChild(b);
   }
@@ -1054,6 +1139,16 @@ function roomBgSVG(room){
       '<rect y="240" width="780" height="14" fill="#9AA7AB"/>' +
       '<rect y="254" width="780" height="126" fill="#C9D2D5"/>' +
       '<rect y="380" width="780" height="20" fill="#B98A5C"/>';
+  }
+  if (room === 'garaje'){
+    let door = '';
+    for (let y = 30; y < 240; y += 42) door += '<line x1="330" y1="' + y + '" x2="760" y2="' + y + '" stroke="#9AA2A8" stroke-width="3"/>';
+    return '<rect width="780" height="310" fill="#CBD2D6"/>' +
+      '<rect x="330" y="20" width="430" height="220" fill="#B8C0C5" stroke="#9AA2A8" stroke-width="4"/>' + door +
+      '<rect x="50" y="162" width="270" height="10" rx="3" fill="#6E7A81"/>' +      // estantería de herramientas
+      '<rect y="310" width="780" height="90" fill="#8E979C"/>' +
+      '<line y1="310" x2="780" y2="310" stroke="#6E7A81" stroke-width="3"/>' +
+      '<rect x="90" y="330" width="420" height="6" fill="#E8A93C" opacity=".8"/>';  // línea de aparcamiento
   }
   if (room === 'bano'){
     let tiles = '';
@@ -1963,6 +2058,145 @@ function answer(bien){
 }
 
 /* ============================================================
+   EL EXAMEN DE COOPER — audio-first command drill
+   ============================================================ */
+let drillQueue = [], drillMode = null, drillSize = 0, drillRight = 0, drillLock = false, drillMissed = new Set();
+
+function seedCommands(){
+  const have = new Set(S.deck.filter(c => c.kind === 'cmd').map(c => c.id));
+  let added = 0;
+  COMMANDS.forEach(cmd => {
+    if (!have.has(cmd.id)){
+      S.deck.push({ id: cmd.id, kind:'cmd', due: Date.now(), reps:0 });
+      added++;
+    }
+  });
+  if (added) save();
+}
+function cmdOf(card){ return COMMANDS.find(c => c.id === card.id); }
+
+function drillOptions(cmd){
+  const uniqByIcon = (list) => {
+    const seen = new Set([cmd.icon]);
+    return list.filter(c => { if (seen.has(c.icon)) return false; seen.add(c.icon); return true; });
+  };
+  const sameCat = uniqByIcon(COMMANDS.filter(c => c.cat === cmd.cat && c.id !== cmd.id))
+    .sort(() => Math.random() - 0.5);
+  const others = uniqByIcon(COMMANDS.filter(c => c.cat !== cmd.cat))
+    .sort(() => Math.random() - 0.5);
+  const picks = sameCat.slice(0, 3);
+  while (picks.length < 3 && others.length) picks.push(others.shift());
+  return [cmd, ...picks].sort(() => Math.random() - 0.5);
+}
+
+function renderDrill(){
+  const el = $('drill');
+  if (S.room !== 'garaje'){ el.innerHTML = ''; drillQueue = []; return; }
+  seedCommands();
+  if (drillQueue.length){ renderDrillCard(); return; }
+  const nd = dueCmds().length;
+  const total = S.deck.filter(c => c.kind === 'cmd').length;
+  el.innerHTML =
+    '<div class="drill-panel">' +
+      '<h3>🚦 El examen de Cooper 🦺</h3>' +
+      '<p style="font-weight:700; color:#5c6a63; margin:4px 0">Escucha la orden del examinador y toca la respuesta.</p>' +
+      '<div class="drill-warn">⚠️ Lista provisional (' + total + ' órdenes) — confírmala con tu profesor de la autoescuela.</div>' +
+      (nd > 0
+        ? '<button class="btn btn-bien" id="dr-due">Repasar ' + nd + ' órdenes · ★1</button> '
+        : '<p style="font-weight:800; color:var(--verde); margin:6px 0">✓ Nada pendiente ahora</p>') +
+      '<button class="btn btn-audio" id="dr-free" style="font-size:15px">Práctica libre</button>' +
+    '</div>';
+  const d = $('dr-due'); if (d) d.addEventListener('click', () => startDrill(false));
+  $('dr-free').addEventListener('click', () => startDrill(true));
+}
+
+function startDrill(practice){
+  drillMode = practice ? 'practice' : 'due';
+  const pool = practice
+    ? S.deck.filter(c => c.kind === 'cmd')
+    : dueCmds();
+  drillQueue = pool.slice().sort(() => Math.random() - 0.5);
+  drillSize = drillQueue.length;
+  drillRight = 0;
+  drillMissed = new Set();
+  renderDrillCard();
+}
+
+function renderDrillCard(){
+  const el = $('drill');
+  const card = drillQueue[0];
+  const cmd = cmdOf(card);
+  const opts = drillOptions(cmd);
+  const done = drillSize - drillQueue.length;
+  drillLock = false;
+  el.innerHTML =
+    '<div class="drill-panel">' +
+      '<div class="rev-progress">' + Math.min(done + 1, drillSize) + ' / ' + drillSize + '</div>' +
+      '<button class="btn-ear" id="dr-say">🔊</button>' +
+      '<div class="drill-q">Escucha la orden…</div>' +
+      '<div class="opts">' +
+        opts.map(o => '<button class="opt" data-id="' + o.id + '">' + o.icon + '</button>').join('') +
+      '</div>' +
+      '<div class="drill-reveal" id="dr-reveal"></div>' +
+    '</div>';
+  $('dr-say').addEventListener('click', () => speak(cmd.es));
+  el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => answerCmd(b, cmd, card)));
+  speak(cmd.es);
+}
+
+function answerCmd(btn, cmd, card){
+  if (drillLock) return;
+  drillLock = true;
+  const right = btn.dataset.id === cmd.id;
+  fsrsReview(card, right ? 3 : 1);
+  S.log.push({ t: Date.now(), id: card.id, k:'cmd', g: right ? 3 : 1, S: +card.S.toFixed(2) });
+  if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  save();
+  const reveal = $('dr-reveal');
+  if (right){
+    if (!drillMissed.has(card.id)) drillRight++;   // first-attempt successes only
+    btn.classList.add('right');
+    SFX.bien();
+    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>';
+    drillQueue.shift();
+    setTimeout(nextDrill, 900);
+  } else {
+    drillMissed.add(card.id);
+    btn.classList.add('wrong');
+    SFX.otra();
+    document.querySelectorAll('.opt').forEach(b => { if (b.dataset.id === cmd.id) b.classList.add('right'); });
+    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>' +
+      '<button class="btn btn-bien" id="dr-next" style="margin-top:10px">Continuar</button>';
+    speak(cmd.es);
+    drillQueue.push(drillQueue.shift());     // requeue until answered right
+    $('dr-next').addEventListener('click', nextDrill);
+  }
+}
+
+function nextDrill(){
+  if (drillQueue.length){ renderDrillCard(); return; }
+  // session complete
+  let rewardTxt = '';
+  if (drillMode === 'due'){
+    S.stars++;
+    S.hammers = (S.hammers || 0) + 1;
+    save(); refreshHUD();
+    rewardTxt = '<p>+1 estrella · +1 🔨</p>';
+  }
+  showModal(
+    '<div class="em">🦺</div><h2>Fin del examen</h2>' +
+    '<p>' + drillRight + ' de ' + drillSize + ' a la primera</p>' + rewardTxt +
+    '<p class="cooper">🐕 <b>Cooper:</b> ' +
+      (drillRight === drillSize ? '¡Apto! Bueno… casi.<br><span class="cen">Pass! Well… almost.</span>'
+                                : 'En la calle no hay segunda salida… digo, oportunidad.<br><span class="cen">On the road there are no second chances.</span>') +
+    '</p>' +
+    '<button class="btn btn-bien" onclick="closeModal()">Vale</button>'
+  );
+  drillMode = null; drillSize = 0; drillRight = 0;
+  renderDrill();
+}
+
+/* ============================================================
    PROGRESO — stats & review log
    ============================================================ */
 function calcStreak(){
@@ -1984,6 +2218,9 @@ function renderStats(){
   const recent = S.log.slice(-100);
   const acc = recent.length ? Math.round(100 * recent.filter(e => e.g === 3).length / recent.length) : null;
   const mastered = S.deck.filter(c => (c.S || 0) >= 21).length;
+  const cmds = S.deck.filter(c => c.kind === 'cmd').length;
+  const cmdLog = S.log.filter(e => e.k === 'cmd').slice(-50);
+  const cmdAcc = cmdLog.length ? Math.round(100 * cmdLog.filter(e => e.g === 3).length / cmdLog.length) : null;
 
   const buckets = [
     { lab:'aprendiendo (<1 d)',  test: st => st < 1 },
@@ -2006,6 +2243,8 @@ function renderStats(){
       '<div class="stat"><div class="n">' + due24 + '</div><div class="l">en las próximas 24 h</div></div>' +
       '<div class="stat"><div class="n">' + (acc === null ? '—' : acc + '%') + '</div><div class="l">aciertos recientes</div></div>' +
       '<div class="stat"><div class="n">' + S.log.length + '</div><div class="l">repasos totales</div></div>' +
+      (cmds ? '<div class="stat"><div class="n">' + cmds + '</div><div class="l">🚦 órdenes del examen</div></div>' +
+              '<div class="stat"><div class="n">' + (cmdAcc === null ? '—' : cmdAcc + '%') + '</div><div class="l">aciertos al volante</div></div>' : '') +
     '</div>' +
     '<div class="stat-panel"><h3>Memoria por estabilidad</h3>' + bars +
       '<p style="font-size:12px; color:#9aa49c; font-weight:700; margin:10px 0 0">' +
