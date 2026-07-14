@@ -114,9 +114,14 @@ leave feed gaps, as Playrix does. L4's chain walls now have a central channel.
 mixed hp2 → caja donut → finale), then infinite procedural continuation: layouts cycle,
 tile-collect goals scale +5 per cycle.
 
-**Boosters**: 🔨 hammer — tap it, then any cell: clears/damages it, triggers specials,
-costs no move. **Earned +1 per completed SRS review session** (alongside the star), so
-the strongest tactical resource in the game comes from studying. Starts with 1.
+**Boosters**:
+- 🔨 hammer — tap it, then any cell: clears/damages it, triggers specials, costs no
+  move. **Earned +1 per completed SRS review session** (alongside the star) — the
+  strongest tactical resource comes from studying. Starts with 1.
+- 🧤 glove (v0.12) — free swap of two adjacent movable pieces: no match required, no
+  move consumed; if a match or special activation results, it resolves normally.
+  Purchasable for ★2 (tap the button when empty); starts with 1. Booster modes are
+  mutually exclusive; both reset at level start.
 
 **Juice**: cascade praise popups in Spanish (¡Bien! → ¡Genial! → ¡Increíble! →
 ¡Espectacular!) — ambient exposure doubling as game feedback.
@@ -171,14 +176,22 @@ Persistence: localStorage (`piso-asturiano` key), in-memory fallback with a visi
 "sesión sin guardar" note when storage is unavailable (e.g., artifact preview).
 **To keep progress: download the file and open it in Safari on the iPad.**
 
-## Content: rooms (v0.7)
+## Content: rooms (v0.11)
 
-**La sala de estar** (13): ventana, televisión, cuadro, espejo, reloj, estantería,
-piano, sofá, silla, lámpara, guitarra, planta, cama del perro (Cooper's).
-**La cocina** (12, Homescapes-style sequential unlock — completing the sala opens it):
-jarra, sartén, olla, tetera, cuchillo, cuchara, plato, taza, vaso, pan, huevo, salero.
-Each room has its own SVG backdrop; the room selector persists. Household vocab =
-A1/A2 core, inherently image-based. Next rooms: dormitorio, baño.
+Sequential unlock chain (finish a room to open the next): **la sala de estar** (13:
+ventana, televisión, cuadro, espejo, reloj, estantería, piano, sofá, silla, lámpara,
+guitarra, planta, cama del perro) → **la cocina** (12: jarra, sartén, olla, tetera,
+cuchillo, cuchara, plato, taza, vaso, pan, huevo, salero) → **el dormitorio** (12:
+cama, puerta, despertador, vela, libro, camiseta, calcetines, pantalones, maleta,
+llave, móvil, peluche — introduces plural articles los/las) → **el baño** (12, v0.13:
+bañera, ducha, váter, papel higiénico, grifo, jabón, esponja, cepillo de dientes,
+maquinilla, peine, cesta, patito de goma — introduces **reflexive imperatives**:
+date una ducha, cepíllate los dientes, péinate el pelo, lávate las manos; plus the
+idiomatic *tira de la cadena*). Grammar deliberately ramps room by room: bare
+imperatives → plurals → reflexives. Every object has an action phrase/task.
+49 nouns + 49 phrases ≈ ★125 of sinks. Each room has its own SVG backdrop; the
+selector persists. The piso is complete — next expansion: la terraza / el hórreo
+(exterior scene), or a second piso.
 
 ## New mechanics (v0.7)
 
@@ -229,13 +242,21 @@ board; selection/hint are soft golden circles, specials glow via drop-shadow.
   stock) — camera integration is the killer feature the HTML can't do well: photograph
   *your own* sofa in Calle Magdalena, attach it to `el sofá`.
 
+## Progreso & review log (v0.10)
+
+📊 tab: streak (consecutive review days), words+phrases learned, due now / next 24 h,
+recent accuracy (last 100 grades), total reviews, and a stability-distribution chart
+(aprendiendo <1 d → dominada 21+ d). Every review appends to `S.log`
+({t, id, kind, grade, elapsed, resulting stability}, capped 2000) — the dataset for
+future FSRS parameter fitting. Cooper appears at streaks ≥3.
+
 ## Open questions / v2 backlog
 
 - More rooms (dormitorio, baño), Homescapes-style "tasks" narrative per room.
 - Verbs/phrases, not just nouns ("enciende la lámpara" as a room interaction).
 - Typing or speech-input recall instead of self-graded reveal (honesty vs. friction).
 - FSRS scheduling; stats screen (streak, retention).
-- Stats screen (streak, retention, per-card stability). Typing/speech recall input (deferred by design).
+- Typing/speech recall input (deferred by design).
 - More phrases per object (rotating verbs); past-tense variants at B1.
 - FSRS parameter optimization from real review logs (needs the stats layer first).
 - Gender imagery per full Fluent Forever method (color is the v1 shortcut).

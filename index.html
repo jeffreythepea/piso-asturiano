@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.7
+  EL PISO ASTURIANO — living spec / v0.13
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -45,7 +45,7 @@
   @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important;} }
 
   nav{position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--linea); display:flex; justify-content:center; gap:6px; padding:8px 10px calc(8px + env(safe-area-inset-bottom)); z-index:40;}
-  nav button{font-family:'Nunito'; font-weight:800; font-size:15px; border:none; background:none; color:#8a948d; padding:10px 22px; border-radius:14px; cursor:pointer; position:relative;}
+  nav button{font-family:'Nunito'; font-weight:800; font-size:14px; border:none; background:none; color:#8a948d; padding:10px 13px; border-radius:14px; cursor:pointer; position:relative;}
   nav button.active{background:var(--verde); color:#fff;}
   nav button .nbadge{position:absolute; top:2px; right:8px; background:var(--teja); color:#fff; border-radius:999px; font-size:11px; padding:1px 6px; font-weight:800;}
 
@@ -66,7 +66,7 @@
   .shop-card button:disabled{background:#eee7d6; color:#b3a888; cursor:default;}
   .shop-card.owned{opacity:.55;}
   .shop-card.owned button{background:var(--verde); color:#fff;}
-  .g-el{color:var(--azul);} .g-la{color:var(--teja);}
+  .g-el,.g-los{color:var(--azul);} .g-la,.g-las{color:var(--teja);}
   .tasks{background:#fff; border:1px solid var(--linea); border-radius:16px; padding:12px 14px; margin-top:14px; box-shadow:var(--sombra);}
   .tasks-h{font-family:'Fraunces',serif; font-weight:800; font-size:17px; margin-bottom:4px;}
   .task{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 4px; border-top:1px dashed var(--linea); font-weight:700; font-size:14px;}
@@ -128,6 +128,19 @@
   .fx-laser{font-size:28px; animation:laserA .45s ease-out forwards;}
   @keyframes laserA{0%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.8);}100%{transform:translate(-50%,-50%) scale(.2); opacity:0;}}
 
+  /* ---------- PROGRESO ---------- */
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat{background:#fff; border:1px solid var(--linea); border-radius:14px; padding:14px; text-align:center; box-shadow:var(--sombra);}
+  .stat .n{font-family:'Fraunces',serif; font-weight:800; font-size:30px;}
+  .stat .l{font-size:12px; font-weight:800; color:#7d8a7f;}
+  .stat-panel{background:#fff; border:1px solid var(--linea); border-radius:16px; padding:14px; margin-top:12px; box-shadow:var(--sombra);}
+  .stat-panel h3{font-family:'Fraunces',serif; font-weight:800; margin:0 0 10px; font-size:17px;}
+  .sbar{display:flex; align-items:center; gap:8px; margin:6px 0; font-size:13px; font-weight:800;}
+  .sbar .lab{width:110px; color:#5c6a63;}
+  .sbar .bar{flex:1; background:#F0EBDD; border-radius:99px; height:16px; overflow:hidden;}
+  .sbar .bar i{display:block; height:100%; background:var(--verde); border-radius:99px;}
+  .sbar .val{width:26px; text-align:right;}
+
   /* ---------- REPASO ---------- */
   .rev-empty{background:#fff; border:1px dashed var(--linea); border-radius:16px; padding:34px 20px; text-align:center; color:#7d8a7f; font-weight:700;}
   .card{background:#fff; border:1px solid var(--linea); border-radius:20px; padding:28px 20px 22px; text-align:center; box-shadow:var(--sombra); max-width:440px; margin:0 auto;}
@@ -188,12 +201,20 @@
   <section id="tab-juego" class="tab">
     <div class="game-top">
       <span class="lvl">Nivel <span id="g-level">1</span></span>
-      <button class="pill hammer" id="btn-hammer" title="martillo">🔨 <span id="h-n">0</span></button>
+      <span style="display:flex; gap:6px;">
+        <button class="pill hammer" id="btn-hammer" title="martillo">🔨 <span id="h-n">0</span></button>
+        <button class="pill hammer" id="btn-glove" title="guante">🧤 <span id="gl-n">0</span></button>
+      </span>
       <span id="g-moves">20 mov.</span>
     </div>
     <div class="goals" id="g-goals"></div>
     <div id="board"></div>
     <div class="legend" id="legend"></div>
+  </section>
+
+  <!-- ================= PROGRESO ================= -->
+  <section id="tab-stats" class="tab">
+    <div id="stats-area"></div>
   </section>
 
   <!-- ================= REPASO ================= -->
@@ -203,7 +224,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.9</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.13</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <button id="btn-reset">reiniciar todo</button>
 </footer>
 
@@ -211,6 +232,7 @@
   <button data-tab="casa" class="active">🏠 Casa</button>
   <button data-tab="juego">🍎 Juego</button>
   <button data-tab="repaso">📖 Repaso<span class="nbadge" id="nav-due" style="display:none">0</span></button>
+  <button data-tab="stats">📊 Progreso</button>
 </nav>
 
 <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
@@ -648,9 +670,13 @@ const TILES = [
 ];
 
 const ROOMS = {
-  sala:   { label:'Sala' },
-  cocina: { label:'Cocina' },
+  sala:       { label:'Sala' },
+  cocina:     { label:'Cocina' },
+  dormitorio: { label:'Dormitorio' },
+  bano:       { label:'Baño' },
 };
+const ROOM_ORDER = ['sala', 'cocina', 'dormitorio', 'bano'];
+const ROOM_ES = { sala:'la sala', cocina:'la cocina', dormitorio:'el dormitorio', bano:'el baño' };
 
 const CATALOG = [
   // ---- la sala de estar ----
@@ -680,6 +706,32 @@ const CATALOG = [
   { id:'pan',      room:'cocina', es:'el pan',      en:'bread',    g:'el', em:'🥖', cost:3, x:140, y:152, fs:46 },
   { id:'huevo',    room:'cocina', es:'el huevo',    en:'egg',      g:'el', em:'🥚', cost:2, x:230, y:150, fs:34 },
   { id:'salero',   room:'cocina', es:'el salero',   en:'salt shaker', g:'el', em:'🧂', cost:2, x:300, y:150, fs:34 },
+  // ---- el dormitorio ----
+  { id:'cama',       room:'dormitorio', es:'la cama',         en:'bed',        g:'la',  em:'🛏️', cost:4, x:200, y:300, fs:80 },
+  { id:'puerta',     room:'dormitorio', es:'la puerta',       en:'door',       g:'la',  em:'🚪', cost:2, x:700, y:280, fs:76 },
+  { id:'despertador',room:'dormitorio', es:'el despertador',  en:'alarm clock',g:'el',  em:'⏰', cost:2, x:330, y:222, fs:36 },
+  { id:'vela',       room:'dormitorio', es:'la vela',         en:'candle',     g:'la',  em:'🕯️', cost:2, x:385, y:220, fs:34 },
+  { id:'libro',      room:'dormitorio', es:'el libro',        en:'book',       g:'el',  em:'📖', cost:2, x:437, y:222, fs:34 },
+  { id:'camiseta',   room:'dormitorio', es:'la camiseta',     en:'t-shirt',    g:'la',  em:'👕', cost:2, x:520, y:150, fs:44 },
+  { id:'calcetines', room:'dormitorio', es:'los calcetines',  en:'socks',      g:'los', em:'🧦', cost:2, x:585, y:148, fs:38 },
+  { id:'pantalones', room:'dormitorio', es:'los pantalones',  en:'trousers',   g:'los', em:'👖', cost:2, x:648, y:150, fs:42 },
+  { id:'maleta',     room:'dormitorio', es:'la maleta',       en:'suitcase',   g:'la',  em:'🧳', cost:3, x:565, y:300, fs:52 },
+  { id:'llave',      room:'dormitorio', es:'la llave',        en:'key',        g:'la',  em:'🗝️', cost:2, x:120, y:130, fs:36 },
+  { id:'movil',      room:'dormitorio', es:'el móvil',        en:'mobile phone', g:'el', em:'📱', cost:3, x:290, y:222, fs:32 },
+  { id:'peluche',    room:'dormitorio', es:'el peluche',      en:'cuddly toy', g:'el',  em:'🧸', cost:2, x:130, y:250, fs:42 },
+  // ---- el baño ----
+  { id:'banera',     room:'bano', es:'la bañera',            en:'bathtub',      g:'la', em:'🛁', cost:4, x:170, y:300, fs:84 },
+  { id:'ducha',      room:'bano', es:'la ducha',             en:'shower',       g:'la', em:'🚿', cost:3, x:170, y:120, fs:56 },
+  { id:'vater',      room:'bano', es:'el váter',             en:'toilet',       g:'el', em:'🚽', cost:3, x:330, y:300, fs:64 },
+  { id:'papel',      room:'bano', es:'el papel higiénico',   en:'toilet paper', g:'el', em:'🧻', cost:2, x:420, y:300, fs:44 },
+  { id:'grifo',      room:'bano', es:'el grifo',             en:'tap',          g:'el', em:'🚰', cost:2, x:470, y:212, fs:40 },
+  { id:'jabon',      room:'bano', es:'el jabón',             en:'soap',         g:'el', em:'🧼', cost:2, x:530, y:212, fs:36 },
+  { id:'esponja',    room:'bano', es:'la esponja',           en:'sponge',       g:'la', em:'🧽', cost:2, x:585, y:212, fs:36 },
+  { id:'cepillo',    room:'bano', es:'el cepillo de dientes',en:'toothbrush',   g:'el', em:'🪥', cost:2, x:640, y:212, fs:34 },
+  { id:'maquinilla', room:'bano', es:'la maquinilla',        en:'razor',        g:'la', em:'🪒', cost:2, x:695, y:212, fs:32 },
+  { id:'peine',      room:'bano', es:'el peine',             en:'comb',         g:'el', em:'🪮', cost:2, x:505, y:150, fs:32 },
+  { id:'cesta',      room:'bano', es:'la cesta',             en:'laundry basket', g:'la', em:'🧺', cost:3, x:640, y:305, fs:56 },
+  { id:'patito',     room:'bano', es:'el patito de goma',    en:'rubber duck',  g:'el', em:'🦆', cost:2, x:140, y:258, fs:28 },
 ];
 
 /* Action phrases: one per object. Task completion teaches these. */
@@ -709,9 +761,33 @@ const PHRASES = {
   pan:       { es:'Tuesta el pan',          en:'toast the bread' },
   huevo:     { es:'Bate el huevo',          en:'beat the egg' },
   salero:    { es:'Pasa el salero',         en:'pass the salt' },
+  cama:       { es:'Haz la cama',            en:'make the bed' },
+  puerta:     { es:'Cierra la puerta',       en:'close the door' },
+  despertador:{ es:'Apaga el despertador',   en:'turn off the alarm' },
+  vela:       { es:'Sopla la vela',          en:'blow out the candle' },
+  libro:      { es:'Lee el libro',           en:'read the book' },
+  camiseta:   { es:'Dobla la camiseta',      en:'fold the t-shirt' },
+  calcetines: { es:'Ponte los calcetines',   en:'put on your socks' },
+  pantalones: { es:'Plancha los pantalones', en:'iron the trousers' },
+  maleta:     { es:'Haz la maleta',          en:'pack the suitcase' },
+  llave:      { es:'Busca la llave',         en:'find the key' },
+  movil:      { es:'Carga el móvil',         en:'charge the phone' },
+  peluche:    { es:'Abraza el peluche',      en:'hug the cuddly toy' },
+  banera:     { es:'Llena la bañera',            en:'fill the bathtub' },
+  ducha:      { es:'Date una ducha',             en:'take a shower' },
+  vater:      { es:'Tira de la cadena',          en:'flush the toilet' },
+  papel:      { es:'Cambia el rollo',            en:'change the roll' },
+  grifo:      { es:'Cierra el grifo',            en:'turn off the tap' },
+  jabon:      { es:'Lávate las manos con jabón', en:'wash your hands with soap' },
+  esponja:    { es:'Escurre la esponja',         en:'wring out the sponge' },
+  cepillo:    { es:'Cepíllate los dientes',      en:'brush your teeth' },
+  maquinilla: { es:'Enjuaga la maquinilla',      en:'rinse the razor' },
+  peine:      { es:'Péinate el pelo',            en:'comb your hair' },
+  cesta:      { es:'Pon la ropa en la cesta',    en:'put the clothes in the basket' },
+  patito:     { es:'Aprieta el patito',          en:'squeeze the ducky' },
 };
 function phraseHTML(p){
-  return p.es.replace(/\b(el|la)\b/, m => '<span class="g-' + m + '">' + m + '</span>');
+  return p.es.replace(/\b(el|la|los|las)\b/, m => '<span class="g-' + m + '">' + m + '</span>');
 }
 
 /* Cooper — the Austin of this house. ES lines with EN subtitles. */
@@ -800,7 +876,7 @@ function dueCards(){
 /* ============================================================
    STATE + persistence
    ============================================================ */
-const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, room:'sala', tasks:[], welcomed:false };
+const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], welcomed:false, log:[] };
 let S;
 let memoryOnly = false;
 
@@ -815,9 +891,11 @@ function loadState(){
   if (S.sound === undefined) S.sound = true;
   if (S.hammers === undefined) S.hammers = 1;
   if (S.room === undefined) S.room = 'sala';
-  if (S.room === 'cocina' && !roomUnlocked('cocina')) S.room = 'sala';
+  if (!roomUnlocked(S.room)) S.room = 'sala';
   if (S.tasks === undefined) S.tasks = [];
   if (S.welcomed === undefined) S.welcomed = false;
+  if (S.log === undefined) S.log = [];
+  if (S.gloves === undefined) S.gloves = 1;
   // migrate Leitner-era cards to FSRS
   const boxToS = { 1:0.4, 2:1, 3:3, 4:7, 5:21 };
   S.deck.forEach(c => {
@@ -836,8 +914,10 @@ function save(){
   try { localStorage.setItem('piso-asturiano', JSON.stringify(S)); } catch(e){ memoryOnly = true; }
 }
 function roomUnlocked(room){
-  if (room === 'sala') return true;
-  return CATALOG.filter(i => i.room === 'sala').every(i => S.owned.includes(i.id));
+  const idx = ROOM_ORDER.indexOf(room);
+  if (idx <= 0) return true;
+  const prev = ROOM_ORDER[idx - 1];
+  return roomUnlocked(prev) && CATALOG.filter(i => i.room === prev).every(i => S.owned.includes(i.id));
 }
 
 /* ============================================================
@@ -934,6 +1014,7 @@ function switchTab(name){
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
   if (name === 'repaso') renderReview();
+  if (name === 'stats') renderStats();
   if (name === 'casa'){ renderRoomTabs(); renderRoom(); renderTasks(); renderShop(); }
   if (name === 'juego') onEnterJuego();
 }
@@ -951,8 +1032,9 @@ function renderRoomTabs(){
     b.classList.toggle('active', S.room === id);
     b.addEventListener('click', () => {
       if (!unlocked){
-        const left = CATALOG.filter(i => i.room === 'sala' && !S.owned.includes(i.id)).length;
-        showModal('<div class="em">🔒</div><h2>La cocina espera</h2><p>Termina la sala primero — faltan ' + left + ' objetos.</p><button class="btn btn-bien" onclick="closeModal()">Vale</button>');
+        const prev = ROOM_ORDER[ROOM_ORDER.indexOf(id) - 1];
+        const left = CATALOG.filter(i => i.room === prev && !S.owned.includes(i.id)).length;
+        showModal('<div class="em">🔒</div><h2>' + r.label + ' espera</h2><p>Termina ' + ROOM_ES[prev] + ' primero — faltan ' + left + ' objetos.</p><button class="btn btn-bien" onclick="closeModal()">Vale</button>');
         return;
       }
       S.room = id; save();
@@ -972,6 +1054,27 @@ function roomBgSVG(room){
       '<rect y="240" width="780" height="14" fill="#9AA7AB"/>' +
       '<rect y="254" width="780" height="126" fill="#C9D2D5"/>' +
       '<rect y="380" width="780" height="20" fill="#B98A5C"/>';
+  }
+  if (room === 'bano'){
+    let tiles = '';
+    for (let x = 0; x <= 780; x += 52) tiles += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="310" stroke="#BFE0E4" stroke-width="2"/>';
+    for (let y = 52; y < 310; y += 52) tiles += '<line x1="0" y1="' + y + '" x2="780" y2="' + y + '" stroke="#BFE0E4" stroke-width="2"/>';
+    return '<rect width="780" height="310" fill="#DDF0F2"/>' + tiles +
+      '<rect y="310" width="780" height="90" fill="#B8C6C9"/>' +
+      '<line y1="310" x2="780" y2="310" stroke="#93A6A9" stroke-width="3"/>' +
+      '<circle cx="595" cy="115" r="46" fill="#F4FAFB" stroke="#93A6A9" stroke-width="5"/>' +   // espejo redondo
+      '<rect x="440" y="222" width="290" height="10" rx="3" fill="#93A6A9"/>' +                  // repisa del lavabo
+      '<rect x="470" y="155" width="90" height="8" rx="3" fill="#93A6A9"/>';                     // repisa del peine
+  }
+  if (room === 'dormitorio'){
+    return '<rect width="780" height="310" fill="#E8E4F0"/>' +
+      '<rect y="310" width="780" height="90" fill="#A78A6F"/>' +
+      '<line y1="310" x2="780" y2="310" stroke="#8A6F55" stroke-width="3"/>' +
+      '<circle cx="120" cy="80" r="34" fill="#F5EFC9" opacity=".9"/>' +          // luna via la ventana
+      '<rect x="70" y="30" width="100" height="100" fill="none" stroke="#8A6544" stroke-width="6" rx="4"/>' +
+      '<rect x="480" y="120" width="220" height="10" rx="3" fill="#8A6544"/>' +  // clothes shelf
+      '<rect x="260" y="200" width="220" height="10" rx="3" fill="#8A6544"/>' +  // bedside shelf
+      '<ellipse cx="390" cy="360" rx="130" ry="24" fill="#C9B8A3"/>';            // alfombra
   }
   return '<rect width="780" height="310" fill="#EAE3D0"/>' +
     '<rect y="310" width="780" height="90" fill="#B98A5C"/>' +
@@ -1152,7 +1255,7 @@ function levelSpec(n){
 let board = null, sel = null, moves = 0, busy = false, levelDone = false;
 let LVL = { mask:new Set(), goals:[], moves:0, jelly:new Set() };
 let goalsLeft = {};
-let hammerMode = false, pendingPreview = false, jellyClearedThisTurn = false;
+let hammerMode = false, gloveMode = false, glovePick = null, pendingPreview = false, jellyClearedThisTurn = false;
 let hintTimer = null, hintCells = null;
 const HINT_DELAY = 120000;
 
@@ -1218,7 +1321,7 @@ function startLevel(){
   moves = spec.moves;
   goalsLeft = {};
   spec.goals.forEach(g => goalsLeft[goalKey(g)] = g.n);
-  sel = null; busy = false; levelDone = false; hammerMode = false;
+  sel = null; busy = false; levelDone = false; hammerMode = false; gloveMode = false; glovePick = null;
   renderGameHUD(); renderGoals(); renderBoard(); updateHammer();
   scheduleHint();
   pendingPreview = true;
@@ -1272,6 +1375,9 @@ function updateHammer(){
   $('h-n').textContent = S.hammers || 0;
   b.classList.toggle('armed', hammerMode);
   b.disabled = !(S.hammers > 0);
+  const g = $('btn-glove');
+  $('gl-n').textContent = S.gloves || 0;
+  g.classList.toggle('armed', gloveMode);
 }
 function renderBoard(popSet, dmgSet){
   const el = $('board');
@@ -1579,6 +1685,39 @@ async function tapCell(r, c){
     return;
   }
 
+  if (gloveMode){
+    if (v === null || !isMovable(v)){ SFX.bad(); return; }
+    if (!glovePick){
+      glovePick = { r, c };
+      sel = { r, c };                        // reuse the selection highlight
+      SFX.select(); renderBoard(); return;
+    }
+    if (glovePick.r === r && glovePick.c === c){
+      glovePick = null; sel = null; renderBoard(); return;
+    }
+    const gAdj = Math.abs(glovePick.r - r) + Math.abs(glovePick.c - c) === 1;
+    if (!gAdj){ glovePick = { r, c }; sel = { r, c }; SFX.select(); renderBoard(); return; }
+    // free swap: no match required, no move consumed
+    gloveMode = false;
+    const gp = glovePick; glovePick = null; sel = null;
+    S.gloves--; save();
+    updateHammer();
+    busy = true;
+    hintCells = null; clearTimeout(hintTimer);
+    jellyClearedThisTurn = false;
+    swapCells(board, gp, { r, c });
+    SFX.swap();
+    renderBoard();
+    await sleep(150);
+    if (isSpecial(board[gp.r][gp.c]) || isSpecial(board[r][c])){
+      await detonate(buildSwapSeeds(board, gp, { r, c }, pickPlaneTarget));
+    } else {
+      await resolveCascades({ r, c });       // resolves if a match formed; free either way
+    }
+    await finishTurn(false);
+    return;
+  }
+
   if (moves <= 0 || v === null) return;
   hintCells = null; clearTimeout(hintTimer);
 
@@ -1677,8 +1816,37 @@ async function finishTurn(usedMove){
 $('btn-hammer').addEventListener('click', () => {
   if (busy || levelDone || !(S.hammers > 0)) return;
   hammerMode = !hammerMode;
+  gloveMode = false; glovePick = null;
   updateHammer();
 });
+
+$('btn-glove').addEventListener('click', () => {
+  if (busy || levelDone) return;
+  if (S.gloves > 0){
+    gloveMode = !gloveMode;
+    hammerMode = false;
+    if (!gloveMode){ glovePick = null; sel = null; renderBoard(); }
+    updateHammer();
+    return;
+  }
+  // out of gloves: offer purchase
+  showModal(
+    '<div class="em">🧤</div><h2>El guante</h2>' +
+    '<p>Cambia dos piezas vecinas sin gastar movimiento — no hace falta que haya match.</p>' +
+    (S.stars >= 2
+      ? '<button class="btn btn-bien" onclick="buyGlove()">Comprar · ★ 2</button> '
+      : '<p style="color:#b3a888">Necesitas ★ 2</p>') +
+    '<button class="btn btn-audio" onclick="closeModal()">Cerrar</button>'
+  );
+});
+function buyGlove(){
+  if (S.stars < 2) return;
+  S.stars -= 2;
+  S.gloves = (S.gloves || 0) + 1;
+  save(); refreshHUD(); updateHammer();
+  SFX.buy();
+  closeModal();
+}
 
 function onEnterJuego(){
   if (dueCards().length > 0) maybeGate();
@@ -1765,7 +1933,12 @@ function renderCard(){
 
 function answer(bien){
   const card = queue.shift();
+  const prevLast = card.last;
   fsrsReview(card, bien ? 3 : 1);
+  S.log.push({ t: Date.now(), id: card.id, k: card.kind, g: bien ? 3 : 1,
+               el: prevLast ? +(((Date.now() - prevLast) / DAY).toFixed(2)) : 0,
+               S: +card.S.toFixed(2) });
+  if (S.log.length > 2000) S.log = S.log.slice(-2000);
   if (bien){ SFX.bien(); }
   else { queue.push(card); SFX.otra(); }
   save();
@@ -1787,6 +1960,58 @@ function answer(bien){
     renderCard();
   }
   refreshHUD();
+}
+
+/* ============================================================
+   PROGRESO — stats & review log
+   ============================================================ */
+function calcStreak(){
+  const days = new Set(S.log.map(e => new Date(e.t).toDateString()));
+  let streak = 0;
+  const d = new Date();
+  if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1); // today still pending
+  while (days.has(d.toDateString())){ streak++; d.setDate(d.getDate() - 1); }
+  return streak;
+}
+function renderStats(){
+  const area = $('stats-area');
+  const now = Date.now();
+  const objs = S.deck.filter(c => c.kind === 'obj').length;
+  const phrs = S.deck.filter(c => c.kind === 'phr').length;
+  const dueNow = dueCards().length;
+  const due24 = S.deck.filter(c => c.due <= now + DAY).length;
+  const streak = calcStreak();
+  const recent = S.log.slice(-100);
+  const acc = recent.length ? Math.round(100 * recent.filter(e => e.g === 3).length / recent.length) : null;
+  const mastered = S.deck.filter(c => (c.S || 0) >= 21).length;
+
+  const buckets = [
+    { lab:'aprendiendo (<1 d)',  test: st => st < 1 },
+    { lab:'joven (1–7 d)',       test: st => st >= 1 && st < 7 },
+    { lab:'madura (7–21 d)',     test: st => st >= 7 && st < 21 },
+    { lab:'dominada (21+ d)',    test: st => st >= 21 },
+  ];
+  const counts = buckets.map(b => S.deck.filter(c => b.test(c.S || 0.01)).length);
+  const maxC = Math.max(1, ...counts);
+  const bars = buckets.map((b, i) =>
+    '<div class="sbar"><span class="lab">' + b.lab + '</span>' +
+    '<span class="bar"><i style="width:' + Math.round(100 * counts[i] / maxC) + '%"></i></span>' +
+    '<span class="val">' + counts[i] + '</span></div>').join('');
+
+  area.innerHTML =
+    '<div class="stat-grid">' +
+      '<div class="stat"><div class="n">' + streak + '</div><div class="l">🔥 racha (días)</div></div>' +
+      '<div class="stat"><div class="n">' + (objs + phrs) + '</div><div class="l">palabras y frases</div></div>' +
+      '<div class="stat"><div class="n">' + dueNow + '</div><div class="l">para repasar ahora</div></div>' +
+      '<div class="stat"><div class="n">' + due24 + '</div><div class="l">en las próximas 24 h</div></div>' +
+      '<div class="stat"><div class="n">' + (acc === null ? '—' : acc + '%') + '</div><div class="l">aciertos recientes</div></div>' +
+      '<div class="stat"><div class="n">' + S.log.length + '</div><div class="l">repasos totales</div></div>' +
+    '</div>' +
+    '<div class="stat-panel"><h3>Memoria por estabilidad</h3>' + bars +
+      '<p style="font-size:12px; color:#9aa49c; font-weight:700; margin:10px 0 0">' +
+      mastered + (mastered === 1 ? ' tarjeta dominada' : ' tarjetas dominadas') +
+      ' · ' + objs + ' objetos · ' + phrs + ' frases</p></div>' +
+    (streak >= 3 ? '<p class="cooper">🐕 <b>Cooper:</b> ¡' + streak + ' días seguidos! Eres más constante que el orbayu.<br><span class="cen">' + streak + ' days in a row! More constant than the drizzle.</span></p>' : '');
 }
 
 /* ============================================================
@@ -1815,7 +2040,7 @@ lg.innerHTML = TILES.map(t => '<span>' + t.em + ' ' + t.es + '</span>').join('')
   '<span style="flex-basis:100%; height:0"></span>' +
   '<span>toca dos veces un especial para activarlo · o cámbialo con un vecino · combínalos entre sí</span>' +
   '<span style="flex-basis:100%; height:0"></span>' +
-  '<span>📦 matches al lado o explosiones · ⛓️ inclúyela en un match · 🥧 llévala abajo · 🌫️ orbayu: haz un match encima (se extiende) · 🔨 se gana repasando</span>';
+  '<span>📦 matches al lado o explosiones · ⛓️ inclúyela en un match · 🥧 llévala abajo · 🌫️ orbayu: haz un match encima (se extiende) · 🔨 se gana repasando · 🧤 cambia dos piezas gratis (★2)</span>';
 
 loadState();
 $('btn-sound').textContent = S.sound ? '🔊' : '🔇';
