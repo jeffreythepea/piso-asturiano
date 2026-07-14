@@ -14,11 +14,15 @@ Jeffrey's autoescuela instructor (Oviedo, DGT practical exam).
   panel is removed or softened, CHANGELOG notes verification.
 
 ## 2. Exam drill v2
-- SVG junction/roundabout diagrams as tappable answer surfaces (replace the
-  icon pad for dir/rot categories). The FX layer shows how to do inline SVG.
-- Timed-response mode (answer within N seconds = exam pressure).
-- Done when: rotonda questions render a roundabout with tappable exits, and a
-  timed mode exists as an opt-in toggle.
+**Done in three slices:**
+- v0.16: roundabout SVG surface (`cmd.cat === 'rot'`) — 4 exits at 12/3/6/9
+  o'clock positioned per Spanish convention.
+- v0.17: fixed iPad Safari rendering — replaced `foreignObject` with native
+  SVG groups.
+- v0.18: junction SVG surface (`cmd.cat === 'dir'`) — 4-arm crossroads with
+  c-recto → north, c-der → east, c-izq → west, c-sentido → south.
+- v0.20: timed-response mode — opt-in toggle "⏱️ Modo contrarreloj", 8s per
+  card, color-shifting badge, time-up counts as wrong.
 
 ## 3. FSRS parameter fitting
 `S.log` records every review. Once ~300+ entries exist, fit FSRS weights to
@@ -28,9 +32,12 @@ a `FW` array to paste in). Don't change the scheduler API.
   weight set from the real log.
 
 ## 4. Exterior room — la terraza / el hórreo
-Fifth purchasable room (12 items, new vocab domain: exterior/weather/plants),
-joins the unlock chain after el baño. Follow the new-room checklist in
-AGENTS.md.
+**Done (v0.19).** Fifth purchasable room with 12 items: mesa, silla
+plegable, sombrilla, geranios, lavanda, tomatera, regadera, tendedero,
+pinzas, farolillos, hórreo, botella de sidra. Tasks use fresh *tú*
+imperatives like *cuelga la ropa*, *riega los geranios*, *abre la
+sidra*. Placed between *el baño* and *el garaje* in the unlock chain;
+garaje remains the always-unlocked exam-drill room.
 
 ## 5. Rotating phrase variants
 Second/third action phrase per object, rotating on task completion or as new
