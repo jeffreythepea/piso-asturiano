@@ -24,6 +24,20 @@ Both must pass before any commit. The tests extract the pure game core from
 exercise match analysis, special pieces, combos, gravity physics, obstacles,
 droppers, and all authored level maps.
 
+## For AI collaborators
+
+Bootstrap prompt (paste into Codex, Hermes, Claude, or any capable model with
+repo access):
+
+> You are iterating on this repo. Read AGENTS.md fully and follow it — it is
+> the working contract. Check CHANGELOG.md for what exists and BACKLOG.md for
+> the work queue. Propose diffs; run the tests in tests/ as your gate; bump
+> the version and changelog per the contract. Ask Jeffrey before large
+> unlisted features.
+
+Codex reads AGENTS.md automatically; Claude Code reads CLAUDE.md (which
+points there). For Hermes or others, include the prompt above.
+
 ## Files
 
 - `index.html` — the entire game. UI layer + pure core (marked).

@@ -1,7 +1,35 @@
 # Working agreement for AI collaborators
 
 This file is the handoff contract. It applies to Claude, Claude Code, Codex,
-Hermes, and any other agent touching this repo.
+Hermes (any model), and any other agent touching this repo.
+
+## Document map
+
+- `AGENTS.md` — this contract. Read first.
+- `BACKLOG.md` — the work queue. Pick from here; Jeffrey prioritizes.
+- `CHANGELOG.md` — what each version added. Read before assuming something
+  doesn't exist; add a line with every version bump.
+- `SPEC.md` — the living design record: every mechanic, physics rule, data
+  model, and the iPad port plan. Update it in the same commit as any design
+  change.
+- `README.md` — humans: how to run and test.
+- `tests/` — the commit gate.
+
+## Architecture map (index.html, single file)
+
+Top to bottom: CSS → HTML shell (tabs: casa/juego/repaso/stats) → script:
+- `/*CORE-START*/ … /*CORE-END*/` — pure match-3 logic, DOM-free (board build,
+  match analysis, gravity/reachability physics, blast engine returning
+  `{clear, events}`, combo seeds). Ports 1:1 to Swift. Keep pure.
+- DATA — `TILES`, `ROOMS`/`ROOM_ORDER`, `CATALOG` (objects), `PHRASES`
+  (tasks), `COMMANDS` (exam drill), `COOPER` (narrative lines).
+- `/*SRS-START*/ … /*SRS-END*/` — FSRS-5 scheduler, pure, own test file.
+- STATE — `DEFAULT_STATE`, `loadState()` (every new state field needs a
+  backfill line for old saves), localStorage key `piso-asturiano`.
+- AUDIO — es-ES speech + synthesized SFX.
+- CASA — rooms, shop, tasks, exam drill (`renderDrill`, garage-only).
+- JUEGO — levels (`LEVELS` ASCII maps), goals, boosters, FX player, input.
+- REPASO — session runner. PROGRESO — stats. INIT.
 
 ## Process
 
@@ -9,8 +37,10 @@ Hermes, and any other agent touching this repo.
    explicitly asked in the session. (Same rule as his ~/memory repo.)
 2. **Tests are the gate.** `node tests/core.test.js && node tests/levels.test.js`
    must pass before presenting any change. Add tests for new core mechanics.
-3. **Bump the version stamp** in the footer of `index.html` on every change,
-   so Jeffrey can verify at a glance which build he's playing.
+3. **Bump the version stamp** in the footer of `index.html` on any
+   game-behavior change (docs-only commits don't bump), add a CHANGELOG.md
+   line in the same commit, and move the finished BACKLOG.md item there.
+   Optionally `git tag vX.Y` on push.
 4. **SPEC.md is the source of truth.** Update it in the same change as any
    design or mechanic modification. It is the design record for the iPad port.
 5. Terminal commands in discussion with Jeffrey must be location-independent
@@ -27,6 +57,16 @@ Hermes, and any other agent touching this repo.
   returns `{clear, events}`; the event stream is the animation spec.
 - **Storage:** localStorage key `piso-asturiano`, in-memory fallback. New state
   fields need a backfill line in `loadState()` for old saves.
+
+## Content checklists
+
+**New room**: ROOMS + ROOM_ORDER + ROOM_ES entry → backdrop branch in
+`roomBgSVG` → 12 CATALOG items (emoji-renderable, coords in the 780×400
+scene) → one PHRASES task per item (mind the grammar ramp: tú → plurals →
+reflexives → usted) → unlock-chain position → SPEC.md content section.
+
+**New exam command**: add to `COMMANDS` with stable id, category, unique icon
+within its category. Cards auto-seed on next garage visit.
 
 ## Design invariants (do not regress)
 
