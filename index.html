@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.18
+  EL PISO ASTURIANO — living spec / v0.19
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -254,7 +254,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.18</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.19</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -704,10 +704,11 @@ const ROOMS = {
   cocina:     { label:'Cocina' },
   dormitorio: { label:'Dormitorio' },
   bano:       { label:'Baño' },
+  terraza:    { label:'Terraza' },
   garaje:     { label:'Garaje 🚦' },
 };
-const ROOM_ORDER = ['sala', 'cocina', 'dormitorio', 'bano', 'garaje'];
-const ROOM_ES = { sala:'la sala', cocina:'la cocina', dormitorio:'el dormitorio', bano:'el baño', garaje:'el garaje' };
+const ROOM_ORDER = ['sala', 'cocina', 'dormitorio', 'bano', 'terraza', 'garaje'];
+const ROOM_ES = { sala:'la sala', cocina:'la cocina', dormitorio:'el dormitorio', bano:'el baño', terraza:'la terraza', garaje:'el garaje' };
 
 const CATALOG = [
   // ---- la sala de estar ----
@@ -842,6 +843,42 @@ const PHRASES = {
   llaveinglesa: { es:'Coja la llave inglesa',    en:'grab the wrench' },
   bateria:      { es:'Revise la batería',        en:'check the battery' },
 };
+
+/**
+ * v0.19 — La terraza: 12 outdoor items. Tasks use tú-imperative actions
+ * continuing the grammar ramp (after reflexives in el baño, before usted
+ * in el garaje). Items cover plants, garden tools, patio furniture, and
+ * Asturian outdoor culture.
+ */
+CATALOG.push(
+  // ---- la terraza ----
+  { id:'mesa',        room:'terraza', es:'la mesa',           en:'table',           g:'la', em:'🪑', cost:3, x:300, y:330, fs:72 },
+  { id:'sillapleg',   room:'terraza', es:'la silla plegable', en:'folding chair',   g:'la', em:'🪑', cost:2, x:400, y:340, fs:58 },
+  { id:'sombrilla',   room:'terraza', es:'la sombrilla',      en:'parasol',         g:'la', em:'⛱️', cost:3, x:340, y:280, fs:68 },
+  { id:'geranios',    room:'terraza', es:'los geranios',      en:'geraniums',       g:'los', em:'🌺', cost:2, x:600, y:340, fs:60 },
+  { id:'lavanda',     room:'terraza', es:'la lavanda',        en:'lavender',        g:'la', em:'💜', cost:2, x:680, y:340, fs:54 },
+  { id:'tomatera',    room:'terraza', es:'la tomatera',       en:'tomato plant',    g:'la', em:'🍅', cost:2, x:520, y:350, fs:62 },
+  { id:'regadera',    room:'terraza', es:'la regadera',       en:'watering can',    g:'la', em:'🚿', cost:2, x:450, y:280, fs:50 },
+  { id:'tendedero',   room:'terraza', es:'el tendedero',      en:'clothesline',     g:'el', em:'🧺', cost:3, x:150, y:200, fs:66 },
+  { id:'pinzas',      room:'terraza', es:'las pinzas',        en:'clothes pegs',    g:'las', em:'📎', cost:2, x:220, y:210, fs:44 },
+  { id:'farolillos',  room:'terraza', es:'los farolillos',    en:'string lights',   g:'los', em:'🏮', cost:3, x:300, y:120, fs:70 },
+  { id:'horreo',      room:'terraza', es:'el hórreo',         en:'Asturian granary', g:'el', em:'🏠', cost:4, x:620, y:180, fs:80 },
+  { id:'sidra',       room:'terraza', es:'la botella de sidra', en:'cider bottle',  g:'la', em:'🍾', cost:2, x:380, y:360, fs:52 }
+);
+
+// Phrases for terraza items
+PHRASES.mesa =      { es:'Pon la mesa',            en:'set the table' };
+PHRASES.sillapleg = { es:'Abre la silla plegable', en:'open the folding chair' };
+PHRASES.sombrilla = { es:'Abre la sombrilla',      en:'open the parasol' };
+PHRASES.geranios =  { es:'Riega los geranios',     en:'water the geraniums' };
+PHRASES.lavanda =   { es:'Corta la lavanda',       en:'cut the lavender' };
+PHRASES.tomatera =  { es:'Recoge los tomates',     en:'pick the tomatoes' };
+PHRASES.regadera =  { es:'Usa la regadera',        en:'use the watering can' };
+PHRASES.tendedero = { es:'Cuelga la ropa',         en:'hang out the laundry' };
+PHRASES.pinzas =    { es:'Sujeta con las pinzas',  en:'clip them with the pegs' };
+PHRASES.farolillos = { es:'Enciende los farolillos', en:'turn on the string lights' };
+PHRASES.horreo =    { es:'Guarda la cosecha en el hórreo', en:'store the harvest in the granary' };
+PHRASES.sidra =     { es:'Abre la sidra',          en:'open the cider' };
 
 /* ============================================================
    EL EXAMEN DE COOPER — DGT practical-exam command drill.
@@ -1153,6 +1190,24 @@ function roomBgSVG(room){
       '<rect y="240" width="780" height="14" fill="#9AA7AB"/>' +
       '<rect y="254" width="780" height="126" fill="#C9D2D5"/>' +
       '<rect y="380" width="780" height="20" fill="#B98A5C"/>';
+  }
+  if (room === 'terraza'){
+    // La terraza: exterior balcony/patio in Oviedo. Tiled floor,
+    // low stone wall with a barandilla (iron railing), distant Picos
+    // silhouette, and the sliding door of the piso on the left.
+    let tiles = '';
+    for (let x = 0; x <= 780; x += 64) tiles += '<line x1="' + x + '" y1="260" x2="' + x + '" y2="400" stroke="#C9A97A" stroke-width="1.5"/>';
+    for (let y = 260; y <= 400; y += 32) tiles += '<line x1="0" y1="' + y + '" x2="780" y2="' + y + '" stroke="#C9A97A" stroke-width="1.5"/>';
+    return '<rect width="780" height="260" fill="#CFE3EC"/>' +          // cielo asturiano
+      '<polygon points="0,230 120,190 230,210 350,175 470,200 600,180 720,195 780,215 780,260 0,260" fill="#A9BCC7" opacity="0.7"/>' +  // Picos al fondo
+      '<rect x="0" y="240" width="780" height="20" fill="#8A7460"/>' +  // alféizar de piedra
+      '<rect x="0" y="256" width="780" height="6" fill="#6E5B4A"/>' +   // barandilla metálica
+      '<rect width="780" height="140" fill="#B98A5C" y="260"/>' +       // pavimento terracota
+      '<rect width="780" height="140" fill="none" y="260"/>' + tiles +
+      '<rect x="60" y="30" width="180" height="210" fill="#B5D3DE" stroke="#6E5B4A" stroke-width="6"/>' +   // puerta corredera
+      '<line x1="150" y1="30" x2="150" y2="240" stroke="#6E5B4A" stroke-width="6"/>' +                   // partelón
+      '<circle cx="130" cy="140" r="4" fill="#6E5B4A"/>' +                                                // manilla
+      '<rect y="396" width="780" height="4" fill="#8A6544"/>';                                              // rodapié
   }
   if (room === 'garaje'){
     let door = '';

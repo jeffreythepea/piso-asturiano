@@ -4,6 +4,18 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.19 — La terraza
+Fifth purchasable room: *la terraza*, an outdoor balcony/patio scene in Oviedo.
+Backdrop: Asturian sky, Picos de Europa silhouette in the distance, stone sill,
+terracotta-tiled floor, and a sliding door to the interior. Twelve items with
+fresh vocabulary (plants, garden tools, outdoor furniture, Asturian cider jug
+on the terrace — la sidra fuera):
+mesa, silla plegable, sombrilla, geranios, lavanda, tomatera, regadera,
+tendedero, pinzas, farolillos, hórreo, botella de sidra. Tasks use simple
+*tú*-imperative actions (*cuelga la ropa*, *riega las plantas*, *abre la
+sidra*). Joins the sequential unlock chain between *el baño* and *el garaje*;
+garaje remains exempt (always unlocked).
+
 ## v0.18 — Cruce en el examen
 The direction drill (cat === 'dir') now replaces the 2×2 icon pad with a
 crossroads SVG (300×300 viewBox): four arms radiating from a central

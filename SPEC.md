@@ -187,11 +187,16 @@ llave, móvil, peluche — introduces plural articles los/las) → **el baño** 
 bañera, ducha, váter, papel higiénico, grifo, jabón, esponja, cepillo de dientes,
 maquinilla, peine, cesta, patito de goma — introduces **reflexive imperatives**:
 date una ducha, cepíllate los dientes, péinate el pelo, lávate las manos; plus the
-idiomatic *tira de la cadena*). Grammar deliberately ramps room by room: bare
-imperatives → plurals → reflexives. Every object has an action phrase/task.
-49 nouns + 49 phrases ≈ ★125 of sinks. Each room has its own SVG backdrop; the
-selector persists. The piso is complete — next expansion: la terraza / el hórreo
-(exterior scene), or a second piso.
+idiomatic *tira de la cadena*) → **la terraza** (12, v0.19: mesa, silla plegable,
+sombrilla, geranios, lavanda, tomatera, regadera, tendedero, pinzas, farolillos,
+hórreo, botella de sidra — outdoor vocabulary, fresh *tú* imperatives like *cuelga
+la ropa*, *riega las plantas*, *abre la sidra*) → **el garaje** (ever-present, exempt
+from the unlock chain, 12 driving-school items with *usted* register). Grammar
+deliberately ramps room by room: bare imperatives → plurals → reflexives → outdoor
+ tú-imperatives → usted in the garage. Every object has an action phrase/task.
+61 nouns + 61 phrases. Each room has its own SVG backdrop; the selector persists.
+The piso is complete — expanded to include la terraza (exterior scene), with el
+garaje (exam drill) and a possible second piso still to come.
 
 ## New mechanics (v0.7)
 
