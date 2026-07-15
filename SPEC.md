@@ -257,7 +257,7 @@ board; selection/hint are soft golden circles, specials glow via drop-shadow.
   stock) — camera integration is the killer feature the HTML can't do well: photograph
   *your own* sofa in Calle Magdalena, attach it to `el sofá`.
 
-## El garaje & El examen de Cooper (v0.14, command set v0.23)
+## El garaje & El examen de Cooper (v0.14, command set v0.24)
 
 **Purpose**: Jeffrey's DGT practical driving exam. The exam skill is the inverse of the
 rest of the game — *hear Spanish under pressure → act instantly* — so it gets its own
@@ -270,22 +270,24 @@ deténgase, compruebe) — the examiner's register, completing the grammar ramp:
 tú imperatives → plurals → reflexives → usted.
 
 **El examen de Cooper** (drill mini-game, in the garage panel):
-- 23-command set in `COMMANDS`, covering every unique actionable/testable prompt
-  extracted from Autoescuela Fermín's 2020 *Practical Driving Test Student
-  Guide*: complete driving instructions, exterior/interior vehicle prechecks,
-  and driving terminology. Repeated concepts are deduplicated; the guide's four
-  explanatory statements about route guidance are not candidate prompts. The
-  guide is illustrative rather than an exhaustive transcript of an Oviedo DGT
-  examiner, and the drill banner states that limitation.
+- 30-command set in `COMMANDS`: 16 driving prompts and 14 safe atomic prechecks
+  derived from Autoescuela Fermín's 2020 *Practical Driving Test Student Guide*.
+  The page-3 reservoir prompt is withheld because its Spanish says brake fluid
+  while its English and diagram indicate washer fluid. Repeated concepts are
+  deduplicated; the guide's four explanatory route statements are not candidate
+  prompts. The guide is illustrative rather than an exhaustive transcript of
+  an Oviedo DGT examiner, and the drill banner states that limitation.
+- Every command carries `phase`, response `type`, `wording` status, validation
+  status, source `page`, and exact parent `source` text. Complete phrases and
+  terminology use verbatim source wording. Alternatives and infinitive/grouped
+  prechecks use natural atomic *usted* wording marked `source-derived`; the UI
+  must not describe those variants as verbatim examiner quotations.
 - Prechecks remain in the same audio-first drill flow. Their answers use icons
-  for the relevant vehicle area or control; a future version may add a vehicle
-  diagram or multi-step demonstration without splitting them into a separate
-  study track.
-- Complete examiner instructions use the guide's exact wording. Terminology and
-  precheck fragments also remain verbatim rather than being expanded into
-  invented spoken sentences. *Parada* (voluntary stop), *estacionamiento*
-  (parking with reversing), and *detención* (involuntary stop) are separate
-  testable concepts with separate IDs.
+  for four response-compatible families: engine bay, dashboard/windows,
+  lighting, and body/demisting. A future version may add a vehicle diagram or
+  multi-step demonstration without splitting them into a separate study track.
+  *Parada* (voluntary stop), *estacionamiento* (parking with reversing), and
+  *detención* (involuntary stop) remain separate testable concepts.
 - **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping an icon;
   distractors are drawn from the same category — segunda vs. tercera salida,
   derecha vs. izquierda — the real exam confusions.

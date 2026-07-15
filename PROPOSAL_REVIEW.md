@@ -2,6 +2,13 @@
 
 **Status:** Review record. No proposal is approved for implementation by this document.
 
+> **Implementation update (v0.24):** The review below evaluated the then-current
+> v0.23 corpus of 23 grouped prompts. v0.24 supersedes that baseline with 30
+> active atomic prompts (16 driving, 14 precheck) and withholds one disputed
+> reservoir term. References below to the “current 23-command corpus” are
+> historical review context, not current repository facts. The recorded
+> decisions about phase filtering and scheduling integrity remain pending.
+
 This document defines the review method for comparing:
 
 1. `PROPOSALS.md`

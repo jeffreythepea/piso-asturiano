@@ -4,6 +4,15 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.24 — Atomic precheck commands
+Split the seven grouped Fermín precheck cards into 14 safe atomic prompts with
+natural *usted* wording, producing a 30-card exam corpus (16 driving, 14
+precheck). Each command now records its phase, response type, exact parent
+source text/page, wording status, and instructor-validation status. Existing
+atomic command IDs survive; ambiguous grouped cards retire without transferring
+their FSRS state, while historical log entries remain. The disputed page-3
+brake-fluid/washer-fluid card is withheld until Fermín confirms the component.
+
 ## v0.23 — Autoescuela guide-supported exam commands
 Replaced the 22 provisional Garage commands with 23 unique prompts extracted
 from Autoescuela Fermín's 2020 student guide. The main drill now includes the

@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.23
+  EL PISO ASTURIANO — living spec / v0.24
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -260,7 +260,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.23</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.24</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -974,33 +974,43 @@ PHRASES.sidra =     { es:'Abre la sidra',          en:'open the cider' };
    ============================================================ */
 const COMMANDS = [
   // dirección
-  { id:'c-der',     cat:'dir', icon:'➡️', es:'Gire a la derecha cuando pueda',   en:'turn right when you can' },
-  { id:'c-izq',     cat:'dir', icon:'⬅️', es:'Gire a la izquierda cuando pueda', en:'turn left when you can' },
-  { id:'c-sentido', cat:'dir', icon:'🔄', es:'Cambio de sentido',                en:'change of direction' },
-  { id:'c-volante', cat:'dir', icon:'⬆️', es:'Volante recto',                    en:'steering wheel straight' },
+  { id:'c-der', cat:'dir', phase:'driving', type:'spoken-direction', wording:'source-derived', validation:'guide-only', page:5, icon:'➡️', es:'Gire a la derecha cuando pueda', en:'turn right when you can', source:'Gire a la derecha (o izquierda) cuando pueda' },
+  { id:'c-izq', cat:'dir', phase:'driving', type:'spoken-direction', wording:'source-derived', validation:'guide-only', page:5, icon:'⬅️', es:'Gire a la izquierda cuando pueda', en:'turn left when you can', source:'Gire a la derecha (o izquierda) cuando pueda' },
+  { id:'c-sentido', cat:'dir', phase:'driving', type:'terminology-maneuver', wording:'verbatim', validation:'guide-only', page:6, icon:'🔄', es:'Cambio de sentido', en:'change of direction', source:'Cambio de sentido' },
+  { id:'c-volante', cat:'dir', phase:'driving', type:'control-instruction', wording:'verbatim', validation:'guide-only', page:6, icon:'⬆️', es:'Volante recto', en:'steering wheel straight', source:'Volante recto' },
   // glorieta
-  { id:'c-rot1', cat:'rot', icon:'1️⃣', es:'Tome la primera salida en la glorieta', en:'take the first exit at the roundabout' },
-  { id:'c-rot2', cat:'rot', icon:'2️⃣', es:'Tome la segunda salida en la glorieta', en:'take the second exit at the roundabout' },
-  { id:'c-rot3', cat:'rot', icon:'3️⃣', es:'Tome la tercera salida en la glorieta', en:'take the third exit at the roundabout' },
-  { id:'c-rot4', cat:'rot', icon:'4️⃣', es:'Cuarta salida',                         en:'fourth exit' },
-  { id:'c-rot5', cat:'rot', icon:'5️⃣', es:'Quinta salida',                         en:'fifth exit' },
+  { id:'c-rot1', cat:'rot', phase:'driving', type:'spoken-direction', wording:'source-derived', validation:'guide-only', page:5, icon:'1️⃣', es:'Tome la primera salida en la glorieta', en:'take the first exit at the roundabout', source:'Tome la primera (segunda, tercera) salida en la glorieta' },
+  { id:'c-rot2', cat:'rot', phase:'driving', type:'spoken-direction', wording:'source-derived', validation:'guide-only', page:5, icon:'2️⃣', es:'Tome la segunda salida en la glorieta', en:'take the second exit at the roundabout', source:'Tome la primera (segunda, tercera) salida en la glorieta' },
+  { id:'c-rot3', cat:'rot', phase:'driving', type:'spoken-direction', wording:'source-derived', validation:'guide-only', page:5, icon:'3️⃣', es:'Tome la tercera salida en la glorieta', en:'take the third exit at the roundabout', source:'Tome la primera (segunda, tercera) salida en la glorieta' },
+  { id:'c-rot4', cat:'rot', phase:'driving', type:'terminology-direction', wording:'source-derived', validation:'guide-only', page:6, icon:'4️⃣', es:'Cuarta salida', en:'fourth exit', source:'Primera (segunda, tercera, cuarta, quinta) salida' },
+  { id:'c-rot5', cat:'rot', phase:'driving', type:'terminology-direction', wording:'source-derived', validation:'guide-only', page:6, icon:'5️⃣', es:'Quinta salida', en:'fifth exit', source:'Primera (segunda, tercera, cuarta, quinta) salida' },
   // velocidad y tipos de inmovilización
-  { id:'c-parada',    cat:'spd', icon:'🛑', es:'Realice una parada',           en:'make a voluntary stop' },
-  { id:'c-detencion', cat:'spd', icon:'🚧', es:'Detención',                    en:'involuntary stop' },
-  { id:'c-adapte',    cat:'spd', icon:'⏬', es:'Adapte la velocidad a la vía', en:'adapt your speed to the road' },
+  { id:'c-parada', cat:'spd', phase:'driving', type:'spoken-maneuver', wording:'source-derived', validation:'guide-only', page:5, icon:'🛑', es:'Realice una parada', en:'make a voluntary stop', source:'Realice una parada (o estacionamiento)' },
+  { id:'c-detencion', cat:'spd', phase:'driving', type:'terminology', wording:'verbatim', validation:'guide-only', page:6, icon:'🚧', es:'Detención', en:'involuntary stop', source:'Detención' },
+  { id:'c-adapte', cat:'spd', phase:'driving', type:'spoken-speed', wording:'verbatim', validation:'guide-only', page:6, icon:'⏬', es:'Adapte la velocidad a la vía', en:'adapt your speed to the road', source:'Adapte la velocidad a la vía' },
   // maniobras
-  { id:'c-est',   cat:'man', icon:'🅿️', es:'Realice un estacionamiento', en:'park the vehicle' },
-  { id:'c-inmov', cat:'man', icon:'✋', es:'Inmovilice el vehículo',      en:'secure the vehicle' },
-  { id:'c-adel',  cat:'man', icon:'⏩', es:'Adelantamiento',              en:'overtaking' },
-  { id:'c-final', cat:'man', icon:'🏁', es:'Finalización del examen',     en:'end of the test' },
-  // comprobaciones exteriores e interiores
-  { id:'c-pre-ext', cat:'pre1', icon:'🧰', es:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante', en:'locate the battery, brake fluid, oil level and coolant level' },
-  { id:'c-pre-capo', cat:'pre1', icon:'🚘', es:'Abrir el capo y decir qué niveles se deben revisar', en:'open the bonnet and say which levels should be checked' },
-  { id:'c-pre-indicadores', cat:'pre1', icon:'⛽', es:'Dónde comprobar nivel combustible o temperatura motor', en:'where to check the fuel level or engine temperature' },
-  { id:'c-pre-maletero', cat:'pre1', icon:'🧳', es:'Abrir el maletero', en:'open the boot' },
-  { id:'c-pre-bloqueo', cat:'pre2', icon:'🔒', es:'Bloqueo o desbloqueo infantil de elevalunas traseros', en:'lock or unlock the rear-window child control' },
-  { id:'c-luces', cat:'pre2', icon:'💡', es:'Encender cualquier luz: largo alcance, niebla delantera o trasera', en:'turn on a requested high-beam or fog light' },
-  { id:'c-pre-desempanar', cat:'pre2', icon:'🌫️', es:'Cómo desempañar la luna delantera o trasera', en:'how to demist the front or rear window' },
+  { id:'c-est', cat:'man', phase:'driving', type:'spoken-maneuver', wording:'source-derived', validation:'guide-only', page:5, icon:'🅿️', es:'Realice un estacionamiento', en:'park the vehicle', source:'Realice una parada (o estacionamiento)' },
+  { id:'c-inmov', cat:'man', phase:'driving', type:'spoken-multi-step', wording:'verbatim', validation:'guide-only', page:5, icon:'✋', es:'Inmovilice el vehículo', en:'secure the vehicle', source:'Inmovilice el vehículo' },
+  { id:'c-adel', cat:'man', phase:'driving', type:'terminology-maneuver', wording:'verbatim', validation:'guide-only', page:6, icon:'⏩', es:'Adelantamiento', en:'overtaking', source:'Adelantamiento' },
+  { id:'c-final', cat:'man', phase:'driving', type:'exam-state', wording:'verbatim', validation:'spoken-use-unverified', page:5, icon:'🏁', es:'Finalización del examen', en:'end of the test', source:'Finalización del examen' },
+  // comprobaciones del compartimento del motor
+  { id:'c-pre-bateria', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'vehicle-unverified', page:3, icon:'🔋', es:'Localice la batería', en:'locate the battery', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante' },
+  { id:'c-pre-aceite', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'vehicle-unverified', page:3, icon:'🛢️', es:'Localice dónde se comprueba el nivel de aceite', en:'locate where the oil level is checked', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante' },
+  { id:'c-pre-refrigerante', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'vehicle-unverified', page:3, icon:'💧', es:'Localice dónde se comprueba el nivel de líquido refrigerante', en:'locate where the coolant level is checked', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante' },
+  { id:'c-pre-capo', cat:'pre-eng', phase:'precheck', type:'multi-step-demonstration', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🚘', es:'Abra el capó y diga qué niveles se deben revisar', en:'open the bonnet and say which levels should be checked', source:'Abrir el capo y decir qué niveles se deben revisar' },
+  // comprobaciones del salpicadero y elevalunas
+  { id:'c-pre-combustible', cat:'pre-dash', phase:'precheck', type:'dashboard-location', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'⛽', es:'Indique dónde se comprueba el nivel de combustible', en:'show where the fuel level is checked', source:'Dónde comprobar nivel combustible o temperatura motor' },
+  { id:'c-pre-temperatura', cat:'pre-dash', phase:'precheck', type:'dashboard-location', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🌡️', es:'Indique dónde se comprueba la temperatura del motor', en:'show where the engine temperature is checked', source:'Dónde comprobar nivel combustible o temperatura motor' },
+  { id:'c-pre-bloquear-elevalunas', cat:'pre-dash', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🔒', es:'Active el bloqueo infantil de los elevalunas traseros', en:'activate the rear-window child lock', source:'Bloqueo o desbloqueo infantil de elevalunas traseros' },
+  { id:'c-pre-desbloquear-elevalunas', cat:'pre-dash', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🔓', es:'Desactive el bloqueo infantil de los elevalunas traseros', en:'deactivate the rear-window child lock', source:'Bloqueo o desbloqueo infantil de elevalunas traseros' },
+  // luces
+  { id:'c-pre-largo-alcance', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🔦', es:'Encienda las luces de largo alcance', en:'turn on the high beams', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera' },
+  { id:'c-pre-niebla-delantera', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🌁', es:'Encienda las luces antiniebla delanteras', en:'turn on the front fog lights', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera' },
+  { id:'c-pre-niebla-trasera', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🌫️', es:'Encienda la luz antiniebla trasera', en:'turn on the rear fog light', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera' },
+  // carrocería y desempañado
+  { id:'c-pre-maletero', cat:'pre-body', phase:'precheck', type:'physical-demonstration', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🧳', es:'Abra el maletero', en:'open the boot', source:'Abrir el maletero' },
+  { id:'c-pre-desempanar-delantera', cat:'pre-body', phase:'precheck', type:'control-explanation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🪟', es:'Indique cómo desempañar la luna delantera', en:'show how to demist the front windscreen', source:'Cómo desempañar la luna delantera o trasera' },
+  { id:'c-pre-desempanar-trasera', cat:'pre-body', phase:'precheck', type:'control-explanation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'♨️', es:'Indique cómo desempañar la luna trasera', en:'show how to demist the rear window', source:'Cómo desempañar la luna delantera o trasera' },
 ];
 function phraseHTML(p){
   return p.es.replace(/\b(el|la|los|las)\b/, m => '<span class="g-' + m + '">' + m + '</span>');

@@ -2,10 +2,10 @@
 
 ## Purpose and status
 
-This is the implementation reference for atomizing the Garage exam corpus. It
-was produced by visually reviewing pages 3–6 of the local PDF, not solely from
-text extraction. It does not claim that the guide is exhaustive or that
-source-derived wording is an exact DGT examiner quotation.
+This is the implementation reference for the atomic Garage exam corpus shipped
+in v0.24. It was produced by visually reviewing pages 3–6 of the local PDF, not
+solely from text extraction. It does not claim that the guide is exhaustive or
+that source-derived wording is an exact DGT examiner quotation.
 
 - **Source:** *20200303 Fermin - Practical Driving Test Student Guide.pdf*
 - **Publisher/date:** Autoescuela Fermín, 2020
