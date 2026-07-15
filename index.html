@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.20
+  EL PISO ASTURIANO — living spec / v0.21
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -260,7 +260,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.20</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.21</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -850,6 +850,84 @@ const PHRASES = {
   bateria:      { es:'Revise la batería',        en:'check the battery' },
 };
 
+/* Action phrases — tier 1 (present tense). Grammar ramp after imperatives:
+   first-person present statements ("Yo + verbo"). Each id mirrors PHRASES. */
+const PHRASES_TIER1 = {
+  lampara:     { es:'Yo enciendo la lámpara',          en:'I turn on the lamp' },
+  tele:        { es:'Yo apago la televisión',          en:'I turn off the TV' },
+  ventana:     { es:'Yo abro la ventana',              en:'I open the window' },
+  sofa:        { es:'Yo me siento en el sofá',         en:'I sit on the sofa' },
+  piano:       { es:'Yo toco el piano',                en:'I play the piano' },
+  guitarra:    { es:'Yo afino la guitarra',            en:'I tune the guitar' },
+  planta:      { es:'Yo riego la planta',              en:'I water the plant' },
+  cuadro:      { es:'Yo cuelgo el cuadro',             en:'I hang the painting' },
+  espejo:      { es:'Yo me miro en el espejo',         en:'I look at myself in the mirror' },
+  reloj:       { es:'Yo doy cuerda al reloj',          en:'I wind the clock' },
+  estanteria:  { es:'Yo ordeno la estantería',         en:'I tidy the bookshelf' },
+  silla:       { es:'Yo acerco la silla',              en:'I pull up the chair' },
+  camaperro:   { es:'Yo llamo a Cooper',               en:'I call Cooper' },
+  jarra:       { es:'Yo escancio la sidra',            en:"I pour the cider, Asturian style" },
+  sarten:      { es:'Yo caliento la sartén',           en:'I heat the pan' },
+  olla:        { es:'Yo remuevo la olla',              en:'I stir the pot' },
+  tetera:      { es:'Yo hiervo el agua',               en:'I boil the water' },
+  cuchillo:    { es:'Yo corto el pan',                 en:'I cut the bread' },
+  cuchara:     { es:'Yo cojo la cuchara',              en:'I take the spoon' },
+  plato:       { es:'Yo lavo el plato',                en:'I wash the plate' },
+  taza:        { es:'Yo lleno la taza',                en:'I fill the cup' },
+  vaso:        { es:'Yo bebo un vaso de agua',         en:'I drink a glass of water' },
+  pan:         { es:'Yo tuesto el pan',                en:'I toast the bread' },
+  huevo:       { es:'Yo bato el huevo',                en:'I beat the egg' },
+  salero:      { es:'Yo paso el salero',               en:'I pass the salt' },
+  cama:        { es:'Yo hago la cama',                 en:'I make the bed' },
+  puerta:      { es:'Yo cierro la puerta',             en:'I close the door' },
+  despertador: { es:'Yo apago el despertador',         en:'I turn off the alarm' },
+  vela:        { es:'Yo soplo la vela',                en:'I blow out the candle' },
+  libro:       { es:'Yo leo el libro',                 en:'I read the book' },
+  camiseta:    { es:'Yo doblo la camiseta',            en:'I fold the t-shirt' },
+  calcetines:  { es:'Yo me pongo los calcetines',      en:'I put on my socks' },
+  pantalones:  { es:'Yo plancho los pantalones',       en:'I iron the trousers' },
+  maleta:      { es:'Yo hago la maleta',               en:'I pack the suitcase' },
+  llave:       { es:'Yo busco la llave',               en:'I look for the key' },
+  movil:       { es:'Yo cargo el móvil',               en:'I charge the phone' },
+  peluche:     { es:'Yo abrazo el peluche',            en:'I hug the cuddly toy' },
+  banera:      { es:'Yo lleno la bañera',              en:'I fill the bathtub' },
+  ducha:       { es:'Yo me ducho',                     en:'I shower' },
+  vater:       { es:'Yo tiro de la cadena',            en:'I flush the toilet' },
+  papel:       { es:'Yo cambio el rollo',              en:'I change the roll' },
+  grifo:       { es:'Yo cierro el grifo',              en:'I turn off the tap' },
+  jabon:       { es:'Yo me lavo las manos con jabón',  en:'I wash my hands with soap' },
+  esponja:     { es:'Yo escurro la esponja',           en:'I wring out the sponge' },
+  cepillo:     { es:'Yo me cepillo los dientes',       en:'I brush my teeth' },
+  maquinilla:  { es:'Yo enjuago la maquinilla',        en:'I rinse the razor' },
+  peine:       { es:'Yo me peino el pelo',             en:'I comb my hair' },
+  cesta:       { es:'Yo pongo la ropa en la cesta',    en:'I put the clothes in the basket' },
+  patito:      { es:'Yo aprieto el patito',            en:'I squeeze the ducky' },
+  coche:       { es:'Yo subo al coche',                en:'I get into the car' },
+  moto:        { es:'Yo cuido la moto',                en:'I watch out for the motorbike' },
+  bicicleta:   { es:'Yo dejo espacio a la bicicleta',  en:'I leave room for the bicycle' },
+  volante:     { es:'Yo sujeto el volante',            en:'I hold the steering wheel' },
+  semaforo:    { es:'Yo paro en el semáforo',          en:'I stop at the traffic light' },
+  stop:        { es:'Yo me detengo en el stop',        en:'I stop at the stop sign' },
+  triangulo:   { es:'Yo coloco el triángulo',          en:'I place the warning triangle' },
+  extintor:    { es:'Yo compruebo el extintor',        en:'I check the extinguisher' },
+  gasolina:    { es:'Yo compruebo la gasolina',        en:'I check the fuel' },
+  herramientas:{ es:'Yo guardo las herramientas',      en:'I put away the tools' },
+  llaveinglesa:{ es:'Yo cojo la llave inglesa',        en:'I grab the wrench' },
+  bateria:     { es:'Yo reviso la batería',            en:'I check the battery' },
+  mesa:        { es:'Yo pongo la mesa',                en:'I set the table' },
+  sillapleg:   { es:'Yo abro la silla plegable',       en:'I open the folding chair' },
+  sombrilla:   { es:'Yo abro la sombrilla',            en:'I open the parasol' },
+  geranios:    { es:'Yo riego los geranios',           en:'I water the geraniums' },
+  lavanda:     { es:'Yo corto la lavanda',             en:'I cut the lavender' },
+  tomatera:    { es:'Yo recojo los tomates',           en:'I pick the tomatoes' },
+  regadera:    { es:'Yo uso la regadera',              en:'I use the watering can' },
+  tendedero:   { es:'Yo cuelgo la ropa',               en:'I hang out the laundry' },
+  pinzas:      { es:'Yo sujeto la ropa con las pinzas',en:'I clip the clothes with the pegs' },
+  farolillos:  { es:'Yo enciendo los farolillos',      en:'I turn on the string lights' },
+  horreo:      { es:'Yo guardo la cosecha en el hórreo', en:'I store the harvest in the granary' },
+  sidra:       { es:'Yo abro la sidra',                en:'I open the cider' },
+};
+
 /**
  * v0.19 — La terraza: 12 outdoor items. Tasks use tú-imperative actions
  * continuing the grammar ramp (after reflexives in el baño, before usted
@@ -1000,8 +1078,8 @@ function fsrsReview(card, g){
     card.due = now + Math.round(Math.max(card.S, 10/1440) * DAY);
   }
 }
-function newCard(item, kind){
-  return { id:item.id, kind: kind || 'obj', due: Date.now() + 10*MIN, reps:0 };
+function newCard(item, kind, tier){
+  return { id:item.id, kind: kind || 'obj', tier: tier || 0, due: Date.now() + 10*MIN, reps:0 };
 }
 /*SRS-END*/
 function dueCards(){
@@ -1036,14 +1114,9 @@ function loadState(){
   if (S.tier === undefined) S.tier = {};
   if (S.welcomed === undefined) S.welcomed = false;
   if (S.log === undefined) S.log = [];
-  // migrate legacy tasks[] (bare item.id) to tier-aware tasks[] (composite id "baseId:tierIdx")
+  // migrate legacy tasks[] (bare item.id) to tier-aware tasks[] (composite id "baseId:0")
   if (S.tasks.length && typeof S.tasks[0] === 'string' && !S.tasks[0].includes(':')){
-    const migrated = [];
-    S.tasks.forEach(id => {
-      migrated.push(id + ':0');
-      S.tier[id] = (S.tier[id] || 0) + 1;
-    });
-    S.tasks = migrated;
+    S.tasks = S.tasks.map(id => id + ':0');
   }
   if (S.gloves === undefined) S.gloves = 1;
   // migrate Leitner-era cards to FSRS
@@ -1308,39 +1381,67 @@ function renderTasks(){
   const items = CATALOG.filter(i => i.room === S.room && PHRASES[i.id]);
   let html = '<div class="tasks-h">📋 La lista de Cooper</div>';
   for (const item of items){
-    const ph = PHRASES[item.id];
+    const tier = S.tier[item.id] || 0;
+    const ph0 = PHRASES[item.id];
+    const ph1 = PHRASES_TIER1[item.id];
     const owned = S.owned.includes(item.id);
-    const done = S.tasks.includes(item.id);
-    if (done){
-      html += '<div class="task done"><span>✓ ' + item.em + ' ' + phraseHTML(ph) + '</span>' +
-              '<button class="tk-audio" data-say="' + ph.es + '">🔊</button></div>';
+    const tier0Done = S.tasks.includes(item.id + ':0');
+    const tier1Done = S.tasks.includes(item.id + ':1');
+
+    if (tier1Done){
+      // Both tiers done
+      html += '<div class="task done">' +
+        '<span>✓ ' + item.em + ' ' + phraseHTML(ph0) + '</span>' +
+        '<span style="opacity:0.6"> · ' + phraseHTML(ph1) + '</span>' +
+        '<button class="tk-audio" data-say="' + ph0.es + '">🔊</button>' +
+        '<button class="tk-audio" data-say="' + ph1.es + '" style="margin-left:4px">🔊</button>' +
+      '</div>';
+    } else if (tier0Done){
+      // Tier 0 done, tier 1 available
+      html += '<div class="task">' +
+        '<span>🔄 ' + item.em + ' ' + phraseHTML(ph1) +
+        ' <span class="cen">' + ph1.en + '</span></span>' +
+        '<button class="tk-do" data-id="' + item.id + '" data-tier="1" ' + (S.stars < 1 ? 'disabled' : '') + '>★ 1</button>' +
+      '</div>';
     } else if (owned){
-      html += '<div class="task"><span>' + item.em + ' ' + phraseHTML(ph) +
-              ' <span class="cen">' + ph.en + '</span></span>' +
-              '<button class="tk-do" data-id="' + item.id + '" ' + (S.stars < 1 ? 'disabled' : '') + '>★ 1</button></div>';
+      // Tier 0 available
+      html += '<div class="task"><span>' + item.em + ' ' + phraseHTML(ph0) +
+              ' <span class="cen">' + ph0.en + '</span></span>' +
+              '<button class="tk-do" data-id="' + item.id + '" data-tier="0" ' + (S.stars < 1 ? 'disabled' : '') + '>★ 1</button></div>';
     } else {
       html += '<div class="task locked"><span>' + item.em + ' — compra ' + esHTML(item) + ' primero</span></div>';
     }
   }
   el.innerHTML = html;
-  el.querySelectorAll('.tk-do').forEach(b => b.addEventListener('click', () => completeTask(b.dataset.id)));
+  el.querySelectorAll('.tk-do').forEach(b => b.addEventListener('click', () => completeTask(b.dataset.id, b.dataset.tier)));
   el.querySelectorAll('.tk-audio').forEach(b => b.addEventListener('click', () => speak(b.dataset.say)));
 }
-function completeTask(id){
-  if (S.tasks.includes(id) || S.stars < 1) return;
-  const item = CATALOG.find(i => i.id === id), ph = PHRASES[id];
+function completeTask(id, tier){
+  const tierNum = parseInt(tier);
+  const taskKey = id + ':' + tierNum;
+  if (S.tasks.includes(taskKey) || S.stars < 1) return;
+
+  const item = CATALOG.find(i => i.id === id);
+  if (!item) return;
+
+  const tierData = tierNum === 0 ? PHRASES[id] : PHRASES_TIER1[id];
+  if (!tierData) return;
+
   S.stars--;
-  S.tasks.push(id);
-  S.deck.push(newCard(item, 'phr'));
+  S.tier[id] = (S.tier[id] || 0) + 1;
+  S.tasks.push(taskKey);
+  S.deck.push(newCard(item, 'phr', tierNum));
   save(); refreshHUD(); renderTasks(); renderShop();
   SFX.buy();
-  speak(ph.es);
+  speak(tierData.es);
+
+  const tierLabel = tierNum === 0 ? 'imperativa' : 'presente';
   showModal(
     '<div class="em">' + item.em + '⚡</div>' +
-    '<h2>' + phraseHTML(ph) + '</h2>' +
-    '<p>' + ph.en + ' · nueva frase en tu repaso</p>' +
+    '<h2>' + phraseHTML(tierData) + '</h2>' +
+    '<p>' + tierData.en + ' · frase ' + tierLabel + ' en tu repaso</p>' +
     cooperLine(COOPER.task, S.tasks.length) +
-    '<button class="btn btn-audio" onclick="speak(\'' + ph.es + '\')">🔊</button> ' +
+    '<button class="btn btn-audio" onclick="speak(\'' + tierData.es + '\')">🔊</button> ' +
     '<button class="btn btn-bien" onclick="closeModal()">¡Hecho!</button>'
   );
 }
@@ -2083,17 +2184,18 @@ function renderCard(){
   const card = queue[0];
   const item = CATALOG.find(i => i.id === card.id);
   const isPhr = card.kind === 'phr';
-  const ph = isPhr ? PHRASES[card.id] : null;
-  const sayText = isPhr ? ph.es : item.es;
+  const tier = isPhr ? (card.tier || 0) : 0;
+  const phraseData = isPhr ? (tier === 1 && PHRASES_TIER1[card.id] ? PHRASES_TIER1[card.id] : PHRASES[card.id]) : null;
+  const sayText = isPhr ? phraseData.es : item.es;
   const done = sessionSize - queue.length;
   area.innerHTML =
     '<div class="rev-progress">' + (done + 1) + ' / ' + sessionSize + '</div>' +
     '<div class="card">' +
-      '<div class="em">' + item.em + (isPhr ? '⚡' : '') + '</div>' +
+      '<div class="em">' + item.em + (isPhr ? (tier === 1 && PHRASES_TIER1[card.id] ? '🔄' : '⚡') : '') + '</div>' +
       '<div class="q">' + (isPhr ? '¿Qué haces con esto?' : '¿Cómo se llama?') + '</div>' +
       (revealed
-        ? '<div class="word">' + (isPhr ? phraseHTML(ph) : esHTML(item)) + '</div>' +
-          '<div class="en">' + (isPhr ? ph.en : item.en) + '</div>' +
+        ? '<div class="word">' + (isPhr ? phraseHTML(phraseData) : esHTML(item)) + '</div>' +
+          '<div class="en">' + (isPhr ? phraseData.en : item.en) + '</div>' +
           '<div class="row">' +
             '<button class="btn btn-audio" id="rv-audio">🔊</button>' +
             '<button class="btn btn-otra" id="rv-otra">Otra vez</button>' +

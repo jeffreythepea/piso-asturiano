@@ -56,6 +56,14 @@ action, not the noun. Completed tasks stay in the list as tappable audio. This i
 Homescapes task-list structure repurposed so the renovation narrative *is* the grammar
 on-ramp (imperatives first, A2-appropriate).
 
+## Rotating phrase variants (v0.21)
+
+Each object has two phrase tiers: imperative (tier 0) and present-tense first-person
+(tier 1). Tier 1 unlocks after completing tier 0, and unlocks in the same ★1 cost.
+Both cards enter the SRS deck independently with different `tier` values, so the FSRS
+scheduler treats them as separate items. In the repaso view, tier 0 cards show ⚡, tier
+1 cards show 🔄 and use `PHRASES_TIER1[id]`. All 72 objects have tier-1 entries.
+
 ## Narrative — Cooper (v0.9)
 
 Cooper is the Austin figure: a welcome scene on first run, rotating level-preview

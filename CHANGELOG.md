@@ -4,6 +4,9 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.21 — Frase presente (tier rotation)
+Task panel now cycles through phrase tiers. Complete the imperative task (★1) to unlock the present-tense variant (★1). Tier 0: "Lávate las manos" (imperative). Tier 1: "Me lavo las manos" (present). Both cards enter FSRS deck independently, so each phrase form gets its own review schedule. Tier icon shifts from ⚡ to 🔄 on tier 1 cards. Full 72-entry tier-1 dataset with first-person conjugations.
+
 ## v0.20 — Timed exam drill
 Added opt-in timed mode to Cooper's exam drill. Toggle "⏱️ Modo contrarreloj" on the start panel: 8 seconds per card, color-shifting countdown badge (green → amber → red), time-up counts as wrong (FSRS Again grade, requeue). Timer clears on answer or session end.
 
