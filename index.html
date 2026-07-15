@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.22
+  EL PISO ASTURIANO — living spec / v0.23
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -260,7 +260,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.22</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.23</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -967,39 +967,40 @@ PHRASES.sidra =     { es:'Abre la sidra',          en:'open the cider' };
 
 /* ============================================================
    EL EXAMEN DE COOPER — DGT practical-exam command drill.
-   ⚠️ STARTER SET, provisional: verify exact phrasing with the
-   autoescuela instructor and edit this list to match verbatim.
+   Guide-supported set from Autoescuela Fermín's 2020 student guide.
+   The guide gives examples, not an exhaustive examiner transcript.
    Audio-first cards: hear the command, tap the matching icon.
    Distractors come from the same category (the real confusions).
    ============================================================ */
 const COMMANDS = [
   // dirección
-  { id:'c-recto',   cat:'dir', icon:'⬆️', es:'Siga todo recto',                            en:'go straight on' },
-  { id:'c-der',     cat:'dir', icon:'➡️', es:'Gire a la derecha en la próxima calle',      en:'turn right at the next street' },
-  { id:'c-izq',     cat:'dir', icon:'⬅️', es:'Gire a la izquierda cuando pueda',           en:'turn left when you can' },
-  { id:'c-sentido', cat:'dir', icon:'🔄', es:'Cambie de sentido cuando le sea posible',    en:'make a U-turn when possible' },
-  // rotonda
-  { id:'c-rot1', cat:'rot', icon:'1️⃣', es:'En la rotonda, tome la primera salida',  en:'at the roundabout, take the first exit' },
-  { id:'c-rot2', cat:'rot', icon:'2️⃣', es:'En la rotonda, tome la segunda salida',  en:'at the roundabout, take the second exit' },
-  { id:'c-rot3', cat:'rot', icon:'3️⃣', es:'En la rotonda, tome la tercera salida',  en:'at the roundabout, take the third exit' },
-  { id:'c-rot4', cat:'rot', icon:'4️⃣', es:'En la rotonda, tome la cuarta salida',   en:'at the roundabout, take the fourth exit' },
-  // velocidad y detención
-  { id:'c-det',  cat:'spd', icon:'🛑', es:'Deténgase donde esté permitido',   en:'stop where permitted' },
-  { id:'c-red',  cat:'spd', icon:'⏬', es:'Reduzca la velocidad',             en:'reduce your speed' },
-  { id:'c-acel', cat:'spd', icon:'⏫', es:'Acelere para incorporarse',        en:'accelerate to merge' },
-  { id:'c-cont', cat:'spd', icon:'▶️', es:'Continúe la marcha',               en:'continue driving' },
+  { id:'c-der',     cat:'dir', icon:'➡️', es:'Gire a la derecha cuando pueda',   en:'turn right when you can' },
+  { id:'c-izq',     cat:'dir', icon:'⬅️', es:'Gire a la izquierda cuando pueda', en:'turn left when you can' },
+  { id:'c-sentido', cat:'dir', icon:'🔄', es:'Cambio de sentido',                en:'change of direction' },
+  { id:'c-volante', cat:'dir', icon:'⬆️', es:'Volante recto',                    en:'steering wheel straight' },
+  // glorieta
+  { id:'c-rot1', cat:'rot', icon:'1️⃣', es:'Tome la primera salida en la glorieta', en:'take the first exit at the roundabout' },
+  { id:'c-rot2', cat:'rot', icon:'2️⃣', es:'Tome la segunda salida en la glorieta', en:'take the second exit at the roundabout' },
+  { id:'c-rot3', cat:'rot', icon:'3️⃣', es:'Tome la tercera salida en la glorieta', en:'take the third exit at the roundabout' },
+  { id:'c-rot4', cat:'rot', icon:'4️⃣', es:'Cuarta salida',                         en:'fourth exit' },
+  { id:'c-rot5', cat:'rot', icon:'5️⃣', es:'Quinta salida',                         en:'fifth exit' },
+  // velocidad y tipos de inmovilización
+  { id:'c-parada',    cat:'spd', icon:'🛑', es:'Realice una parada',           en:'make a voluntary stop' },
+  { id:'c-detencion', cat:'spd', icon:'🚧', es:'Detención',                    en:'involuntary stop' },
+  { id:'c-adapte',    cat:'spd', icon:'⏬', es:'Adapte la velocidad a la vía', en:'adapt your speed to the road' },
   // maniobras
-  { id:'c-est',  cat:'man', icon:'🅿️', es:'Estacione donde esté permitido',           en:'park where permitted' },
-  { id:'c-atras',cat:'man', icon:'🔙', es:'Dé marcha atrás en línea recta',            en:'reverse in a straight line' },
-  { id:'c-adel', cat:'man', icon:'⏩', es:'Adelante al vehículo cuando sea seguro',    en:'overtake the vehicle when safe' },
-  { id:'c-inc',  cat:'man', icon:'↗️', es:'Incorpórese a la autovía',                  en:'merge onto the motorway' },
-  { id:'c-sal',  cat:'man', icon:'↘️', es:'Salga de la autovía en la próxima salida', en:'leave the motorway at the next exit' },
-  // antes de arrancar
-  { id:'c-retro', cat:'pre', icon:'🪞', es:'Ajuste los retrovisores',  en:'adjust the mirrors' },
-  { id:'c-cint',  cat:'pre', icon:'💺', es:'Póngase el cinturón',      en:'put on your seatbelt' },
-  { id:'c-arr',   cat:'pre', icon:'🔑', es:'Arranque el motor',        en:'start the engine' },
-  { id:'c-freno', cat:'pre', icon:'✋', es:'Quite el freno de mano',   en:'release the handbrake' },
-  { id:'c-luces', cat:'pre', icon:'💡', es:'Encienda las luces',       en:'turn on the lights' },
+  { id:'c-est',   cat:'man', icon:'🅿️', es:'Realice un estacionamiento', en:'park the vehicle' },
+  { id:'c-inmov', cat:'man', icon:'✋', es:'Inmovilice el vehículo',      en:'secure the vehicle' },
+  { id:'c-adel',  cat:'man', icon:'⏩', es:'Adelantamiento',              en:'overtaking' },
+  { id:'c-final', cat:'man', icon:'🏁', es:'Finalización del examen',     en:'end of the test' },
+  // comprobaciones exteriores e interiores
+  { id:'c-pre-ext', cat:'pre1', icon:'🧰', es:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante', en:'locate the battery, brake fluid, oil level and coolant level' },
+  { id:'c-pre-capo', cat:'pre1', icon:'🚘', es:'Abrir el capo y decir qué niveles se deben revisar', en:'open the bonnet and say which levels should be checked' },
+  { id:'c-pre-indicadores', cat:'pre1', icon:'⛽', es:'Dónde comprobar nivel combustible o temperatura motor', en:'where to check the fuel level or engine temperature' },
+  { id:'c-pre-maletero', cat:'pre1', icon:'🧳', es:'Abrir el maletero', en:'open the boot' },
+  { id:'c-pre-bloqueo', cat:'pre2', icon:'🔒', es:'Bloqueo o desbloqueo infantil de elevalunas traseros', en:'lock or unlock the rear-window child control' },
+  { id:'c-luces', cat:'pre2', icon:'💡', es:'Encender cualquier luz: largo alcance, niebla delantera o trasera', en:'turn on a requested high-beam or fog light' },
+  { id:'c-pre-desempanar', cat:'pre2', icon:'🌫️', es:'Cómo desempañar la luna delantera o trasera', en:'how to demist the front or rear window' },
 ];
 function phraseHTML(p){
   return p.es.replace(/\b(el|la|los|las)\b/, m => '<span class="g-' + m + '">' + m + '</span>');
@@ -2254,6 +2255,11 @@ const DRILL_TIME_MS = 8000;      // 8 seconds per card in timed mode
 let drillTimerId = null, drillTimerTick = null;
 
 function seedCommands(){
+  const supported = new Set(COMMANDS.map(c => c.id));
+  const before = S.deck.length;
+  // Retire provisional command cards that no longer have source support.
+  // Review-log entries remain intact as historical data.
+  S.deck = S.deck.filter(c => c.kind !== 'cmd' || supported.has(c.id));
   const have = new Set(S.deck.filter(c => c.kind === 'cmd').map(c => c.id));
   let added = 0;
   COMMANDS.forEach(cmd => {
@@ -2262,7 +2268,7 @@ function seedCommands(){
       added++;
     }
   });
-  if (added) save();
+  if (added || S.deck.length !== before) save();
 }
 function cmdOf(card){ return COMMANDS.find(c => c.id === card.id); }
 
@@ -2273,6 +2279,11 @@ function drillOptions(cmd){
   };
   const sameCat = uniqByIcon(COMMANDS.filter(c => c.cat === cmd.cat && c.id !== cmd.id))
     .sort(() => Math.random() - 0.5);
+  // Diagram surfaces represent their category literally; do not fill their
+  // missing arms/exits with unrelated commands.
+  if (cmd.cat === 'dir' || cmd.cat === 'rot'){
+    return [cmd, ...sameCat].sort(() => Math.random() - 0.5);
+  }
   const others = uniqByIcon(COMMANDS.filter(c => c.cat !== cmd.cat))
     .sort(() => Math.random() - 0.5);
   const picks = sameCat.slice(0, 3);
@@ -2296,7 +2307,7 @@ function renderDrill(){
       '<p style="font-weight:700; color:#5c6a63; margin:4px 0">' +
         (drillTimed ? '8 segundos por orden. Si no respondes, cuenta como error.' : 'Escucha la orden del examinador y toca la respuesta.') +
       '</p>' +
-      '<div class="drill-warn">⚠️ Lista provisional (' + total + ' órdenes) — confírmala con tu profesor de la autoescuela.</div>' +
+      '<div class="drill-warn">Fuente: guía de Autoescuela Fermín (2020), con ejemplos comunes; no es una transcripción exhaustiva del examinador. ' + total + ' órdenes.</div>' +
       (nd > 0
         ? '<button class="btn btn-bien" id="dr-due">Repasar ' + nd + ' órdenes · ★1</button> '
         : '<p style="font-weight:800; color:var(--verde); margin:6px 0">✓ Nada pendiente ahora</p>') +
@@ -2354,21 +2365,19 @@ function startDrill(practice){
 }
 
 function roundaboutSVG(exits){
-  // exits: array of {id, label, x, y} — four exits, each placed at its
-  // geographic position. Layout: viewBox 300x300, center (150,150).
-  // Ring radius 70. Each exit is a native SVG <g> with a <circle> tap
-  // target (44 viewBox units radius ≈ 44px equivalent on iPad) and a
+  // exits: array of {id, label, x, y} — up to five numbered exits, each
+  // placed counterclockwise from the bottom entry road.
+  // Ring radius 70. Each exit is a native SVG <g> with a 68×68 viewBox-unit
+  // <circle> tap target and a
   // <text> label. Click listeners attached to the groups in renderDrillCard.
   const R = 70, CX = 150, CY = 150;
-  const hitR = 44;             // tap target radius (viewBox units)
-  const roadW = 22;            // road rectangle half-width
-  const roadL = 110;           // road length from ring edge outward
-  // Road rectangles: top/bottom/left/right
+  const hitR = 34;             // 68×68 viewBox-unit tap targets
+  // Five exit roads plus the entry road. The diagonals make exits 1–5
+  // geometrically distinct without sharing the 6-o'clock entry arm.
   const roads =
-    `<rect x="${CX - roadW}" y="${CY - R - roadL}" width="${roadW*2}" height="${roadL}" fill="#535a53"/>` +
-    `<rect x="${CX - roadW}" y="${CY + R}"         width="${roadW*2}" height="${roadL}" fill="#535a53"/>` +
-    `<rect x="${CX + R}"    y="${CY - roadW}"      width="${roadL}" height="${roadW*2}" fill="#535a53"/>` +
-    `<rect x="${CX - R - roadL}" y="${CY - roadW}" width="${roadL}" height="${roadW*2}" fill="#535a53"/>`;
+    `<path d="M220 150 L300 150 M199 101 L270 30 M150 80 L150 0 ` +
+      `M101 101 L30 30 M80 150 L0 150 M150 220 L150 300" ` +
+      `stroke="#535a53" stroke-width="44" fill="none"/>`;
   // Roundabout ring + inner island
   const ring =
     `<circle cx="${CX}" cy="${CY}" r="${R + 10}" fill="#535a53"/>` +
@@ -2398,8 +2407,8 @@ function junctionSVG(exits){
   // Junction/crossroads for the dir category. Layout: viewBox 300x300, center
   // (150,150). Four arms of road at N/E/W/S ending in tappable <g> groups.
   // Same geometry as roundabout so they match visually side-by-side.
-  // exits: [{id, icon, x, y}] — each placed at its natural arm endpoint:
-  // c-recto → North, c-der → East, c-izq → West, c-sentido → South.
+  // exits: [{id, icon, x, y}] — direction/position terminology uses the
+  // same natural mapping as the original four-arm surface.
   const CX = 150, CY = 150;
   const roadW = 22;            // road half-width
   const roadL = 110;           // arm length from center edge
@@ -2444,12 +2453,12 @@ function renderDrillCard(){
   // Junction (dir) branch: same idea, crossroads with 4 arms.
   let optionsHtml;
   if (cmd.cat === 'rot'){
-    const CX = 150, CY = 150, R = 70, roadL = 110;
     const positions = {
-      'c-rot1': { x: CX + R + roadL - 20, y: CY,                label: '1ª' },
-      'c-rot2': { x: CX,                  y: CY - R - roadL + 20, label: '2ª' },
-      'c-rot3': { x: CX - R - roadL + 20, y: CY,                label: '3ª' },
-      'c-rot4': { x: CX,                  y: CY + R + roadL - 20, label: '4ª' }
+      'c-rot1': { x:260, y:150, label:'1ª' },
+      'c-rot2': { x:228, y:72,  label:'2ª' },
+      'c-rot3': { x:150, y:40,  label:'3ª' },
+      'c-rot4': { x:72,  y:72,  label:'4ª' },
+      'c-rot5': { x:40,  y:150, label:'5ª' }
     };
     const rotOpts = opts.map(o => ({ id: o.id, label: positions[o.id].label, x: positions[o.id].x, y: positions[o.id].y }));
     optionsHtml = roundaboutSVG(rotOpts);
@@ -2457,7 +2466,7 @@ function renderDrillCard(){
     const CX = 150, CY = 150, roadL = 110;
     const d = roadL - 20;
     const positions = {
-      'c-recto':   { x: CX,     y: CY - d, icon: '⬆️' },
+      'c-volante': { x: CX,     y: CY - d, icon: '⬆️' },
       'c-der':     { x: CX + d, y: CY,     icon: '➡️' },
       'c-izq':     { x: CX - d, y: CY,     icon: '⬅️' },
       'c-sentido': { x: CX,     y: CY + d, icon: '🔄' }

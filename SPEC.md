@@ -257,7 +257,7 @@ board; selection/hint are soft golden circles, specials glow via drop-shadow.
   stock) — camera integration is the killer feature the HTML can't do well: photograph
   *your own* sofa in Calle Magdalena, attach it to `el sofá`.
 
-## El garaje & El examen de Cooper (v0.14)
+## El garaje & El examen de Cooper (v0.14, command set v0.23)
 
 **Purpose**: Jeffrey's DGT practical driving exam. The exam skill is the inverse of the
 rest of the game — *hear Spanish under pressure → act instantly* — so it gets its own
@@ -270,28 +270,40 @@ deténgase, compruebe) — the examiner's register, completing the grammar ramp:
 tú imperatives → plurals → reflexives → usted.
 
 **El examen de Cooper** (drill mini-game, in the garage panel):
-- 22-command starter set in `COMMANDS` — ⚠️ **provisional**: exact phrasing must be
-  verified with the autoescuela instructor and edited to match verbatim. Categories:
-  dirección, rotonda (primera–cuarta salida), velocidad/detención, maniobras,
-  pre-arranque.
-- **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping one of four
-  icons; distractors are drawn from the same category — segunda vs. tercera salida,
+- 23-command set in `COMMANDS`, covering every unique actionable/testable prompt
+  extracted from Autoescuela Fermín's 2020 *Practical Driving Test Student
+  Guide*: complete driving instructions, exterior/interior vehicle prechecks,
+  and driving terminology. Repeated concepts are deduplicated; the guide's four
+  explanatory statements about route guidance are not candidate prompts. The
+  guide is illustrative rather than an exhaustive transcript of an Oviedo DGT
+  examiner, and the drill banner states that limitation.
+- Prechecks remain in the same audio-first drill flow. Their answers use icons
+  for the relevant vehicle area or control; a future version may add a vehicle
+  diagram or multi-step demonstration without splitting them into a separate
+  study track.
+- Complete examiner instructions use the guide's exact wording. Terminology and
+  precheck fragments also remain verbatim rather than being expanded into
+  invented spoken sentences. *Parada* (voluntary stop), *estacionamiento*
+  (parking with reversing), and *detención* (involuntary stop) are separate
+  testable concepts with separate IDs.
+- **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping an icon;
+  distractors are drawn from the same category — segunda vs. tercera salida,
   derecha vs. izquierda — the real exam confusions.
 - **Junction surface (v0.18)**: when `cmd.cat === 'dir'`, the icon pad is
   replaced with an inline SVG crossroads (viewBox 300×300): four arms
   radiating from a central intersection block with yellow entry arrow at
-  the bottom. Each of the four direction commands (recto/der/izq/sentido)
-  sits on its geometrically natural arm end (N/E/W/S respectively) as a
+  the bottom. Right, left, straight-wheel, and change-of-direction prompts sit
+  on their geometrically natural arm ends (E/W/N/S respectively) as a
   native-SVG group carrying the original command's arrow emoji. Same
   `answerCmd` flow and `.right`/`.wrong` classing as the roundabout
   surface. Non-dir, non-rot categories keep the 2×2 icon pad.
 - **Roundabout surface (v0.16)**: when `cmd.cat === 'rot'`, the icon pad is replaced
-  with an inline SVG roundabout (viewBox 300×300): ring with exits at 12/3/6/9
-  o'clock, yellow entry arrow at the bottom, and four tappable exits labeled 1ª–4ª
-  placed per Spanish convention (1ª = right at 3 o'clock, counterclockwise from
-  entry). Each exit is a `<button class="opt rot-exit" data-id="c-rotN">` via
-  `foreignObject`, so the existing `answerCmd` flow and `.right`/`.wrong` classing
-  apply unchanged. Non-rot categories keep the 2×2 icon pad.
+  with an inline SVG roundabout (viewBox 300×300). Five distinct exit roads run
+  counterclockwise from right to left across the top half, with a separate entry road
+  and yellow arrow at the bottom. First–third exits use the guide's complete
+  instructions; fourth/fifth use its exact terminology fragments. Native SVG
+  groups use the existing `answerCmd` flow and `.right`/`.wrong` classing.
+  Non-rot categories keep the icon pad.
 - **Auto-graded FSRS**: correct → Good, wrong → Again (no self-grading), wrong answers
   requeue until answered right, and the score reports first-attempt successes.
 - **Timed-response mode (v0.20)**: opt-in toggle on the drill start panel ("⏱️ Modo
@@ -323,8 +335,8 @@ future FSRS parameter fitting. Cooper appears at streaks ≥3.
 - Typing or speech-input recall instead of self-graded reveal (honesty vs. friction).
 - FSRS scheduling; stats screen (streak, retention).
 - Typing/speech recall input (deferred by design).
-- Exam drill v2: instructor-verified command list; junction/roundabout SVG diagrams as
-  answer surfaces instead of icon pads; timed-response mode; multiple TTS voices.
+- Exam drill v2: multiple TTS voices and richer vehicle-control/diagram answer
+  surfaces for the precheck prompts.
 - More phrases per object (rotating verbs); past-tense variants at B1.
 - FSRS parameter optimization from real review logs (needs the stats layer first).
 - Gender imagery per full Fluent Forever method (color is the v1 shortcut).

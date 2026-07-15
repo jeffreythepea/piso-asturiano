@@ -5,15 +5,6 @@ SPEC.md, build it as a discrete shippable chunk (tests green, version bumped,
 CHANGELOG line added). Move the item here → CHANGELOG when done. Jeffrey
 prioritizes; don't invent large features not listed without asking him.
 
-## 1. Instructor-verified exam commands  ← highest value, blocked on Jeffrey
-Replace the provisional `COMMANDS` set with the verbatim phrasing from
-Jeffrey's autoescuela instructor (Oviedo, DGT practical exam).
-- Source extraction and comparison: [`references/fermin-practical-test-commands-2020.md`](references/fermin-practical-test-commands-2020.md).
-- Keep command `id`s stable where the meaning is unchanged (preserves FSRS
-  history); new ids for genuinely new commands.
-- Done when: list matches instructor's wording, warning banner in the drill
-  panel is removed or softened, CHANGELOG notes verification.
-
 ## 2. Exam drill v2
 **Done in three slices:**
 - v0.16: roundabout SVG surface (`cmd.cat === 'rot'`) — 4 exits at 12/3/6/9

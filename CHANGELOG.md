@@ -4,6 +4,17 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.23 — Autoescuela guide-supported exam commands
+Replaced the 22 provisional Garage commands with 23 unique prompts extracted
+from Autoescuela Fermín's 2020 student guide. The main drill now includes the
+guide's complete driving instructions, vehicle prechecks, and testable
+terminology while preserving the source's exact Spanish fragments. Preserved
+stable IDs where meanings survived and kept *parada*, *estacionamiento*, and
+*detención* as three distinct concepts. The junction again covers change of
+direction and straight steering; the rebuilt roundabout surface represents
+five numbered exits on separate roads. The banner states that the guide is
+illustrative rather than exhaustive.
+
 ## v0.22 — Code review fixes
 1. Removed leading "Yo " from all PHRASES_TIER1 entries — pronoun-drop is the natural Spanish register, the subject is encoded in the verb ending.
 2. Fixed moto tier-1: "Tengo cuidado con la moto" (was "Cuido la moto").
