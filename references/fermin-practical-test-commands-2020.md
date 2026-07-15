@@ -1,5 +1,10 @@
 # Autoescuela Fermín practical-test commands (2020)
 
+> **Implementation note (2026):** This file preserves the original grouped
+> extraction and comparison with the former provisional command set. Use
+> [`fermin-atomic-command-inventory.md`](fermin-atomic-command-inventory.md) for
+> the visually re-audited, atomic implementation plan.
+
 ## Source
 
 - **Document:** *Practical Driving Test Student Guide*
