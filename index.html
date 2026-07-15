@@ -1016,7 +1016,7 @@ function dueCmds(){
 /* ============================================================
    STATE + persistence
    ============================================================ */
-const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], welcomed:false, log:[] };
+const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], tier:{}, welcomed:false, log:[] };
 let S;
 let memoryOnly = false;
 
@@ -1030,11 +1030,21 @@ function loadState(){
   }
   if (S.sound === undefined) S.sound = true;
   if (S.hammers === undefined) S.hammers = 1;
-  if (S.room === undefined) S.room = 'sala';
-  if (!roomUnlocked(S.room)) S.room = 'sala';
+  if (S.owned === undefined) S.owned = [];
+  if (S.deck === undefined) S.deck = [];
   if (S.tasks === undefined) S.tasks = [];
+  if (S.tier === undefined) S.tier = {};
   if (S.welcomed === undefined) S.welcomed = false;
   if (S.log === undefined) S.log = [];
+  // migrate legacy tasks[] (bare item.id) to tier-aware tasks[] (composite id "baseId:tierIdx")
+  if (S.tasks.length && typeof S.tasks[0] === 'string' && !S.tasks[0].includes(':')){
+    const migrated = [];
+    S.tasks.forEach(id => {
+      migrated.push(id + ':0');
+      S.tier[id] = (S.tier[id] || 0) + 1;
+    });
+    S.tasks = migrated;
+  }
   if (S.gloves === undefined) S.gloves = 1;
   // migrate Leitner-era cards to FSRS
   const boxToS = { 1:0.4, 2:1, 3:3, 4:7, 5:21 };
