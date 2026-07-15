@@ -8,6 +8,7 @@ prioritizes; don't invent large features not listed without asking him.
 ## 1. Instructor-verified exam commands  ← highest value, blocked on Jeffrey
 Replace the provisional `COMMANDS` set with the verbatim phrasing from
 Jeffrey's autoescuela instructor (Oviedo, DGT practical exam).
+- Source extraction and comparison: [`references/fermin-practical-test-commands-2020.md`](references/fermin-practical-test-commands-2020.md).
 - Keep command `id`s stable where the meaning is unchanged (preserves FSRS
   history); new ids for genuinely new commands.
 - Done when: list matches instructor's wording, warning banner in the drill
