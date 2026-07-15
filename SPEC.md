@@ -63,6 +63,8 @@ Each object has two phrase tiers: imperative (tier 0) and present-tense first-pe
 Both cards enter the SRS deck independently with different `tier` values, so the FSRS
 scheduler treats them as separate items. In the repaso view, tier 0 cards show ⚡, tier
 1 cards show 🔄 and use `PHRASES_TIER1[id]`. All 72 objects have tier-1 entries.
+Tier 1 uses pronoun-drop register — the subject is encoded in the verb ending, no
+explicit "yo" pronoun.
 
 ## Narrative — Cooper (v0.9)
 

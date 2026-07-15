@@ -4,6 +4,11 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.22 — Code review fixes
+1. Removed leading "Yo " from all PHRASES_TIER1 entries — pronoun-drop is the natural Spanish register, the subject is encoded in the verb ending.
+2. Fixed moto tier-1: "Tengo cuidado con la moto" (was "Cuido la moto").
+3. Added missing v0.16 CHANGELOG entry for rotonda SVG surface.
+
 ## v0.21 — Frase presente (tier rotation)
 Task panel now cycles through phrase tiers. Complete the imperative task (★1) to unlock the present-tense variant (★1). Tier 0: "Lávate las manos" (imperative). Tier 1: "Me lavo las manos" (present). Both cards enter FSRS deck independently, so each phrase form gets its own review schedule. Tier icon shifts from ⚡ to 🔄 on tier 1 cards. Full 72-entry tier-1 dataset with first-person conjugations.
 
@@ -33,14 +38,11 @@ o'clock — so the icon's direction visually matches the arm it sits on.
 Same answerCmd flow and .right/.wrong feedback as the roundabout surface;
 other categories keep the icon pad.
 
-## v0.17 — Rotonda en el examen
-The roundabout drill (cat === 'rot') now replaces the 2x2 icon pad with an
-inline SVG roundabout (~300×300 viewBox): a ring with four exit roads at
-12/3/6/9 o'clock, entry arrow at the bottom, and four tappable exits labeled
-1ª–4ª positioned per Spanish convention (1ª = right at 3 o'clock,
-counterclockwise from entry). Tapping an exit flows through the existing
-answerCmd → right/wrong classing; new `.opt.rot-exit` CSS keeps feedback
-visually consistent with icon buttons. Non-rot categories keep the icon pad.
+## v0.17 — Rotonda en el examen (iPad Safari fix)
+Fixed roundabout SVG rendering issue on iPad Safari. Previous implementation used foreignObject, which caused layout problems. Now uses native SVG elements for all tap targets, ensuring consistent sizing (44px minimum) and proper touch interactions across all iOS devices.
+
+## v0.16 — Rotonda en el examen
+Added SVG roundabout surface for `c-rot1`–`c-rot4` (command category `rot`). Visual answer selector shows a four-exit roundabout diagram: 1ª exit at 3 o'clock (first right), 2ª at 12 (straight), 3ª at 9 (left), 4ª at 6 (U-turn). Yellow entry arrow at bottom. All tap targets are 44px minimum.
 
 ## v0.15 — Copia de seguridad
 Export/import of the full save (progress, FSRS deck, review log) as JSON via a
