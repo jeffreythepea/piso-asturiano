@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.30
+  EL PISO ASTURIANO — living spec / v0.31
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -214,6 +214,18 @@
   .btn-bien{background:var(--verde); color:#fff; padding:12px 34px;}
   .btn-audio{background:#fff; border:1px solid var(--linea); font-size:20px; padding:8px 14px;}
   .rev-progress{text-align:center; font-weight:800; color:#7d8a7f; margin:10px 0 14px;}
+  .vocab-tools{display:flex; justify-content:center; gap:8px; margin:0 0 12px;}
+  .vocab-tool{font:800 13px 'Nunito',sans-serif; padding:8px 12px; color:#4f5e54; background:#fff; border:1px solid var(--linea); border-radius:10px; cursor:pointer; box-shadow:var(--sombra);}
+  .vocab-form{display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:left; margin:14px 0;}
+  .vocab-form label{font-size:12px; font-weight:800; color:#5c6a63;}
+  .vocab-form label.full{grid-column:1/-1;}
+  .vocab-form input,.vocab-form select{box-sizing:border-box; width:100%; margin-top:4px; padding:9px 10px; font:700 15px 'Nunito',sans-serif; color:var(--pizarra); background:#fff; border:1.5px solid var(--linea); border-radius:9px;}
+  .vocab-error{min-height:18px; color:var(--teja); font-size:12px; font-weight:800;}
+  .vocab-list{max-height:330px; overflow:auto; margin:12px 0; text-align:left;}
+  .vocab-row{display:grid; grid-template-columns:42px 1fr auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--linea);}
+  .vocab-row .cue{font-size:28px; text-align:center;}
+  .vocab-row .meaning{font-size:11px; color:#8a958c; font-weight:700;}
+  .vocab-delete{font:800 12px 'Nunito',sans-serif; color:var(--teja); background:#fff; border:1px solid #D7AAA0; border-radius:8px; padding:6px 8px; cursor:pointer;}
 
   /* ---------- MODALES ---------- */
   .overlay{position:fixed; inset:0; background:rgba(46,58,68,.55); display:none; align-items:center; justify-content:center; z-index:60; padding:20px;}
@@ -279,12 +291,16 @@
 
   <!-- ================= REPASO ================= -->
   <section id="tab-repaso" class="tab">
+    <div class="vocab-tools">
+      <button class="vocab-tool" id="pv-add">➕ Añadir palabra</button>
+      <button class="vocab-tool" id="pv-manage">🗂️ Mis palabras (<span id="pv-count">0</span>)</button>
+    </div>
     <div id="rev-area"></div>
   </section>
 </main>
 
 <footer>
-  <span><strong>v0.30</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.31</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -1130,7 +1146,7 @@ function dueCmds(phase){
 /* ============================================================
    STATE + persistence
    ============================================================ */
-const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], tier:{}, welcomed:false, log:[], drillPhase:'driving', lastTab:'casa', examFocus:false, examFocusStarts:0 };
+const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], personalVocab:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], tier:{}, welcomed:false, log:[], drillPhase:'driving', lastTab:'casa', examFocus:false, examFocusStarts:0 };
 let S;
 let memoryOnly = false;
 
@@ -1146,6 +1162,7 @@ function loadState(){
   if (S.hammers === undefined) S.hammers = 1;
   if (S.owned === undefined) S.owned = [];
   if (S.deck === undefined) S.deck = [];
+  if (!Array.isArray(S.personalVocab)) S.personalVocab = [];
   if (S.tasks === undefined) S.tasks = [];
   if (S.tier === undefined) S.tier = {};
   if (S.welcomed === undefined) S.welcomed = false;
@@ -1171,6 +1188,8 @@ function loadState(){
       delete c.box;
     }
   });
+  const personalIds = new Set(S.personalVocab.map(item => item.id));
+  S.deck = S.deck.filter(card => card.kind !== 'vocab' || personalIds.has(card.id));
   if (memoryOnly) document.getElementById('save-note').textContent = 'sesión sin guardar (abre el archivo en Safari para guardar)';
 }
 function save(){
@@ -1254,6 +1273,47 @@ function esHTML(item){
   const [art, ...rest] = item.es.split(' ');
   return '<span class="g-' + item.g + '">' + art + '</span> ' + rest.join(' ');
 }
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function normalizePersonalVocabText(value){
+  return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('es');
+}
+function personalVocabSpanish(item){
+  return (item.g ? item.g + ' ' : '') + item.term;
+}
+function personalVocabHTML(item){
+  const article = item.g ? '<span class="g-' + item.g + '">' + item.g + '</span> ' : '';
+  return article + escapeHTML(item.term);
+}
+function buildPersonalVocabItem(items, values, now, entropy){
+  let term = String(values.term || '').trim().replace(/\s+/g, ' ');
+  let gender = ['el','la'].includes(values.g) ? values.g : '';
+  const article = term.match(/^(el|la)\s+(.+)$/i);
+  if (article){
+    const enteredGender = article[1].toLocaleLowerCase('es');
+    if (gender && gender !== enteredGender) return { error:'El artículo y el género no coinciden.' };
+    gender = enteredGender;
+    term = article[2].trim();
+  }
+  const en = String(values.en || '').trim().replace(/\s+/g, ' ');
+  const em = String(values.em || '').trim();
+  if (!term) return { error:'Escribe la palabra en español.' };
+  if (!en) return { error:'Añade un significado para comprobar la respuesta.' };
+  if (!em) return { error:'Elige un emoji como pista visual.' };
+  if (/[\p{L}\p{N}]/u.test(em)) return { error:'Usa solo uno o varios emoji como pista, sin palabras.' };
+  const duplicate = items.some(item => item.g === gender &&
+    normalizePersonalVocabText(item.term) === normalizePersonalVocabText(term) &&
+    normalizePersonalVocabText(item.en) === normalizePersonalVocabText(en));
+  if (duplicate) return { error:'Esa palabra y significado ya están en Mis palabras.' };
+  const stamp = Number.isFinite(now) ? now : Date.now();
+  const random = Number.isFinite(entropy) ? entropy : Math.random();
+  const base = 'pv-' + stamp.toString(36) + '-' + Math.floor(Math.max(0, Math.min(.999999, random)) * 1679616).toString(36).padStart(4, '0');
+  let id = base, suffix = 2;
+  const ids = new Set(items.map(item => item.id));
+  while (ids.has(id)) id = base + '-' + suffix++;
+  return { item:{ id, term, en, g:gender, em, createdAt:stamp } };
+}
 function refreshHUD(){
   $('hud-stars').textContent = S.stars;
   const n = dueCards().length;
@@ -1282,7 +1342,7 @@ function switchTab(name){
   save();
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
-  if (name === 'repaso') renderReview();
+  if (name === 'repaso'){ renderPersonalVocabTools(); renderReview(); }
   if (name === 'stats') renderStats();
   if (name === 'casa'){ renderRoomTabs(); renderRoom(); renderDrill(); renderTasks(); renderShop(); }
   if (name === 'juego') onEnterJuego();
@@ -2223,6 +2283,80 @@ function maybeGate(){
   );
 }
 
+/* Personal vocabulary intake — text/emoji/TTS baseline. */
+function renderPersonalVocabTools(){
+  $('pv-count').textContent = S.personalVocab.length;
+}
+function openPersonalVocabForm(){
+  showModal(
+    '<div class="em">📝</div><h2>Añadir palabra</h2>' +
+    '<p>El emoji será la pista. El español y el significado aparecen después de responder.</p>' +
+    '<div class="vocab-form">' +
+      '<label class="full">Español<input id="pv-term" autocomplete="off" placeholder="perro o el perro"></label>' +
+      '<label>Género<select id="pv-g"><option value="">sin artículo</option><option value="el">el</option><option value="la">la</option></select></label>' +
+      '<label>Emoji<input id="pv-em" autocomplete="off" placeholder="🐕"></label>' +
+      '<label class="full">Significado en inglés<input id="pv-en" autocomplete="off" placeholder="dog"></label>' +
+    '</div>' +
+    '<div class="vocab-error" id="pv-error"></div>' +
+    '<button class="btn btn-bien" id="pv-save">Añadir al repaso</button> ' +
+    '<button class="btn btn-audio" onclick="closeModal()">Cancelar</button>'
+  );
+  $('pv-save').addEventListener('click', addPersonalVocabFromForm);
+  $('pv-term').focus();
+}
+function addPersonalVocabFromForm(){
+  const result = buildPersonalVocabItem(S.personalVocab, {
+    term:$('pv-term').value, g:$('pv-g').value,
+    em:$('pv-em').value, en:$('pv-en').value
+  });
+  if (result.error){ $('pv-error').textContent = result.error; return; }
+  const alreadyInHouse = CATALOG.some(item =>
+    normalizePersonalVocabText(item.es) === normalizePersonalVocabText(personalVocabSpanish(result.item))
+  );
+  if (alreadyInHouse){
+    $('pv-error').textContent = 'Esa palabra ya tiene una tarjeta en la casa.';
+    return;
+  }
+  S.personalVocab.push(result.item);
+  S.deck.push(newCard(result.item, 'vocab'));
+  save(); refreshHUD(); renderPersonalVocabTools();
+  speak(personalVocabSpanish(result.item));
+  showModal(
+    '<div class="em">' + escapeHTML(result.item.em) + '</div><h2>' + personalVocabHTML(result.item) + '</h2>' +
+    '<p>' + escapeHTML(result.item.en) + ' · entrará en Repaso dentro de 10 minutos.</p>' +
+    '<button class="btn btn-bien" onclick="closeModal()">Hecho</button> ' +
+    '<button class="btn btn-audio" id="pv-add-another">Añadir otra</button>'
+  );
+  $('pv-add-another').addEventListener('click', openPersonalVocabForm);
+}
+function openPersonalVocabManager(){
+  const rows = S.personalVocab.map(item =>
+    '<div class="vocab-row"><div class="cue">' + escapeHTML(item.em) + '</div>' +
+      '<div><b>' + personalVocabHTML(item) + '</b><div class="meaning">' + escapeHTML(item.en) + '</div></div>' +
+      '<button class="vocab-delete" data-id="' + item.id + '">Eliminar</button></div>'
+  ).join('');
+  showModal(
+    '<div class="em">🗂️</div><h2>Mis palabras</h2>' +
+    (rows ? '<div class="vocab-list">' + rows + '</div>' : '<p>Aún no has añadido palabras personales.</p>') +
+    '<button class="btn btn-bien" id="pv-manager-add">Añadir palabra</button> ' +
+    '<button class="btn btn-audio" onclick="closeModal()">Cerrar</button>'
+  );
+  $('pv-manager-add').addEventListener('click', openPersonalVocabForm);
+  document.querySelectorAll('.vocab-delete').forEach(button => button.addEventListener('click', () => {
+    const item = S.personalVocab.find(word => word.id === button.dataset.id);
+    if (!item || !confirm('¿Eliminar "' + personalVocabSpanish(item) + '" de tus repasos?')) return;
+    S.personalVocab = S.personalVocab.filter(word => word.id !== item.id);
+    S.deck = S.deck.filter(card => !(card.kind === 'vocab' && card.id === item.id));
+    const oldLength = queue.length;
+    queue = queue.filter(card => !(card.kind === 'vocab' && card.id === item.id));
+    sessionSize = Math.max(0, sessionSize - (oldLength - queue.length));
+    save(); refreshHUD(); renderPersonalVocabTools(); renderReview();
+    openPersonalVocabManager();
+  }));
+}
+$('pv-add').addEventListener('click', openPersonalVocabForm);
+$('pv-manage').addEventListener('click', openPersonalVocabManager);
+
 /* ============================================================
    REPASO — session runner
    ============================================================ */
@@ -2233,12 +2367,12 @@ function renderReview(){
   const due = dueCards();
   if (queue.length === 0){
     if (due.length === 0){
-      const total = S.deck.length;
+      const total = S.deck.filter(card => card.kind !== 'cmd').length;
       area.innerHTML =
         '<div class="rev-empty">' +
         (total === 0
-          ? 'Todavía no tienes palabras.<br>Compra algo para la casa y empieza. 🛋️'
-          : '¡Todo repasado! ' + total + (total === 1 ? ' palabra' : ' palabras') + ' en tu piso.<br>Vuelve cuando toque.') +
+          ? 'Todavía no tienes palabras.<br>Compra algo para la casa o añade una palabra personal. 🛋️'
+          : '¡Todo repasado! ' + total + (total === 1 ? ' tarjeta' : ' tarjetas') + '.<br>Vuelve cuando toque.') +
         '</div>';
       return;
     }
@@ -2252,20 +2386,29 @@ function renderReview(){
 function renderCard(){
   const area = $('rev-area');
   const card = queue[0];
-  const item = CATALOG.find(i => i.id === card.id);
   const isPhr = card.kind === 'phr';
+  const isVocab = card.kind === 'vocab';
+  const item = isVocab ? S.personalVocab.find(word => word.id === card.id) : CATALOG.find(i => i.id === card.id);
+  if (!item){
+    queue.shift();
+    sessionSize = Math.max(0, sessionSize - 1);
+    renderReview();
+    return;
+  }
   const tier = isPhr ? (card.tier || 0) : 0;
   const phraseData = isPhr ? (tier === 1 && PHRASES_TIER1[card.id] ? PHRASES_TIER1[card.id] : PHRASES[card.id]) : null;
-  const sayText = isPhr ? phraseData.es : item.es;
+  const sayText = isPhr ? phraseData.es : isVocab ? personalVocabSpanish(item) : item.es;
+  const answerHTML = isPhr ? phraseHTML(phraseData) : isVocab ? personalVocabHTML(item) : esHTML(item);
+  const answerEnglish = isPhr ? phraseData.en : item.en;
   const done = sessionSize - queue.length;
   area.innerHTML =
     '<div class="rev-progress">' + (done + 1) + ' / ' + sessionSize + '</div>' +
     '<div class="card">' +
-      '<div class="em">' + item.em + (isPhr ? (tier === 1 && PHRASES_TIER1[card.id] ? '🔄' : '⚡') : '') + '</div>' +
+      '<div class="em">' + escapeHTML(item.em) + (isPhr ? (tier === 1 && PHRASES_TIER1[card.id] ? '🔄' : '⚡') : '') + '</div>' +
       '<div class="q">' + (isPhr ? '¿Qué haces con esto?' : '¿Cómo se llama?') + '</div>' +
       (revealed
-        ? '<div class="word">' + (isPhr ? phraseHTML(phraseData) : esHTML(item)) + '</div>' +
-          '<div class="en">' + (isPhr ? phraseData.en : item.en) + '</div>' +
+        ? '<div class="word">' + answerHTML + '</div>' +
+          '<div class="en">' + escapeHTML(answerEnglish) + '</div>' +
           '<div class="row">' +
             '<button class="btn btn-audio" id="rv-audio">🔊</button>' +
             '<button class="btn btn-otra" id="rv-otra">Otra vez</button>' +
@@ -2867,6 +3010,7 @@ function renderStats(){
   const now = Date.now();
   const objs = S.deck.filter(c => c.kind === 'obj').length;
   const phrs = S.deck.filter(c => c.kind === 'phr').length;
+  const vocab = S.deck.filter(c => c.kind === 'vocab').length;
   const dueNow = dueCards().length;
   const due24 = S.deck.filter(c => c.due <= now + DAY).length;
   const streak = calcStreak();
@@ -2893,7 +3037,7 @@ function renderStats(){
   area.innerHTML =
     '<div class="stat-grid">' +
       '<div class="stat"><div class="n">' + streak + '</div><div class="l">🔥 racha (días)</div></div>' +
-      '<div class="stat"><div class="n">' + (objs + phrs) + '</div><div class="l">palabras y frases</div></div>' +
+      '<div class="stat"><div class="n">' + (objs + phrs + vocab) + '</div><div class="l">palabras y frases</div></div>' +
       '<div class="stat"><div class="n">' + dueNow + '</div><div class="l">para repasar ahora</div></div>' +
       '<div class="stat"><div class="n">' + due24 + '</div><div class="l">en las próximas 24 h</div></div>' +
       '<div class="stat"><div class="n">' + (acc === null ? '—' : acc + '%') + '</div><div class="l">aciertos recientes</div></div>' +
@@ -2904,7 +3048,7 @@ function renderStats(){
     '<div class="stat-panel"><h3>Memoria por estabilidad</h3>' + bars +
       '<p style="font-size:12px; color:#9aa49c; font-weight:700; margin:10px 0 0">' +
       mastered + (mastered === 1 ? ' tarjeta dominada' : ' tarjetas dominadas') +
-      ' · ' + objs + ' objetos · ' + phrs + ' frases</p></div>' +
+      ' · ' + objs + ' objetos · ' + vocab + ' personales · ' + phrs + ' frases</p></div>' +
     (streak >= 3 ? '<p class="cooper">🐕 <b>Cooper:</b> ¡' + streak + ' días seguidos! Eres más constante que el orbayu.<br><span class="cen">' + streak + ' days in a row! More constant than the drizzle.</span></p>' : '');
 }
 

@@ -22,12 +22,13 @@ localStorage; the version stamp is in the footer.
     node tests/commands.test.js
     node tests/drill.test.js
     node tests/gate.test.js
+    node tests/vocab.test.js
     node tests/report.test.js
 
-All seven must pass before any commit. The tests cover the pure game core, all
+All eight must pass before any commit. The tests cover the pure game core, all
 authored level maps, FSRS behavior, the source-backed command inventory and
 migration, the exam drill's scheduling/logging policy, the ordinary-review
-prompt policy, and exported-log validation.
+prompt policy, personal-vocabulary intake, and exported-log validation.
 
 To inspect the review history in a backup exported through **copia de seguridad**:
 

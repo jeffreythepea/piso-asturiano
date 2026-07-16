@@ -68,6 +68,27 @@ scheduler treats them as separate items. In the repaso view, tier 0 cards show �
 Tier 1 uses pronoun-drop register — the subject is encoded in the verb ending, no
 explicit "yo" pronoun.
 
+## Personal vocabulary intake (v0.31)
+
+Repaso provides **Añadir palabra** and **Mis palabras** controls independent of
+the apartment catalog. Manual intake records
+`PersonalVocabItem { id, term, en, g(el|la|''), em, createdAt }` in
+`S.personalVocab` and creates a fresh `kind:'vocab'` FSRS card due after the
+normal 10-minute learning delay. The front is only the emoji cue; reveal shows
+the gender-colored Spanish, then the English meaning, and speaks es-ES.
+
+IDs use the stable `pv-` namespace and survive backup/restore. Exact
+case-insensitive term + gender + meaning duplicates are rejected; an article
+typed with the term is normalized, and a conflicting selected gender is
+rejected. Deleting an entry removes its active deck card and any queued copy but
+retains historical log entries. Old saves backfill an empty `personalVocab`
+array and discard orphaned `vocab` cards whose content is missing.
+
+This is a durable text/emoji/TTS intake baseline, not evidence that emoji cues
+match personally selected images for retention. Bulk import remains conditional
+on inspecting the actual Fluent Forever export, and browser image storage stays
+out of scope.
+
 ## Narrative — Cooper (v0.9)
 
 Cooper is the Austin figure: a welcome scene on first run, rotating level-preview

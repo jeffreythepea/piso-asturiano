@@ -4,7 +4,7 @@ const assert = require('assert');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const gateStart = html.indexOf('function maybeGate(){');
-const gateEnd = html.indexOf('\n/* ============================================================\n   REPASO', gateStart);
+const gateEnd = html.indexOf('\n/* Personal vocabulary intake', gateStart);
 assert(gateStart >= 0 && gateEnd > gateStart, 'ordinary-review prompt not found');
 
 function promptForDueCount(count) {

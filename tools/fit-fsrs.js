@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 
-const KINDS = ['obj', 'phr', 'cmd'];
+const KINDS = ['obj', 'phr', 'vocab', 'cmd'];
 const GRADE_LABELS = { 1: 'Again', 2: 'Hard', 3: 'Good', 4: 'Easy' };
 const COMMAND_MISS_REASONS = ['hearing', 'meaning', 'mapping', 'target', 'accidental', 'other'];
 
@@ -23,6 +23,9 @@ function validateSave(save) {
   }
   if (!Array.isArray(save.log)) errors.push('top-level "log" must be an array');
   if (!Array.isArray(save.deck)) errors.push('top-level "deck" must be an array');
+  if (save.personalVocab !== undefined && !Array.isArray(save.personalVocab)) {
+    errors.push('top-level "personalVocab" must be an array when present');
+  }
   if (errors.length) return errors;
 
   save.log.forEach((entry, index) => {
@@ -37,7 +40,7 @@ function validateSave(save) {
     if (typeof entry.id !== 'string' || entry.id.length === 0) {
       errors.push(`${at}.id must be a non-empty string`);
     }
-    if (!KINDS.includes(entry.k)) errors.push(`${at}.k must be obj, phr, or cmd`);
+    if (!KINDS.includes(entry.k)) errors.push(`${at}.k must be obj, phr, vocab, or cmd`);
     if (![1, 2, 3, 4].includes(entry.g)) errors.push(`${at}.g must be a grade from 1 to 4`);
     // Ordinary reviews use elapsed days; instrumented command attempts use milliseconds.
     if (entry.el !== undefined && (!isFiniteNumber(entry.el) || entry.el < 0)) {
@@ -76,7 +79,29 @@ function validateSave(save) {
     if (card.S !== undefined && (!isFiniteNumber(card.S) || card.S < 0)) {
       errors.push(`${at}.S must be a non-negative number when present`);
     }
+    if (card.kind !== undefined && !KINDS.includes(card.kind)) {
+      errors.push(`${at}.kind must be obj, phr, vocab, or cmd when present`);
+    }
   });
+
+  if (Array.isArray(save.personalVocab)) {
+    const ids = new Set();
+    save.personalVocab.forEach((item, index) => {
+      const at = `personalVocab[${index}]`;
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        errors.push(`${at} must be an object`);
+        return;
+      }
+      if (typeof item.id !== 'string' || !item.id) errors.push(`${at}.id must be a non-empty string`);
+      else if (ids.has(item.id)) errors.push(`${at}.id must be unique`);
+      else ids.add(item.id);
+      for (const field of ['term', 'en', 'em']) {
+        if (typeof item[field] !== 'string' || !item[field].trim()) errors.push(`${at}.${field} must be a non-empty string`);
+      }
+      if (!['', 'el', 'la'].includes(item.g)) errors.push(`${at}.g must be empty, el, or la`);
+      if (!isFiniteNumber(item.createdAt) || item.createdAt < 0) errors.push(`${at}.createdAt must be a non-negative number`);
+    });
+  }
 
   return errors;
 }

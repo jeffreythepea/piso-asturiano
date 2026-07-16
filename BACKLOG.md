@@ -39,32 +39,56 @@ into a separate HTML product.
 - Done when: Jeffrey confirms the focused entry removes the friction and the
   decision to keep or separate the broader game is supported by actual use.
 
-## 3. Personal vocabulary intake spike
-Test whether the broader game can become an ongoing personal Spanish tool
-without prematurely building a rich-media importer.
-- First inspect one real vocabulary source/export supplied by Jeffrey; do not
-  invent a Fluent Forever, Anki, or other file format.
-- Import or manually enter one bounded batch of 20 real words with stable
-  identity, deduplication, deletion, gender where applicable, es-ES audio, and
-  fresh FSRS schedules. Never claim to preserve scheduling history the source
-  does not provide.
-- Keep English glosses off recall fronts. Use the current text/emoji/TTS model
-  for this plumbing test; it does not validate or replace personal-image
-  learning.
-- Define deterministic backup/restore and old-save migration before scaling.
-  Do not add browser image storage or IndexedDB as part of this spike.
-- Done when: the real 20-word batch imports cleanly, reviews correctly, survives
-  export/import, handles duplicates and deletion, and Jeffrey finds the intake
-  effort useful enough to justify broader vocabulary work.
+## 3. Personal vocabulary intake  ← manual baseline shipped; bulk evidence pending
+v0.31 adds durable one-at-a-time entry with stable identity, duplicate handling,
+deletion, gender, emoji cues, es-ES audio, fresh FSRS cards, migration, and full
+JSON backup/restore. It deliberately does not claim that emoji replaces
+personal-image learning.
+- Evaluate the manual flow with a real 20-word batch and revise only from
+  observed friction.
+- For bulk intake, first inspect the actual Fluent Forever data export requested
+  by Jeffrey; do not invent its format or claim to preserve unavailable review
+  history.
+- Keep English glosses off recall fronts. Do not add browser image storage or
+  IndexedDB without a separately approved, completely recoverable media design.
+- Done when: the real batch reviews correctly after continued use, Jeffrey finds
+  intake worthwhile, and any bulk path is based on an inspected source file.
 
-## 4. FSRS parameter fitting
+## 4. Personal image cues and image search  ← essential
+Emoji cues are an interim plumbing baseline, not an adequate replacement for
+personally selected images in the Fluent Forever learning model. Personal
+vocabulary cards need durable image-backed fronts.
+- First support adding or replacing an image through the lowest-friction
+  browser paths that work reliably on Jeffrey's iPad and Mac: clipboard paste,
+  drag/drop, and Photos/Files selection. Resize and orient a local review
+  derivative while preserving a clear remove/replace action.
+- The preferred discovery experience is an in-app image search, ideally Google
+  Images. Investigate the supported API, cost, authentication, usage rights,
+  privacy, CORS, and single-file implications before choosing a provider. Do
+  not scrape Google Images, hotlink remote results, or ship a brittle hidden
+  dependency. An external-search → paste/Photos handoff is the acceptable first
+  fallback if direct search is not defensible.
+- Store an ingested local copy used by the card; a remote URL alone is not a
+  recoverable learning asset. Define quota failures, missing-image behavior,
+  replacement, deletion, and orphan cleanup.
+- Backup and restore must recover both scheduling state and every personal
+  image. If images require IndexedDB or another store, replace the current
+  single-JSON recovery claim with a complete archive/manifest design before
+  shipping.
+- Keep English off card fronts. The chosen image remains a recall cue, not a
+  recognition grade or permission to change FSRS semantics.
+- Done when: Jeffrey can find or paste/select an image, attach and replace it on
+  a personal word, review it offline on the card front, delete it cleanly, and
+  restore the complete image-backed card from backup on iPad Safari.
+
+## 5. FSRS parameter fitting
 `S.log` records every review. Once ~300+ entries exist, fit FSRS weights to
 Jeffrey's data (a `tools/fit-fsrs.js` script reading an exported log; output:
 a `FW` array to paste in). Don't change the scheduler API.
 - Done when: script exists, documented in README, and produces a plausible
   weight set from the real log.
 
-## 5. Targeted phrase and word-form expansion
+## 6. Targeted phrase and word-form expansion
 The blanket two-tier phrase ramp already shipped in v0.21: every object has an
 imperative card and a separate first-person present card. Do not automatically
 create another 72-card tier.
@@ -77,7 +101,7 @@ create another 72-card tier.
 - Done when: an evidence-backed target batch is defined, added without a card
   explosion, and independently scheduled and tested.
 
-## 6. Evidence-led match-3 tuning and depth
+## 7. Evidence-led match-3 tuning and depth
 Jeffrey's play feedback drives this; collect specific complaints first. Decide
 whether the problem is level balance or genuine mechanical repetition.
 - If the issue is balance, tune existing moves, targets, and obstacle counts
@@ -95,8 +119,8 @@ whether the problem is level balance or genuine mechanical repetition.
 - Done when: a written play problem justifies one bounded change, its reusable
   rule is recorded in `SPEC.md`, and measured play feedback shows improvement.
 
-## 7. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
+## 8. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
 
-## 8. iPad port (SwiftUI/SpriteKit)
+## 9. iPad port (SwiftUI/SpriteKit)
 The endgame. SPEC.md is the design record; the CORE and SRS marked blocks and
 the FX event stream port 1:1. Recorded audio replaces TTS here.

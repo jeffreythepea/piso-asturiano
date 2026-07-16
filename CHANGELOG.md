@@ -4,6 +4,16 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.31 — Manual personal vocabulary intake
+The Repaso tab now accepts personal vocabulary one word at a time: Spanish
+term, optional `el`/`la`, English meaning, and an emoji recall cue. Each entry
+gets a stable ID and fresh FSRS card; duplicate and conflicting-article checks
+protect the deck. **Mis palabras** lists and deletes entries, removing their
+active cards while preserving historical logs. Old saves backfill the new
+`personalVocab` collection, backups preserve it, validation understands the
+new `vocab` card kind, and statistics include personal cards. This text/emoji/
+TTS baseline does not claim to replace personal-image learning.
+
 ## v0.30 — Honestly soft ordinary-review prompt
 Entering match-3 with any number of ordinary cards due now visibly offers both
 **Repasar ahora** and **Jugar igual**. The old three-card threshold no longer
