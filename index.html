@@ -163,6 +163,7 @@
   .drill-phase{font-weight:800; font-size:12px; padding:8px 4px; border-radius:10px; border:1.5px solid var(--linea); background:#FBF8F0; color:#5c6a63; cursor:pointer;}
   .drill-phase span{font-size:10px; opacity:.8;}
   .drill-phase.on{background:var(--verde); color:#fff; border-color:var(--verde);}
+  .drill-hint{min-height:24px; margin:6px 0 10px; font-family:'Fraunces',serif; font-size:19px; font-weight:800; color:#3f5547;}
   .drill-reveal{margin-top:12px; font-weight:800;}
   .drill-reveal .es{font-family:'Fraunces',serif; font-size:20px;}
   .drill-reveal .en{font-size:12px; color:#9aa49c;}
@@ -2269,7 +2270,7 @@ let drillSessionPhase = null, drillPhaseResults = null;
 let drillTimed = false;          // per-session opt-in toggle (not persisted)
 const DRILL_TIME_MS = 8000;      // 8 seconds per card in timed mode
 let drillTimerId = null, drillTimerTick = null;
-let drillCardStartedAt = 0, drillReplayCount = 0;
+let drillCardStartedAt = 0, drillReplayCount = 0, drillHinted = false;
 
 function commandInDrillPhase(cmd, phase){
   return !!cmd && (phase === 'mixed' || cmd.phase === phase);
@@ -2306,7 +2307,7 @@ function commandLogEntry(cmd, card, grade, context){
     S: +(card.S || 0).toFixed(2),
     phase:cmd.phase, mode:context.mode, timed:context.timed,
     first:context.first, selected:context.selected,
-    ms:context.ms, replays:context.replays,
+    ms:context.ms, replays:context.replays, hinted:context.hinted,
     surface:context.surface, scheduled:context.scheduled,
     timeout:context.timeout
   };
@@ -2318,7 +2319,7 @@ function recordCommandAttempt(cmd, card, grade, selected, timeout){
     now, mode:drillMode, timed:drillTimed,
     first:!drillMissed.has(card.id), selected,
     ms:Math.max(0, now - drillCardStartedAt),
-    replays:drillReplayCount, surface:drillSurfaceId(cmd),
+    replays:drillReplayCount, hinted:drillHinted, surface:drillSurfaceId(cmd),
     scheduled, timeout:!!timeout
   });
   S.log.push(entry);
@@ -2578,12 +2579,21 @@ function renderDrillCard(){
       '<div class="rev-progress">' + Math.min(done + 1, drillSize) + ' / ' + drillSize + timerHtml + '</div>' +
       '<button class="btn-ear" id="dr-say">🔊</button>' +
       '<div class="drill-q">Escucha la orden…</div>' +
+      '<button class="drill-mode-toggle" id="dr-show-es">Mostrar español</button>' +
+      '<div class="drill-hint" id="dr-hint"></div>' +
       optionsHtml +
       '<div class="drill-reveal" id="dr-reveal"></div>' +
     '</div>';
   drillCardStartedAt = Date.now();
   drillReplayCount = 0;
+  drillHinted = false;
   $('dr-say').addEventListener('click', () => { drillReplayCount++; speak(cmd.es); });
+  $('dr-show-es').addEventListener('click', () => {
+    drillHinted = true;
+    drillMissed.add(card.id);
+    $('dr-hint').textContent = cmd.es;
+    $('dr-show-es').disabled = true;
+  });
   el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => answerCmd(b, cmd, card)));
   speak(cmd.es);
   if (drillTimed) startDrillTimer(card, cmd);
@@ -2594,7 +2604,7 @@ function answerCmd(btn, cmd, card){
   drillLock = true;
   stopDrillTimer();
   const right = btn.dataset.id === cmd.id;
-  recordCommandAttempt(cmd, card, right ? 3 : 1, btn.dataset.id, false);
+  recordCommandAttempt(cmd, card, right && !drillHinted ? 3 : 1, btn.dataset.id, false);
   const reveal = $('dr-reveal');
   if (right){
     if (!drillMissed.has(card.id)){

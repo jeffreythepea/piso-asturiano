@@ -51,6 +51,9 @@ function validateSave(save) {
       for (const field of ['timed', 'first', 'scheduled', 'timeout']) {
         if (typeof entry[field] !== 'boolean') errors.push(`${at}.${field} must be boolean`);
       }
+      if (entry.hinted !== undefined && typeof entry.hinted !== 'boolean') {
+        errors.push(`${at}.hinted must be boolean when present`);
+      }
       if (entry.selected !== null && (typeof entry.selected !== 'string' || !entry.selected)) {
         errors.push(`${at}.selected must be null or a non-empty string`);
       }

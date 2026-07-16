@@ -64,13 +64,13 @@ assert.strictEqual(helpers.drillSurfaceId({cat:'pre-eng'}), 'icon-grid-v1');
 const entry = helpers.commandLogEntry(
   { phase:'driving' }, { id:'c-der', S:2.5 }, 1,
   { now:123, mode:'practice', timed:true, first:false, selected:'c-izq',
-    ms:742, replays:2, surface:'junction-v1', scheduled:false, timeout:false }
+    ms:742, replays:2, hinted:true, surface:'junction-v1', scheduled:false, timeout:false }
 );
 assert.deepStrictEqual(entry, {
   t:123, id:'c-der', k:'cmd', g:1, S:2.5,
   phase:'driving', mode:'practice', timed:true,
   first:false, selected:'c-izq', ms:742, replays:2,
-  surface:'junction-v1', scheduled:false, timeout:false
+  hinted:true, surface:'junction-v1', scheduled:false, timeout:false
 });
 assert.deepStrictEqual(JSON.parse(JSON.stringify({log:[entry]})).log[0], entry,
   'instrumented command logs must survive JSON backup/restore');
@@ -110,6 +110,20 @@ assert.strictEqual((answerPaths.match(/recordCommandAttempt\(/g) || []).length, 
   'tap and timeout paths must share instrumented recording');
 assert(!answerPaths.includes('fsrsReview('),
   'answer paths must not bypass the command scheduling policy');
+assert(answerPaths.includes('right && !drillHinted ? 3 : 1'),
+  'a hinted response must not receive a successful listening grade');
+
+const cardStart = html.indexOf('function renderDrillCard(');
+const cardEnd = html.indexOf('\nfunction answerCmd(', cardStart);
+const cardPath = html.slice(cardStart, cardEnd);
+assert(cardPath.includes('id="dr-show-es">Mostrar español</button>'),
+  'the card should offer a Spanish-only hint before answering');
+assert(cardPath.includes("$('dr-hint').textContent = cmd.es;"),
+  'the hint should reveal the written Spanish command');
+assert(!cardPath.includes("$('dr-hint').textContent = cmd.en;"),
+  'the pre-answer hint must not reveal English');
+assert(cardPath.includes('drillMissed.add(card.id);'),
+  'using the hint must remove the attempt from unaided first-attempt accuracy');
 
 const nextStart = answerEnd;
 const nextEnd = html.indexOf('/* ============================================================\n   PROGRESO', nextStart);

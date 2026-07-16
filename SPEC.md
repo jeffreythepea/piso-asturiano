@@ -297,6 +297,13 @@ tú imperatives → plurals → reflexives → usted.
 - **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping an icon;
   distractors are drawn from the same category — segunda vs. tercera salida,
   derecha vs. izquierda — the real exam confusions.
+- **Spanish-only listening hint (v0.26)**: before answering, **Mostrar
+  español** reveals the spoken command in written Spanish without its English
+  translation. The normal Spanish + English answer reveal still appears only
+  after a response. A hinted response is logged as `hinted: true`, does not
+  count as first-attempt listening success, and receives an Again grade in an
+  authoritative due review; a correct selection still advances rather than
+  forcing an immediate repeat.
 - **Junction surface (v0.18)**: when `cmd.cat === 'dir'`, the icon pad is
   replaced with an inline SVG crossroads (viewBox 300×300): four arms
   radiating from a central intersection block with yellow entry arrow at
@@ -329,7 +336,8 @@ tú imperatives → plurals → reflexives → usted.
   ★1 + 🔨; timed and free practice pay nothing (no farming).
 - Every command attempt logs: `phase`, `mode` (`due`/`practice`), `timed`, `first`,
   selected target id (or `null` on timeout), response `ms`, manual audio `replays`,
-  `surface`, `timeout`, and `scheduled`, alongside the legacy grade/stability fields.
+  `hinted`, `surface`, `timeout`, and `scheduled`, alongside the legacy
+  grade/stability fields.
   Old log entries remain valid. JSON backup/restore preserves the additive schema.
 - Stats tab gains: órdenes del examen count + "aciertos al volante" (last-50
   authoritative accuracy; legacy entries remain included because their mode is unknown).
