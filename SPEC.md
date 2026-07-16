@@ -358,6 +358,22 @@ tú imperatives → plurals → reflexives → usted.
   confirmation arrive, those commands remain `trim-dependent`, the diagrams are
   labeled approximate, and the backlog item stays open. Command Spanish and
   stable IDs do not change, so existing FSRS histories survive.
+- **Exam Focus (v0.28)**: the Garage start panel offers a persisted, reversible
+  **Enfocar examen** presentation. Enabling it stores the current room and tab,
+  moves to the Garage, changes the header to *El examen de Cooper*, and hides
+  room navigation, the apartment scene/shop/tasks, and the unrelated Juego,
+  Repaso, and Progreso tabs. The sound control, drill, backup, and reset remain
+  available. Exiting restores the stored room and tab; no owned items, cards,
+  logs, schedules, or match-3 state are modified. Outside focus mode `lastTab`
+  reopens the app where it was last used. Focus mode does not replace the
+  persisted `drillPhase`, so Conducción/Comprobaciones/Mixto still remembers its
+  last setting. `examFocusStarts` increments only when focus is enabled and is
+  exported with the save as a lightweight usage signal. A standalone exam app
+  remains deferred until several weeks of use justify the split.
+- **Answer pacing (v0.28)**: every command selection stops the timer and reveals
+  the Spanish command, English meaning, and any vehicle-specific note. Both
+  correct and incorrect answers remain on screen until the learner presses
+  **Continuar**; there is no automatic advance after a correct selection.
 
 ## Progreso & review log (v0.10)
 

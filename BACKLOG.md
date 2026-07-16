@@ -24,17 +24,20 @@ manual-based response diagrams shipped in v0.27.
   usable on iPad without `foreignObject` (the v0.27 baseline already meets the
   rendering constraint).
 
-## 2. Exam-focused product mode
-After the drill modes and v0.25 instrumentation have been used in Safari, make
-the exam the primary working experience without duplicating the app into a
-separate HTML product.
-- Open into the last-used tab or Garage, and evaluate an optional Exam Focus
-  presentation that hides unrelated tabs without deleting their progress.
+## 2. Exam-focused product mode  ← reversible focus shipped; usage review pending
+v0.28 makes the exam the primary working experience without duplicating the app
+into a separate HTML product.
+- The app opens into the last-used tab. Optional Exam Focus opens directly in
+  the Garage, hides unrelated rooms/tabs, remembers the drill phase, and restores
+  the previous room/tab on exit without deleting progress.
+- The exported `examFocusStarts` counter provides a minimal usage signal.
 - Reassess extracting a standalone exam app only after several weeks of actual
   use show that the apartment and match-3 portions are no longer useful.
-- Done when: Jeffrey can enter the exam drill with minimal friction and the
-  decision to keep or separate the broader game is supported by usage rather
-  than architecture speculation.
+- Remaining: use the focus presentation in Safari, then inspect actual behavior
+  and `examFocusStarts` before deciding whether to close this item or extract the
+  drill. Do not infer that decision from the implementation alone.
+- Done when: Jeffrey confirms the focused entry removes the friction and the
+  decision to keep or separate the broader game is supported by actual use.
 
 ## 3. FSRS parameter fitting
 `S.log` records every review. Once ~300+ entries exist, fit FSRS weights to

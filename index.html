@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.27
+  EL PISO ASTURIANO — living spec / v0.28
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -48,6 +48,10 @@
   nav button{font-family:'Nunito'; font-weight:800; font-size:14px; border:none; background:none; color:#8a948d; padding:10px 13px; border-radius:14px; cursor:pointer; position:relative;}
   nav button.active{background:var(--verde); color:#fff;}
   nav button .nbadge{position:absolute; top:2px; right:8px; background:var(--teja); color:#fff; border-radius:999px; font-size:11px; padding:1px 6px; font-weight:800;}
+  body.exam-focus .room-tabs,body.exam-focus .room-wrap,body.exam-focus .room-note,body.exam-focus #tasks,body.exam-focus #shop{display:none;}
+  body.exam-focus nav button:not([data-tab="casa"]){display:none;}
+  body.exam-focus .hud>*:not(#btn-sound){display:none;}
+  body.exam-focus #drill{max-width:620px; margin:0 auto;}
 
   /* ---------- CASA ---------- */
   .room-tabs{display:flex; gap:8px; margin:0 0 10px;}
@@ -219,7 +223,7 @@
 <body>
 
 <header>
-  <h1>El Piso Asturiano<small>Amuebla tu casa, palabra a palabra</small></h1>
+  <h1 id="app-title">El Piso Asturiano<small id="app-subtitle">Amuebla tu casa, palabra a palabra</small></h1>
   <div class="hud">
     <div class="pill"><span class="star">★</span><span id="hud-stars">0</span></div>
     <div class="pill due-badge" id="hud-due" style="display:none">📖 <span id="hud-due-n">0</span></div>
@@ -274,12 +278,12 @@
 </main>
 
 <footer>
-  <span><strong>v0.27</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.28</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
 <nav>
-  <button data-tab="casa" class="active">🏠 Casa</button>
+  <button data-tab="casa" class="active"><span class="nav-casa-label">🏠 Casa</span></button>
   <button data-tab="juego">🍎 Juego</button>
   <button data-tab="repaso">📖 Repaso<span class="nbadge" id="nav-due" style="display:none">0</span></button>
   <button data-tab="stats">📊 Progreso</button>
@@ -1120,7 +1124,7 @@ function dueCmds(phase){
 /* ============================================================
    STATE + persistence
    ============================================================ */
-const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], tier:{}, welcomed:false, log:[], drillPhase:'driving' };
+const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], tier:{}, welcomed:false, log:[], drillPhase:'driving', lastTab:'casa', examFocus:false, examFocusStarts:0 };
 let S;
 let memoryOnly = false;
 
@@ -1141,6 +1145,10 @@ function loadState(){
   if (S.welcomed === undefined) S.welcomed = false;
   if (S.log === undefined) S.log = [];
   if (!['driving','precheck','mixed'].includes(S.drillPhase)) S.drillPhase = 'driving';
+  if (!['casa','juego','repaso','stats'].includes(S.lastTab)) S.lastTab = 'casa';
+  if (typeof S.examFocus !== 'boolean') S.examFocus = false;
+  if (!Number.isInteger(S.examFocusStarts) || S.examFocusStarts < 0) S.examFocusStarts = 0;
+  if (S.examFocus && S.room !== 'garaje') S.room = 'garaje';
   // migrate legacy tasks[] (bare item.id) to tier-aware tasks[] (composite id "baseId:0")
   if (S.tasks.length && typeof S.tasks[0] === 'string' && !S.tasks[0].includes(':')){
     S.tasks = S.tasks.map(id => id + ':0');
@@ -1262,12 +1270,48 @@ document.querySelectorAll('nav button').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 function switchTab(name){
+  if (!['casa','juego','repaso','stats'].includes(name)) name = 'casa';
+  if (S.examFocus) name = 'casa';
+  S.lastTab = name;
+  save();
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
   if (name === 'repaso') renderReview();
   if (name === 'stats') renderStats();
   if (name === 'casa'){ renderRoomTabs(); renderRoom(); renderDrill(); renderTasks(); renderShop(); }
   if (name === 'juego') onEnterJuego();
+}
+function applyExamFocus(){
+  document.body.classList.toggle('exam-focus', S.examFocus);
+  $('app-title').childNodes[0].nodeValue = S.examFocus ? 'El examen de Cooper' : 'El Piso Asturiano';
+  $('app-subtitle').textContent = S.examFocus ? 'Órdenes de conducción y comprobaciones' : 'Amuebla tu casa, palabra a palabra';
+  document.querySelector('.nav-casa-label').textContent = S.examFocus ? '🚦 Examen' : '🏠 Casa';
+}
+function setExamFocus(enabled){
+  enabled = !!enabled;
+  if (enabled === S.examFocus) return;
+  stopDrillTimer(); drillQueue = []; drillMode = null; drillSessionPhase = null;
+  if (enabled){
+    S.examFocusReturnTab = S.lastTab;
+    S.examFocusReturnRoom = S.room;
+    S.examFocus = true;
+    S.examFocusStarts++;
+    S.examFocusEnabledAt = Date.now();
+    S.room = 'garaje';
+    S.lastTab = 'casa';
+    save();
+    applyExamFocus();
+    switchTab('casa');
+  } else {
+    const returnTab = ['casa','juego','repaso','stats'].includes(S.examFocusReturnTab) ? S.examFocusReturnTab : 'casa';
+    const returnRoom = ROOMS[S.examFocusReturnRoom] ? S.examFocusReturnRoom : 'garaje';
+    S.examFocus = false;
+    S.room = returnRoom;
+    S.lastTab = returnTab;
+    save();
+    applyExamFocus();
+    switchTab(returnTab);
+  }
 }
 
 /* ============================================================
@@ -2404,6 +2448,11 @@ function renderDrill(){
         ).join('') +
       '</div>' +
       '<div class="drill-mode-toggle-row">' +
+        '<button class="drill-mode-toggle' + (S.examFocus ? ' on' : '') + '" id="dr-focus-toggle">' +
+          (S.examFocus ? '↩ Salir del enfoque' : '🎯 Enfocar examen') +
+        '</button>' +
+      '</div>' +
+      '<div class="drill-mode-toggle-row">' +
         '<button class="drill-mode-toggle' + (drillTimed ? ' on' : '') + '" id="dr-timed-toggle">⏱️ Modo contrarreloj</button>' +
       '</div>' +
       '<p style="font-weight:700; color:#5c6a63; margin:4px 0">' +
@@ -2424,6 +2473,7 @@ function renderDrill(){
     save();
     renderDrill();
   }));
+  $('dr-focus-toggle').addEventListener('click', () => setExamFocus(!S.examFocus));
   $('dr-timed-toggle').addEventListener('click', () => {
     drillTimed = !drillTimed;
     renderDrill();
@@ -2700,9 +2750,10 @@ function answerCmd(btn, cmd, card){
     }
     btn.classList.add('right');
     SFX.bien();
-    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>' + vehicleAnswerHtml(cmd);
+    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>' + vehicleAnswerHtml(cmd) +
+      '<button class="btn btn-bien" id="dr-next" style="margin-top:10px">Continuar</button>';
     drillQueue.shift();
-    setTimeout(nextDrill, 900);
+    $('dr-next').addEventListener('click', nextDrill);
   } else {
     drillMissed.add(card.id);
     btn.classList.add('wrong');
@@ -2856,7 +2907,7 @@ $('btn-data').addEventListener('click', () => {
 $('btn-reset').addEventListener('click', () => {
   if (confirm('¿Borrar todo el progreso?')){
     S = structuredClone(DEFAULT_STATE);
-    save(); refreshHUD(); renderRoomTabs(); renderRoom(); renderTasks(); renderShop(); startLevel(); renderReview();
+    save(); refreshHUD(); startLevel(); applyExamFocus(); switchTab('casa');
   }
 });
 
@@ -2881,11 +2932,9 @@ lg.innerHTML = TILES.map(t => '<span>' + t.em + ' ' + t.es + '</span>').join('')
 loadState();
 $('btn-sound').textContent = S.sound ? '🔊' : '🔇';
 refreshHUD();
-renderRoomTabs();
-renderRoom();
-renderTasks();
-renderShop();
 startLevel();
+applyExamFocus();
+switchTab(S.examFocus ? 'casa' : S.lastTab);
 if (!S.welcomed){
   S.welcomed = true;
   save();

@@ -4,6 +4,18 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.28 — Exam-focused product mode
+Added a persisted, reversible **Enfocar examen** mode in the Garage. It opens
+directly into Cooper's drill, hides the apartment rooms and unrelated bottom
+tabs, simplifies the header, and retains the last-used driving/precheck/mixed
+selection. Leaving focus restores the prior room and tab without changing any
+game, deck, or FSRS progress. Outside focus mode the app now reopens on the
+last-used tab. An additive focus-start counter in the exported save supports a
+later evidence-based decision about whether the exam should ever become a
+separate product. Correct command answers now remain visible—including their
+vehicle-specific notes—until **Continuar** is pressed instead of advancing after
+900 milliseconds.
+
 ## v0.27 — Toyota Yaris precheck baseline
 Added four native-SVG precheck response surfaces for the 2019 Toyota Yaris
 Hybrid: vehicle/engine locations, instruments/window lock, lighting stalk, and

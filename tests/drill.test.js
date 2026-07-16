@@ -104,6 +104,30 @@ const exportedPhase = JSON.parse(JSON.stringify({drillPhase:'precheck'}));
 assert.strictEqual(exportedPhase.drillPhase, 'precheck',
   'the persisted selection must survive JSON export/import');
 
+const defaultMatch = html.match(/const DEFAULT_STATE = (\{[^\n]+\});/);
+assert(defaultMatch, 'default state must remain extractable');
+const defaultState = Function(`return ${defaultMatch[1]}`)();
+assert.strictEqual(defaultState.lastTab, 'casa', 'new saves should start on Casa');
+assert.strictEqual(defaultState.examFocus, false, 'Exam Focus must be opt-in');
+assert.strictEqual(defaultState.examFocusStarts, 0, 'focus usage starts at zero');
+assert(html.includes("if (!['casa','juego','repaso','stats'].includes(S.lastTab)) S.lastTab = 'casa';"),
+  'old saves must backfill the last-used tab safely');
+assert(html.includes("if (typeof S.examFocus !== 'boolean') S.examFocus = false;"),
+  'old saves must backfill Exam Focus as disabled');
+assert(html.includes("S.examFocusReturnTab = S.lastTab;") &&
+       html.includes("S.examFocusReturnRoom = S.room;"),
+  'enabling focus must preserve the previous app location');
+assert(html.includes('S.examFocusStarts++;'),
+  'focus entries must provide a lightweight usage signal');
+assert(html.includes("switchTab(S.examFocus ? 'casa' : S.lastTab);"),
+  'startup must honor focus mode or reopen the last-used tab');
+assert(html.includes('id="dr-focus-toggle"') && html.includes('🎯 Enfocar examen'),
+  'the Garage must expose the reversible focus control');
+assert(html.includes("document.body.classList.toggle('exam-focus', S.examFocus);"),
+  'focus mode must drive the reduced presentation through one body state');
+assert(html.includes('body.exam-focus nav button:not([data-tab="casa"])'),
+  'focus mode must hide unrelated bottom tabs');
+
 const answerStart = html.indexOf('function answerCmd(');
 const answerEnd = html.indexOf('function nextDrill(', answerStart);
 const answerPaths = html.slice(answerStart, answerEnd);
@@ -113,6 +137,12 @@ assert(!answerPaths.includes('fsrsReview('),
   'answer paths must not bypass the command scheduling policy');
 assert(answerPaths.includes('right && !drillHinted ? 3 : 1'),
   'a hinted response must not receive a successful listening grade');
+assert.strictEqual((answerPaths.match(/id="dr-next"/g) || []).length, 3,
+  'correct, incorrect, and timed-out answers must all wait for Continue');
+assert(!answerPaths.includes('setTimeout(nextDrill'),
+  'correct answers must not disappear on an automatic timer');
+assert(answerPaths.includes("$('dr-next').addEventListener('click', nextDrill);"),
+  'revealed answers should advance only through the Continue control');
 
 const cardStart = html.indexOf('function renderDrillCard(');
 const cardEnd = html.indexOf('\nfunction answerCmd(', cardStart);
