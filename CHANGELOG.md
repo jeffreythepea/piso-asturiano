@@ -4,6 +4,18 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.26 — Separate driving and precheck practice
+Added a persisted three-way Garage selector for Conducción, Comprobaciones, and
+Mixto. Due review, free practice, and answer distractors all respect the chosen
+phase without duplicating command cards or FSRS history. The selector shows
+phase-specific due counts, old saves default to driving, and mixed-session
+results report driving and precheck accuracy separately. Recorded the
+user-confirmed test car as a 2019 Toyota Yaris Hybrid while keeping its physical
+controls and procedures blocked on instructor verification. Added a pre-answer
+**Mostrar español** hint that reveals only the written Spanish command; hinted
+responses remain answerable but do not count as unaided listening successes and
+are recorded explicitly in the command log.
+
 ## v0.25 — Honest exam scheduling and diagnostic logs
 Only untimed due command review now updates FSRS and earns the existing ★1 + 🔨
 reward. Timed due and free-practice attempts requeue within their session but

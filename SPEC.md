@@ -257,7 +257,7 @@ board; selection/hint are soft golden circles, specials glow via drop-shadow.
   stock) — camera integration is the killer feature the HTML can't do well: photograph
   *your own* sofa in Calle Magdalena, attach it to `el sofá`.
 
-## El garaje & El examen de Cooper (v0.14, command set v0.24)
+## El garaje & El examen de Cooper (v0.14, command set v0.24, modes v0.26)
 
 **Purpose**: Jeffrey's DGT practical driving exam. The exam skill is the inverse of the
 rest of the game — *hear Spanish under pressure → act instantly* — so it gets its own
@@ -282,7 +282,13 @@ tú imperatives → plurals → reflexives → usted.
   terminology use verbatim source wording. Alternatives and infinitive/grouped
   prechecks use natural atomic *usted* wording marked `source-derived`; the UI
   must not describe those variants as verbatim examiner quotations.
-- Prechecks remain in the same audio-first drill flow. Their answers use icons
+- Prechecks remain in the same audio-first drill system, selected separately
+  from driving commands or combined through the persisted three-way selector
+  **Conducción / Comprobaciones / Mixto**. Old saves default to `driving`.
+  Due review, free practice, distractors, due counts, and results respect the
+  selected phase; mixed results keep the two phase scores separate. The
+  selector changes neither command IDs nor FSRS histories. Their answers use
+  icons
   for four response-compatible families: engine bay, dashboard/windows,
   lighting, and body/demisting. A future version may add a vehicle diagram or
   multi-step demonstration without splitting them into a separate study track.
@@ -291,6 +297,13 @@ tú imperatives → plurals → reflexives → usted.
 - **Audio-first**: the card front is only 🔊 (es-ES). Answer by tapping an icon;
   distractors are drawn from the same category — segunda vs. tercera salida,
   derecha vs. izquierda — the real exam confusions.
+- **Spanish-only listening hint (v0.26)**: before answering, **Mostrar
+  español** reveals the spoken command in written Spanish without its English
+  translation. The normal Spanish + English answer reveal still appears only
+  after a response. A hinted response is logged as `hinted: true`, does not
+  count as first-attempt listening success, and receives an Again grade in an
+  authoritative due review; a correct selection still advances rather than
+  forcing an immediate repeat.
 - **Junction surface (v0.18)**: when `cmd.cat === 'dir'`, the icon pad is
   replaced with an inline SVG crossroads (viewBox 300×300): four arms
   radiating from a central intersection block with yellow entry arrow at
@@ -323,12 +336,17 @@ tú imperatives → plurals → reflexives → usted.
   ★1 + 🔨; timed and free practice pay nothing (no farming).
 - Every command attempt logs: `phase`, `mode` (`due`/`practice`), `timed`, `first`,
   selected target id (or `null` on timeout), response `ms`, manual audio `replays`,
-  `surface`, `timeout`, and `scheduled`, alongside the legacy grade/stability fields.
+  `hinted`, `surface`, `timeout`, and `scheduled`, alongside the legacy
+  grade/stability fields.
   Old log entries remain valid. JSON backup/restore preserves the additive schema.
 - Stats tab gains: órdenes del examen count + "aciertos al volante" (last-50
   authoritative accuracy; legacy entries remain included because their mode is unknown).
 - Port note: this drill is the strongest candidate for real recorded audio (multiple
   voices, road noise) on iPad — TTS is the v1 shortcut.
+- **Vehicle-specific practice status (v0.26)**: the test car is a 2019 Toyota
+  Yaris Hybrid (user-confirmed). Component locations, dashboard controls, and
+  required physical procedures remain unimplemented until Fermín validates the
+  exact test vehicle; no generic Yaris diagram should be presented as that car.
 
 ## Progreso & review log (v0.10)
 

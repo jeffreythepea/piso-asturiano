@@ -7,8 +7,8 @@
 > active atomic prompts (16 driving, 14 precheck) and withholds one disputed
 > reservoir term. References below to the “current 23-command corpus” are
 > historical review context, not current repository facts. v0.25 implements the
-> recorded scheduling-integrity and command-instrumentation decisions. Phase
-> filtering remains pending.
+> recorded scheduling-integrity and command-instrumentation decisions. v0.26
+> adds persisted driving, precheck, and mixed phase filtering.
 
 This document defines the review method for comparing:
 
