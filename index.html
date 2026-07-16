@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.26
+  EL PISO ASTURIANO — living spec / v0.27
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -153,6 +153,15 @@
   .dir-exit:active .hit{opacity:.7;}
   .dir-exit.right .hit{fill:#E4F2E7; stroke:var(--verde); stroke-width:4;}
   .dir-exit.wrong .hit{fill:#F8E5DF; stroke:var(--teja); stroke-width:4; animation:shake .25s ease;}
+  .pre-svg{width:100%; max-width:360px; height:auto; aspect-ratio:4/3; display:block; margin:0 auto; user-select:none; -webkit-tap-highlight-color:transparent;}
+  .pre-target{cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;}
+  .pre-target .hit{fill:#FBF8F0; stroke:#7f8d82; stroke-width:3; transition:fill .15s ease,stroke .15s ease;}
+  .pre-target .lbl{font-size:27px; pointer-events:none; text-anchor:middle; dominant-baseline:central;}
+  .pre-target:active .hit{opacity:.7;}
+  .pre-target.right .hit{fill:#E4F2E7; stroke:var(--verde); stroke-width:4;}
+  .pre-target.wrong .hit{fill:#F8E5DF; stroke:var(--teja); stroke-width:4; animation:shake .25s ease;}
+  .vehicle-note{font-size:13px; line-height:1.35; font-weight:700; color:#4f5e54; background:#F1F5EF; border:1px solid #CBD8CB; border-radius:10px; padding:8px 10px; margin-top:10px; text-align:left;}
+  .vehicle-note b{color:#2c6e3a;}
   .drill-timer{display:inline-block; font-family:'Fraunces',serif; font-weight:800; font-size:16px; padding:3px 10px; border-radius:999px; background:#E4F2E7; color:var(--verde); margin-left:8px; min-width:42px; text-align:center;}
   .drill-timer.warn{background:#FDEBCF; color:#8a5a0c;}
   .drill-timer.crit{background:#F8E5DF; color:var(--teja); animation:shake .3s ease;}
@@ -265,7 +274,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.26</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.27</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -999,23 +1008,23 @@ const COMMANDS = [
   { id:'c-adel', cat:'man', phase:'driving', type:'terminology-maneuver', wording:'verbatim', validation:'guide-only', page:6, icon:'⏩', es:'Adelantamiento', en:'overtaking', source:'Adelantamiento' },
   { id:'c-final', cat:'man', phase:'driving', type:'exam-state', wording:'verbatim', validation:'spoken-use-unverified', page:5, icon:'🏁', es:'Finalización del examen', en:'end of the test', source:'Finalización del examen' },
   // comprobaciones del compartimento del motor
-  { id:'c-pre-bateria', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'vehicle-unverified', page:3, icon:'🔋', es:'Localice la batería', en:'locate the battery', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante' },
-  { id:'c-pre-aceite', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'vehicle-unverified', page:3, icon:'🛢️', es:'Localice dónde se comprueba el nivel de aceite', en:'locate where the oil level is checked', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante' },
-  { id:'c-pre-refrigerante', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'vehicle-unverified', page:3, icon:'💧', es:'Localice dónde se comprueba el nivel de líquido refrigerante', en:'locate where the coolant level is checked', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante' },
-  { id:'c-pre-capo', cat:'pre-eng', phase:'precheck', type:'multi-step-demonstration', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🚘', es:'Abra el capó y diga qué niveles se deben revisar', en:'open the bonnet and say which levels should be checked', source:'Abrir el capo y decir qué niveles se deben revisar' },
+  { id:'c-pre-bateria', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'manual-baseline', page:3, icon:'🔋', es:'Localice la batería', en:'locate the battery', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante', vehicle:{page:493, answer:'La batería de 12 V está debajo del asiento trasero derecho, bajo una tapa.'} },
+  { id:'c-pre-aceite', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'manual-baseline', page:3, icon:'🛢️', es:'Localice dónde se comprueba el nivel de aceite', en:'locate where the oil level is checked', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante', vehicle:{page:483, answer:'El nivel se comprueba con la varilla de aceite del compartimento del motor.'} },
+  { id:'c-pre-refrigerante', cat:'pre-eng', phase:'precheck', type:'component-location', wording:'source-derived', validation:'manual-baseline', page:3, icon:'💧', es:'Localice dónde se comprueba el nivel de líquido refrigerante', en:'locate where the coolant level is checked', source:'Localizar: Batería, Liquido de frenos, Nivel de aceite y Nivel de líquido refrigerante', vehicle:{page:483, answer:'El depósito de refrigerante del motor está bajo el capó. El híbrido tiene además otro depósito para la unidad de control de potencia.'} },
+  { id:'c-pre-capo', cat:'pre-eng', phase:'precheck', type:'multi-step-demonstration', wording:'source-derived', validation:'manual-baseline', page:4, icon:'🚘', es:'Abra el capó y diga qué niveles se deben revisar', en:'open the bonnet and say which levels should be checked', source:'Abrir el capo y decir qué niveles se deben revisar', vehicle:{page:479, answer:'Tire de la palanca interior, libere el cierre auxiliar y coloque la varilla de apoyo. Bajo el capó: aceite, dos depósitos de refrigerante y líquido lavaparabrisas.'} },
   // comprobaciones del salpicadero y elevalunas
-  { id:'c-pre-combustible', cat:'pre-dash', phase:'precheck', type:'dashboard-location', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'⛽', es:'Indique dónde se comprueba el nivel de combustible', en:'show where the fuel level is checked', source:'Dónde comprobar nivel combustible o temperatura motor' },
-  { id:'c-pre-temperatura', cat:'pre-dash', phase:'precheck', type:'dashboard-location', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🌡️', es:'Indique dónde se comprueba la temperatura del motor', en:'show where the engine temperature is checked', source:'Dónde comprobar nivel combustible o temperatura motor' },
-  { id:'c-pre-bloquear-elevalunas', cat:'pre-dash', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🔒', es:'Active el bloqueo infantil de los elevalunas traseros', en:'activate the rear-window child lock', source:'Bloqueo o desbloqueo infantil de elevalunas traseros' },
-  { id:'c-pre-desbloquear-elevalunas', cat:'pre-dash', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🔓', es:'Desactive el bloqueo infantil de los elevalunas traseros', en:'deactivate the rear-window child lock', source:'Bloqueo o desbloqueo infantil de elevalunas traseros' },
+  { id:'c-pre-combustible', cat:'pre-dash', phase:'precheck', type:'dashboard-location', wording:'source-derived', validation:'manual-baseline', page:4, icon:'⛽', es:'Indique dónde se comprueba el nivel de combustible', en:'show where the fuel level is checked', source:'Dónde comprobar nivel combustible o temperatura motor', vehicle:{page:130, answer:'El indicador de combustible está en el cuadro de instrumentos; su forma cambia entre la pantalla monocroma y la de color.'} },
+  { id:'c-pre-temperatura', cat:'pre-dash', phase:'precheck', type:'dashboard-location', wording:'source-derived', validation:'manual-baseline', page:4, icon:'🌡️', es:'Indique dónde se comprueba la temperatura del motor', en:'show where the engine temperature is checked', source:'Dónde comprobar nivel combustible o temperatura motor', vehicle:{page:134, answer:'La pantalla de color tiene un indicador de temperatura del refrigerante. En otras versiones, una luz de advertencia avisa del sobrecalentamiento.'} },
+  { id:'c-pre-bloquear-elevalunas', cat:'pre-dash', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'manual-baseline', page:4, icon:'🔒', es:'Active el bloqueo infantil de los elevalunas traseros', en:'activate the rear-window child lock', source:'Bloqueo o desbloqueo infantil de elevalunas traseros', vehicle:{page:230, answer:'Pulse el interruptor de bloqueo de las ventanillas en la puerta del conductor. Bloquea los mandos de los pasajeros.'} },
+  { id:'c-pre-desbloquear-elevalunas', cat:'pre-dash', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'manual-baseline', page:4, icon:'🔓', es:'Desactive el bloqueo infantil de los elevalunas traseros', en:'deactivate the rear-window child lock', source:'Bloqueo o desbloqueo infantil de elevalunas traseros', vehicle:{page:230, answer:'Vuelva a pulsar el interruptor de bloqueo en la puerta del conductor para devolver el control a los pasajeros.'} },
   // luces
-  { id:'c-pre-largo-alcance', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🔦', es:'Encienda las luces de largo alcance', en:'turn on the high beams', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera' },
-  { id:'c-pre-niebla-delantera', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🌁', es:'Encienda las luces antiniebla delanteras', en:'turn on the front fog lights', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera' },
-  { id:'c-pre-niebla-trasera', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🌫️', es:'Encienda la luz antiniebla trasera', en:'turn on the rear fog light', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera' },
+  { id:'c-pre-largo-alcance', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'manual-baseline', page:4, icon:'🔦', es:'Encienda las luces de largo alcance', en:'turn on the high beams', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera', vehicle:{page:271, answer:'Con los faros encendidos, empuje la palanca izquierda hacia delante para encender las luces largas.'} },
+  { id:'c-pre-niebla-delantera', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'trim-dependent', page:4, icon:'🌁', es:'Encienda las luces antiniebla delanteras', en:'turn on the front fog lights', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera', vehicle:{page:277, answer:'Si el coche las equipa, gire el aro de antiniebla a la primera posición con los faros o las luces de posición encendidos.'} },
+  { id:'c-pre-niebla-trasera', cat:'pre-light', phase:'precheck', type:'control-operation', wording:'source-derived', validation:'trim-dependent', page:4, icon:'🌫️', es:'Encienda la luz antiniebla trasera', en:'turn on the rear fog light', source:'Encender cualquier luz: largo alcance, niebla delantera o trasera', vehicle:{page:276, answer:'Gire el aro de antiniebla a la posición trasera. El manual muestra una versión trasera sola y otra combinada con antinieblas delanteros.'} },
   // carrocería y desempañado
-  { id:'c-pre-maletero', cat:'pre-body', phase:'precheck', type:'physical-demonstration', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🧳', es:'Abra el maletero', en:'open the boot', source:'Abrir el maletero' },
-  { id:'c-pre-desempanar-delantera', cat:'pre-body', phase:'precheck', type:'control-explanation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'🪟', es:'Indique cómo desempañar la luna delantera', en:'show how to demist the front windscreen', source:'Cómo desempañar la luna delantera o trasera' },
-  { id:'c-pre-desempanar-trasera', cat:'pre-body', phase:'precheck', type:'control-explanation', wording:'source-derived', validation:'vehicle-unverified', page:4, icon:'♨️', es:'Indique cómo desempañar la luna trasera', en:'show how to demist the rear window', source:'Cómo desempañar la luna delantera o trasera' },
+  { id:'c-pre-maletero', cat:'pre-body', phase:'precheck', type:'physical-demonstration', wording:'source-derived', validation:'manual-baseline', page:4, icon:'🧳', es:'Abra el maletero', en:'open the boot', source:'Abrir el maletero', vehicle:{page:178, answer:'Pulse hacia arriba el abridor situado bajo el borde de la puerta trasera y levante el portón.'} },
+  { id:'c-pre-desempanar-delantera', cat:'pre-body', phase:'precheck', type:'control-explanation', wording:'source-derived', validation:'trim-dependent', page:4, icon:'🪟', es:'Indique cómo desempañar la luna delantera', en:'show how to demist the front windscreen', source:'Cómo desempañar la luna delantera o trasera', vehicle:{page:435, answer:'Use el botón del desempañador del parabrisas. La disposición exacta depende del sistema de climatización.'} },
+  { id:'c-pre-desempanar-trasera', cat:'pre-body', phase:'precheck', type:'control-explanation', wording:'source-derived', validation:'trim-dependent', page:4, icon:'♨️', es:'Indique cómo desempañar la luna trasera', en:'show how to demist the rear window', source:'Cómo desempañar la luna delantera o trasera', vehicle:{page:435, answer:'Pulse el interruptor del desempañador de la luneta trasera; algunas versiones también desempañan los retrovisores.'} },
 ];
 function phraseHTML(p){
   return p.es.replace(/\b(el|la|los|las)\b/, m => '<span class="g-' + m + '">' + m + '</span>');
@@ -2299,7 +2308,15 @@ function gradeCommandCard(card, grade, mode, timed){
 function drillSurfaceId(cmd){
   if (cmd.cat === 'rot') return 'roundabout-v2';
   if (cmd.cat === 'dir') return 'junction-v1';
+  if (cmd.cat.startsWith('pre-')) return 'yaris-manual-v1-' + cmd.cat.slice(4);
   return 'icon-grid-v1';
+}
+function vehicleAnswerHtml(cmd){
+  if (!cmd.vehicle) return '';
+  const caveat = cmd.validation === 'trim-dependent'
+    ? ' · <em>equipamiento por confirmar</em>' : '';
+  return '<div class="vehicle-note"><b>Toyota Yaris Hybrid 2019 — referencia provisional:</b> ' +
+    cmd.vehicle.answer + '<br><span>Manual PZ49X-52A96-EN, p. ' + cmd.vehicle.page + caveat + '</span></div>';
 }
 function commandLogEntry(cmd, card, grade, context){
   return {
@@ -2356,7 +2373,7 @@ function drillOptions(cmd, phase){
     .sort(() => Math.random() - 0.5);
   // Diagram surfaces represent their category literally; do not fill their
   // missing arms/exits with unrelated commands.
-  if (cmd.cat === 'dir' || cmd.cat === 'rot'){
+  if (cmd.cat === 'dir' || cmd.cat === 'rot' || cmd.cat.startsWith('pre-')){
     return [cmd, ...sameCat].sort(() => Math.random() - 0.5);
   }
   const others = uniqByIcon(candidates.filter(c => c.cat !== cmd.cat))
@@ -2392,7 +2409,9 @@ function renderDrill(){
       '<p style="font-weight:700; color:#5c6a63; margin:4px 0">' +
         (drillTimed ? '8 segundos por orden. Entrenamiento de presión: no cambia tu calendario.' : 'Escucha la orden del examinador y toca la respuesta.') +
       '</p>' +
-      '<div class="drill-warn">Fuente: guía de Autoescuela Fermín (2020), con ejemplos comunes; no es una transcripción exhaustiva del examinador. ' + total + ' órdenes en este modo.</div>' +
+      '<div class="drill-warn">Fuente de las órdenes: guía de Autoescuela Fermín (2020), no una transcripción exhaustiva. ' +
+        (S.drillPhase === 'driving' ? '' : 'Las respuestas físicas usan el manual del Toyota Yaris Hybrid de mayo de 2019 como referencia provisional; el equipamiento del coche y las expectativas del instructor siguen sin confirmar. ') +
+        total + ' órdenes en este modo.</div>' +
       (nd > 0
         ? '<button class="btn btn-bien" id="dr-due">' +
             (drillTimed ? 'Entrenar ' + nd + ' pendientes' : 'Repasar ' + nd + ' órdenes · ★1') +
@@ -2536,6 +2555,72 @@ function junctionSVG(exits){
   return `<svg class="dir-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">${roads}${cross}${markings}${entry}${buttons}</svg>`;
 }
 
+function precheckSVG(cat, options){
+  const layouts = {
+    'pre-eng': {
+      background:
+        `<path d="M35 185 Q45 105 125 82 L250 82 Q305 88 350 145 L370 185 Z" fill="#d9ded8" stroke="#657168" stroke-width="4"/>` +
+        `<path d="M128 91 L238 91 L278 142 L116 142 Z" fill="#b9d6df" stroke="#657168" stroke-width="3"/>` +
+        `<line x1="185" y1="91" x2="185" y2="142" stroke="#657168" stroke-width="3"/>` +
+        `<circle cx="105" cy="190" r="29" fill="#535a53"/><circle cx="305" cy="190" r="29" fill="#535a53"/>` +
+        `<path d="M38 115 L115 92 L113 145 L35 160 Z" fill="#eef1ea" stroke="#657168" stroke-width="3"/>` +
+        `<text x="200" y="265" text-anchor="middle" font-size="13" font-weight="700" fill="#68756b">ubicaciones aproximadas según el manual</text>`,
+      positions:{
+        'c-pre-aceite':{x:65,y:125}, 'c-pre-refrigerante':{x:105,y:105},
+        'c-pre-bateria':{x:255,y:133}, 'c-pre-capo':{x:60,y:205}
+      }
+    },
+    'pre-dash': {
+      background:
+        `<path d="M45 50 Q200 5 355 50 L335 170 L65 170 Z" fill="#444d47" stroke="#657168" stroke-width="4"/>` +
+        `<circle cx="125" cy="100" r="48" fill="#eef1ea" stroke="#9aa69a" stroke-width="3"/>` +
+        `<circle cx="275" cy="100" r="48" fill="#eef1ea" stroke="#9aa69a" stroke-width="3"/>` +
+        `<path d="M80 205 L320 205 L345 270 L55 270 Z" fill="#d9ded8" stroke="#657168" stroke-width="4"/>` +
+        `<rect x="105" y="225" width="190" height="27" rx="9" fill="#535a53"/>` +
+        `<text x="200" y="292" text-anchor="middle" font-size="13" font-weight="700" fill="#68756b">cuadro de instrumentos · puerta del conductor</text>`,
+      positions:{
+        'c-pre-combustible':{x:125,y:100}, 'c-pre-temperatura':{x:275,y:100},
+        'c-pre-bloquear-elevalunas':{x:145,y:238}, 'c-pre-desbloquear-elevalunas':{x:255,y:238}
+      }
+    },
+    'pre-light': {
+      background:
+        `<circle cx="92" cy="150" r="55" fill="#444d47" stroke="#657168" stroke-width="4"/>` +
+        `<path d="M135 135 L345 105 Q370 103 372 128 L372 172 Q370 197 345 195 L135 165 Z" fill="#d9ded8" stroke="#657168" stroke-width="4"/>` +
+        `<rect x="215" y="113" width="22" height="74" rx="8" fill="#eef1ea" stroke="#657168" stroke-width="3"/>` +
+        `<rect x="290" y="106" width="22" height="88" rx="8" fill="#eef1ea" stroke="#657168" stroke-width="3"/>` +
+        `<path d="M55 77 L95 42 L135 77" fill="none" stroke="#e8c547" stroke-width="6" stroke-linecap="round"/>` +
+        `<text x="200" y="270" text-anchor="middle" font-size="13" font-weight="700" fill="#68756b">palanca izquierda · la versión exacta puede variar</text>`,
+      positions:{
+        'c-pre-largo-alcance':{x:92,y:74}, 'c-pre-niebla-delantera':{x:226,y:150},
+        'c-pre-niebla-trasera':{x:301,y:150}
+      }
+    },
+    'pre-body': {
+      background:
+        `<path d="M28 118 Q45 65 118 55 L210 58 Q255 65 285 110 L335 120 L355 175 L30 175 Z" fill="#d9ded8" stroke="#657168" stroke-width="4"/>` +
+        `<path d="M213 69 Q255 78 278 115 L212 112 Z" fill="#b9d6df" stroke="#657168" stroke-width="3"/>` +
+        `<path d="M52 105 L18 78" stroke="#e8c547" stroke-width="6" stroke-linecap="round"/>` +
+        `<circle cx="100" cy="178" r="27" fill="#535a53"/><circle cx="285" cy="178" r="27" fill="#535a53"/>` +
+        `<rect x="72" y="220" width="256" height="55" rx="15" fill="#444d47"/>` +
+        `<circle cx="135" cy="247" r="20" fill="#eef1ea"/><circle cx="265" cy="247" r="20" fill="#eef1ea"/>` +
+        `<text x="200" y="297" text-anchor="middle" font-size="13" font-weight="700" fill="#68756b">portón · mandos de climatización</text>`,
+      positions:{
+        'c-pre-maletero':{x:55,y:105}, 'c-pre-desempanar-delantera':{x:135,y:247},
+        'c-pre-desempanar-trasera':{x:265,y:247}
+      }
+    }
+  };
+  const layout = layouts[cat];
+  const buttons = options.map(o => {
+    const p = layout.positions[o.id];
+    return `<g class="opt pre-target" data-id="${o.id}">` +
+      `<circle cx="${p.x}" cy="${p.y}" r="30" class="hit"/>` +
+      `<text x="${p.x}" y="${p.y}" class="lbl">${o.icon}</text></g>`;
+  }).join('');
+  return `<svg class="pre-svg" viewBox="0 0 400 300" role="img" aria-label="Esquema provisional del Toyota Yaris Hybrid" xmlns="http://www.w3.org/2000/svg">${layout.background}${buttons}</svg>`;
+}
+
 function renderDrillCard(){
   const el = $('drill');
   const card = drillQueue[0];
@@ -2568,6 +2653,8 @@ function renderDrillCard(){
     };
     const dirOpts = opts.map(o => ({ id: o.id, icon: positions[o.id].icon, x: positions[o.id].x, y: positions[o.id].y }));
     optionsHtml = junctionSVG(dirOpts);
+  } else if (cmd.cat.startsWith('pre-')){
+    optionsHtml = precheckSVG(cmd.cat, opts);
   } else {
     optionsHtml = '<div class="opts">' +
       opts.map(o => '<button class="opt" data-id="' + o.id + '">' + o.icon + '</button>').join('') +
@@ -2613,7 +2700,7 @@ function answerCmd(btn, cmd, card){
     }
     btn.classList.add('right');
     SFX.bien();
-    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>';
+    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>' + vehicleAnswerHtml(cmd);
     drillQueue.shift();
     setTimeout(nextDrill, 900);
   } else {
@@ -2621,7 +2708,7 @@ function answerCmd(btn, cmd, card){
     btn.classList.add('wrong');
     SFX.otra();
     document.querySelectorAll('.opt').forEach(b => { if (b.dataset.id === cmd.id) b.classList.add('right'); });
-    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>' +
+    reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>' + vehicleAnswerHtml(cmd) +
       '<button class="btn btn-bien" id="dr-next" style="margin-top:10px">Continuar</button>';
     speak(cmd.es);
     drillQueue.push(drillQueue.shift());     // requeue until answered right
@@ -2643,7 +2730,7 @@ function answerCmdTimedExpired(rightBtn, cmd, card){
   reveal.innerHTML =
     '<div class="es">¡Se acabó el tiempo!</div>' +
     '<div class="es" style="margin-top:4px">' + cmd.es + '</div>' +
-    '<div class="en">' + cmd.en + '</div>' +
+    '<div class="en">' + cmd.en + '</div>' + vehicleAnswerHtml(cmd) +
     '<button class="btn btn-bien" id="dr-next" style="margin-top:10px">Continuar</button>';
   speak(cmd.es);
   drillQueue.push(drillQueue.shift());     // requeue

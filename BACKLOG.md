@@ -5,17 +5,24 @@ SPEC.md, build it as a discrete shippable chunk (tests green, version bumped,
 CHANGELOG line added). Move the item here → CHANGELOG when done. Jeffrey
 prioritizes; don't invent large features not listed without asking him.
 
-## 1. Vehicle-specific precheck practice  ← vehicle known; controls unverified
+## 1. Vehicle-specific precheck practice  ← manual baseline shipped; car unverified
 The test car is a **2019 Toyota Yaris Hybrid** (user-confirmed). After Fermín
-confirms its actual controls and procedures, add engine-bay and dashboard
-response diagrams.
+confirms its actual controls and procedures, replace or correct the provisional
+manual-based response diagrams shipped in v0.27.
+- v0.27 baseline: native-SVG vehicle/engine, instruments/windows, lighting,
+  and body/demister surfaces plus answer notes from Toyota manual
+  `PZ49X-52A96-EN` (May 2019). Trim-dependent controls are labeled honestly.
 - Validate component names, locations, controls, and required actions against
   the real vehicle; do not assume the Toyota/Renault illustrations in the guide
   match the test car.
 - Keep generic listening comprehension separate from vehicle-specific physical
   location/procedure practice, with honest measurement for each.
+- Remaining evidence: photos of the actual instrument cluster, left stalk,
+  climate panel, driver's window switches, engine bay, hatch opener, and rear
+  right battery cover, followed by instructor confirmation.
 - Done when: the diagrams and expected responses are instructor-validated and
-  usable on iPad without `foreignObject`.
+  usable on iPad without `foreignObject` (the v0.27 baseline already meets the
+  rendering constraint).
 
 ## 2. Exam-focused product mode
 After the drill modes and v0.25 instrumentation have been used in Safari, make

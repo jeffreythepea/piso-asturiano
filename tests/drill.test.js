@@ -59,7 +59,8 @@ assert.strictEqual(fsrsCalls, 1, 'diagnostic attempts must never call FSRS');
 
 assert.strictEqual(helpers.drillSurfaceId({cat:'rot'}), 'roundabout-v2');
 assert.strictEqual(helpers.drillSurfaceId({cat:'dir'}), 'junction-v1');
-assert.strictEqual(helpers.drillSurfaceId({cat:'pre-eng'}), 'icon-grid-v1');
+assert.strictEqual(helpers.drillSurfaceId({cat:'pre-eng'}), 'yaris-manual-v1-eng');
+assert.strictEqual(helpers.drillSurfaceId({cat:'pre-light'}), 'yaris-manual-v1-light');
 
 const entry = helpers.commandLogEntry(
   { phase:'driving' }, { id:'c-der', S:2.5 }, 1,
@@ -124,6 +125,10 @@ assert(!cardPath.includes("$('dr-hint').textContent = cmd.en;"),
   'the pre-answer hint must not reveal English');
 assert(cardPath.includes('drillMissed.add(card.id);'),
   'using the hint must remove the attempt from unaided first-attempt accuracy');
+assert(cardPath.includes("optionsHtml = precheckSVG(cmd.cat, opts);"),
+  'prechecks should use the Yaris manual-based SVG response surfaces');
+assert(html.includes('equipamiento del coche y las expectativas del instructor siguen sin confirmar'),
+  'the drill must disclose the limitations of the manual baseline');
 
 const nextStart = answerEnd;
 const nextEnd = html.indexOf('/* ============================================================\n   PROGRESO', nextStart);

@@ -4,6 +4,17 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.27 — Toyota Yaris precheck baseline
+Added four native-SVG precheck response surfaces for the 2019 Toyota Yaris
+Hybrid: vehicle/engine locations, instruments/window lock, lighting stalk, and
+body/demister controls. Each answer now reveals a concise vehicle-specific note
+with its page in Toyota manual `PZ49X-52A96-EN`. The drill correctly places the
+12-volt battery under the rear-right seat, distinguishes the two hybrid coolant
+reservoirs, and flags fog lights, instrument clusters, and climate controls as
+trim-dependent. The UI explicitly describes these responses as a provisional
+manual baseline pending photos and instructor confirmation; command wording,
+IDs, and FSRS histories are unchanged.
+
 ## v0.26 — Separate driving and precheck practice
 Added a persisted three-way Garage selector for Conducción, Comprobaciones, and
 Mixto. Due review, free practice, and answer distractors all respect the chosen

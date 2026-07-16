@@ -66,6 +66,17 @@ assert.strictEqual(commands.filter(c => c.phase === 'driving').length, 16,
 assert.strictEqual(commands.filter(c => c.phase === 'precheck').length, 14,
   '14 safe prechecks should ship while the disputed reservoir is withheld');
 
+for (const cmd of commands.filter(c => c.phase === 'precheck')) {
+  assert(cmd.vehicle && cmd.vehicle.page && cmd.vehicle.answer,
+    `${cmd.id} needs a manual-backed vehicle answer`);
+  assert(['manual-baseline', 'trim-dependent'].includes(cmd.validation),
+    `${cmd.id} must disclose its vehicle-validation status`);
+}
+assert.strictEqual(byId['c-pre-bateria'].vehicle.page, 493,
+  'the Yaris 12-volt battery baseline must point to its under-seat manual page');
+assert(byId['c-pre-bateria'].vehicle.answer.includes('asiento trasero derecho'),
+  'the battery must not be taught as an engine-bay component');
+
 for (const cmd of commands) {
   assert(['driving', 'precheck'].includes(cmd.phase), `${cmd.id} needs a valid phase`);
   assert(cmd.type, `${cmd.id} needs a response type`);
