@@ -3,19 +3,39 @@ const path = require('path');
 const assert = require('assert');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const helpersStart = html.indexOf('function commandAttemptSchedules(');
+const helpersStart = html.indexOf('function commandInDrillPhase(');
 const helpersEnd = html.indexOf('function recordCommandAttempt(', helpersStart);
 assert(helpersStart >= 0 && helpersEnd > helpersStart, 'command policy helpers not found');
 
 let fsrsCalls = 0;
-const helpers = Function('fsrsReview',
+const sampleCommands = {
+  driving1:{id:'driving1', phase:'driving'},
+  driving2:{id:'driving2', phase:'driving'},
+  precheck1:{id:'precheck1', phase:'precheck'}
+};
+const helpers = Function('fsrsReview', 'cmdOf',
   `${html.slice(helpersStart, helpersEnd)}; return {` +
+  'commandInDrillPhase, commandCardsForPhase, drillPhaseLabel, drillPhaseResultHtml,' +
   'commandAttemptSchedules, gradeCommandCard, drillSurfaceId, commandLogEntry};'
 )((card, grade) => {
   fsrsCalls++;
   card.S = grade === 3 ? 2.5 : 0.5;
   card.due = 999;
-});
+}, card => sampleCommands[card.id]);
+
+const sampleCards = Object.keys(sampleCommands).map(id => ({id}));
+assert.deepStrictEqual(helpers.commandCardsForPhase(sampleCards, 'driving').map(c => c.id),
+  ['driving1','driving2']);
+assert.deepStrictEqual(helpers.commandCardsForPhase(sampleCards, 'precheck').map(c => c.id),
+  ['precheck1']);
+assert.deepStrictEqual(helpers.commandCardsForPhase(sampleCards, 'mixed').map(c => c.id),
+  ['driving1','driving2','precheck1']);
+assert.strictEqual(helpers.drillPhaseLabel('driving'), 'Conducción');
+assert.strictEqual(helpers.drillPhaseLabel('precheck'), 'Comprobaciones');
+assert.strictEqual(helpers.drillPhaseLabel('mixed'), 'Mixto');
+assert.strictEqual(helpers.drillPhaseResultHtml({
+  driving:{size:2,right:1}, precheck:{size:1,right:1}
+}, 'mixed'), '<p>Conducción: 1 de 2 a la primera</p><p>Comprobaciones: 1 de 1 a la primera</p>');
 
 assert.strictEqual(helpers.commandAttemptSchedules('due', false), true,
   'untimed due review is authoritative');
@@ -54,6 +74,34 @@ assert.deepStrictEqual(entry, {
 });
 assert.deepStrictEqual(JSON.parse(JSON.stringify({log:[entry]})).log[0], entry,
   'instrumented command logs must survive JSON backup/restore');
+
+const optionsStart = html.indexOf('function drillOptions(');
+const optionsEnd = html.indexOf('\nfunction renderDrill(', optionsStart);
+assert(optionsStart >= 0 && optionsEnd > optionsStart, 'drillOptions helper not found');
+const optionCommands = [
+  {id:'d1', phase:'driving', cat:'man', icon:'1'},
+  {id:'d2', phase:'driving', cat:'man', icon:'2'},
+  {id:'p1', phase:'precheck', cat:'pre', icon:'A'},
+  {id:'p2', phase:'precheck', cat:'pre', icon:'B'},
+  {id:'p3', phase:'precheck', cat:'pre2', icon:'C'},
+  {id:'p4', phase:'precheck', cat:'pre3', icon:'D'}
+];
+const drillOptions = Function('COMMANDS', 'commandInDrillPhase',
+  `${html.slice(optionsStart, optionsEnd)}; return drillOptions;`
+)(optionCommands, helpers.commandInDrillPhase);
+assert(drillOptions(optionCommands[0], 'driving').every(c => c.phase === 'driving'),
+  'driving answer choices must never include prechecks');
+assert(drillOptions(optionCommands[2], 'precheck').every(c => c.phase === 'precheck'),
+  'precheck answer choices must never include driving commands');
+assert(drillOptions(optionCommands[0], 'mixed').some(c => c.phase === 'precheck'),
+  'mixed answer choices may use either phase');
+
+assert(html.includes("drillPhase:'driving'"), 'new saves must default to driving mode');
+assert(html.includes("if (!['driving','precheck','mixed'].includes(S.drillPhase)) S.drillPhase = 'driving';"),
+  'old or invalid saves must backfill to driving mode');
+const exportedPhase = JSON.parse(JSON.stringify({drillPhase:'precheck'}));
+assert.strictEqual(exportedPhase.drillPhase, 'precheck',
+  'the persisted selection must survive JSON export/import');
 
 const answerStart = html.indexOf('function answerCmd(');
 const answerEnd = html.indexOf('function nextDrill(', answerStart);

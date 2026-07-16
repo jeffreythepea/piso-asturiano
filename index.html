@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.25
+  EL PISO ASTURIANO — living spec / v0.26
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -159,6 +159,10 @@
   .drill-mode-toggle{display:inline-block; font-weight:800; font-size:13px; padding:6px 14px; border-radius:999px; border:1.5px solid var(--linea); background:#FBF8F0; color:#5c6a63; cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease;}
   .drill-mode-toggle.on{background:var(--verde); color:#fff; border-color:var(--verde);}
   .drill-mode-toggle-row{margin:6px 0 10px; text-align:center;}
+  .drill-phase-row{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0;}
+  .drill-phase{font-weight:800; font-size:12px; padding:8px 4px; border-radius:10px; border:1.5px solid var(--linea); background:#FBF8F0; color:#5c6a63; cursor:pointer;}
+  .drill-phase span{font-size:10px; opacity:.8;}
+  .drill-phase.on{background:var(--verde); color:#fff; border-color:var(--verde);}
   .drill-reveal{margin-top:12px; font-weight:800;}
   .drill-reveal .es{font-family:'Fraunces',serif; font-size:20px;}
   .drill-reveal .en{font-size:12px; color:#9aa49c;}
@@ -260,7 +264,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.25</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.26</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -1098,15 +1102,15 @@ function dueCards(){
   const now = Date.now();
   return S.deck.filter(c => c.kind !== 'cmd' && c.due <= now);   // exam drill has its own track
 }
-function dueCmds(){
+function dueCmds(phase){
   const now = Date.now();
-  return S.deck.filter(c => c.kind === 'cmd' && c.due <= now);
+  return commandCardsForPhase(S.deck.filter(c => c.kind === 'cmd' && c.due <= now), phase || 'mixed');
 }
 
 /* ============================================================
    STATE + persistence
    ============================================================ */
-const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], tier:{}, welcomed:false, log:[] };
+const DEFAULT_STATE = { stars:3, level:1, owned:[], deck:[], sound:true, hammers:1, gloves:1, room:'sala', tasks:[], tier:{}, welcomed:false, log:[], drillPhase:'driving' };
 let S;
 let memoryOnly = false;
 
@@ -1126,6 +1130,7 @@ function loadState(){
   if (S.tier === undefined) S.tier = {};
   if (S.welcomed === undefined) S.welcomed = false;
   if (S.log === undefined) S.log = [];
+  if (!['driving','precheck','mixed'].includes(S.drillPhase)) S.drillPhase = 'driving';
   // migrate legacy tasks[] (bare item.id) to tier-aware tasks[] (composite id "baseId:0")
   if (S.tasks.length && typeof S.tasks[0] === 'string' && !S.tasks[0].includes(':')){
     S.tasks = S.tasks.map(id => id + ':0');
@@ -1274,7 +1279,7 @@ function renderRoomTabs(){
         return;
       }
       S.room = id; save();
-      drillQueue = []; drillMode = null;
+      stopDrillTimer(); drillQueue = []; drillMode = null; drillSessionPhase = null;
       renderRoomTabs(); renderRoom(); renderDrill(); renderTasks(); renderShop();
     });
     el.appendChild(b);
@@ -2260,10 +2265,27 @@ function answer(bien){
    EL EXAMEN DE COOPER — audio-first command drill
    ============================================================ */
 let drillQueue = [], drillMode = null, drillSize = 0, drillRight = 0, drillLock = false, drillMissed = new Set();
+let drillSessionPhase = null, drillPhaseResults = null;
 let drillTimed = false;          // per-session opt-in toggle (not persisted)
 const DRILL_TIME_MS = 8000;      // 8 seconds per card in timed mode
 let drillTimerId = null, drillTimerTick = null;
 let drillCardStartedAt = 0, drillReplayCount = 0;
+
+function commandInDrillPhase(cmd, phase){
+  return !!cmd && (phase === 'mixed' || cmd.phase === phase);
+}
+function commandCardsForPhase(cards, phase){
+  return cards.filter(card => commandInDrillPhase(cmdOf(card), phase));
+}
+function drillPhaseLabel(phase){
+  return phase === 'precheck' ? 'Comprobaciones' : phase === 'mixed' ? 'Mixto' : 'Conducción';
+}
+function drillPhaseResultHtml(results, phase){
+  const phases = phase === 'mixed' ? ['driving','precheck'] : [phase];
+  return phases.filter(p => results[p].size > 0).map(p =>
+    '<p>' + drillPhaseLabel(p) + ': ' + results[p].right + ' de ' + results[p].size + ' a la primera</p>'
+  ).join('');
+}
 
 function commandAttemptSchedules(mode, timed){
   return mode === 'due' && !timed;
@@ -2323,19 +2345,20 @@ function seedCommands(){
 }
 function cmdOf(card){ return COMMANDS.find(c => c.id === card.id); }
 
-function drillOptions(cmd){
+function drillOptions(cmd, phase){
+  const candidates = COMMANDS.filter(c => commandInDrillPhase(c, phase || 'mixed'));
   const uniqByIcon = (list) => {
     const seen = new Set([cmd.icon]);
     return list.filter(c => { if (seen.has(c.icon)) return false; seen.add(c.icon); return true; });
   };
-  const sameCat = uniqByIcon(COMMANDS.filter(c => c.cat === cmd.cat && c.id !== cmd.id))
+  const sameCat = uniqByIcon(candidates.filter(c => c.cat === cmd.cat && c.id !== cmd.id))
     .sort(() => Math.random() - 0.5);
   // Diagram surfaces represent their category literally; do not fill their
   // missing arms/exits with unrelated commands.
   if (cmd.cat === 'dir' || cmd.cat === 'rot'){
     return [cmd, ...sameCat].sort(() => Math.random() - 0.5);
   }
-  const others = uniqByIcon(COMMANDS.filter(c => c.cat !== cmd.cat))
+  const others = uniqByIcon(candidates.filter(c => c.cat !== cmd.cat))
     .sort(() => Math.random() - 0.5);
   const picks = sameCat.slice(0, 3);
   while (picks.length < 3 && others.length) picks.push(others.shift());
@@ -2347,18 +2370,28 @@ function renderDrill(){
   if (S.room !== 'garaje'){ el.innerHTML = ''; drillQueue = []; return; }
   seedCommands();
   if (drillQueue.length){ renderDrillCard(); return; }
-  const nd = dueCmds().length;
-  const total = S.deck.filter(c => c.kind === 'cmd').length;
+  const dueDriving = dueCmds('driving').length;
+  const duePrecheck = dueCmds('precheck').length;
+  const dueCounts = { driving:dueDriving, precheck:duePrecheck, mixed:dueDriving + duePrecheck };
+  const nd = dueCounts[S.drillPhase];
+  const total = commandCardsForPhase(S.deck.filter(c => c.kind === 'cmd'), S.drillPhase).length;
   el.innerHTML =
     '<div class="drill-panel">' +
       '<h3>🚦 El examen de Cooper 🦺</h3>' +
+      '<div class="drill-phase-row" aria-label="Tipo de práctica">' +
+        ['driving','precheck','mixed'].map(phase =>
+          '<button class="drill-phase' + (S.drillPhase === phase ? ' on' : '') + '" data-phase="' + phase + '">' +
+            drillPhaseLabel(phase) + '<br><span>' + dueCounts[phase] + ' pendientes</span>' +
+          '</button>'
+        ).join('') +
+      '</div>' +
       '<div class="drill-mode-toggle-row">' +
         '<button class="drill-mode-toggle' + (drillTimed ? ' on' : '') + '" id="dr-timed-toggle">⏱️ Modo contrarreloj</button>' +
       '</div>' +
       '<p style="font-weight:700; color:#5c6a63; margin:4px 0">' +
         (drillTimed ? '8 segundos por orden. Entrenamiento de presión: no cambia tu calendario.' : 'Escucha la orden del examinador y toca la respuesta.') +
       '</p>' +
-      '<div class="drill-warn">Fuente: guía de Autoescuela Fermín (2020), con ejemplos comunes; no es una transcripción exhaustiva del examinador. ' + total + ' órdenes.</div>' +
+      '<div class="drill-warn">Fuente: guía de Autoescuela Fermín (2020), con ejemplos comunes; no es una transcripción exhaustiva del examinador. ' + total + ' órdenes en este modo.</div>' +
       (nd > 0
         ? '<button class="btn btn-bien" id="dr-due">' +
             (drillTimed ? 'Entrenar ' + nd + ' pendientes' : 'Repasar ' + nd + ' órdenes · ★1') +
@@ -2366,6 +2399,11 @@ function renderDrill(){
         : '<p style="font-weight:800; color:var(--verde); margin:6px 0">✓ Nada pendiente ahora</p>') +
       '<button class="btn btn-audio" id="dr-free" style="font-size:15px">Práctica libre</button>' +
     '</div>';
+  el.querySelectorAll('.drill-phase').forEach(b => b.addEventListener('click', () => {
+    S.drillPhase = b.dataset.phase;
+    save();
+    renderDrill();
+  }));
   $('dr-timed-toggle').addEventListener('click', () => {
     drillTimed = !drillTimed;
     renderDrill();
@@ -2407,13 +2445,16 @@ function startDrillTimer(card, cmd){
 
 function startDrill(practice){
   drillMode = practice ? 'practice' : 'due';
+  drillSessionPhase = S.drillPhase;
   const pool = practice
-    ? S.deck.filter(c => c.kind === 'cmd')
-    : dueCmds();
+    ? commandCardsForPhase(S.deck.filter(c => c.kind === 'cmd'), drillSessionPhase)
+    : dueCmds(drillSessionPhase);
   drillQueue = pool.slice().sort(() => Math.random() - 0.5);
   drillSize = drillQueue.length;
   drillRight = 0;
   drillMissed = new Set();
+  drillPhaseResults = { driving:{size:0,right:0}, precheck:{size:0,right:0} };
+  pool.forEach(card => { drillPhaseResults[cmdOf(card).phase].size++; });
   renderDrillCard();
 }
 
@@ -2498,7 +2539,7 @@ function renderDrillCard(){
   const el = $('drill');
   const card = drillQueue[0];
   const cmd = cmdOf(card);
-  const opts = drillOptions(cmd);
+  const opts = drillOptions(cmd, drillSessionPhase);
   const done = drillSize - drillQueue.length;
   drillLock = false;
   stopDrillTimer();
@@ -2556,7 +2597,10 @@ function answerCmd(btn, cmd, card){
   recordCommandAttempt(cmd, card, right ? 3 : 1, btn.dataset.id, false);
   const reveal = $('dr-reveal');
   if (right){
-    if (!drillMissed.has(card.id)) drillRight++;   // first-attempt successes only
+    if (!drillMissed.has(card.id)){
+      drillRight++;   // first-attempt successes only
+      drillPhaseResults[cmd.phase].right++;
+    }
     btn.classList.add('right');
     SFX.bien();
     reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>';
@@ -2608,15 +2652,15 @@ function nextDrill(){
     rewardTxt = '<p>+1 estrella · +1 🔨</p>';
   }
   showModal(
-    '<div class="em">🦺</div><h2>Fin del examen</h2>' +
-    '<p>' + drillRight + ' de ' + drillSize + ' a la primera</p>' + rewardTxt +
+    '<div class="em">🦺</div><h2>Fin: ' + drillPhaseLabel(drillSessionPhase) + '</h2>' +
+    drillPhaseResultHtml(drillPhaseResults, drillSessionPhase) + rewardTxt +
     '<p class="cooper">🐕 <b>Cooper:</b> ' +
       (drillRight === drillSize ? '¡Apto! Bueno… casi.<br><span class="cen">Pass! Well… almost.</span>'
                                 : 'En la calle no hay segunda salida… digo, oportunidad.<br><span class="cen">On the road there are no second chances.</span>') +
     '</p>' +
     '<button class="btn btn-bien" onclick="closeModal()">Vale</button>'
   );
-  drillMode = null; drillSize = 0; drillRight = 0;
+  drillMode = null; drillSize = 0; drillRight = 0; drillSessionPhase = null; drillPhaseResults = null;
   renderDrill();
 }
 
