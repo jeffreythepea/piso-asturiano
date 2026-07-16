@@ -4,6 +4,15 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.25 — Honest exam scheduling and diagnostic logs
+Only untimed due command review now updates FSRS and earns the existing ★1 + 🔨
+reward. Timed due and free-practice attempts requeue within their session but
+leave card schedules untouched and pay no reward. Every command attempt logs
+phase, due/practice mode, timed state, first-attempt status, selected target,
+response milliseconds, manual audio replays, response surface, timeout, and
+whether it changed scheduling. Timed UI copy no longer promises a reward, and
+the stats and save-report accuracy exclude new diagnostic attempts.
+
 ## v0.24 — Atomic precheck commands
 Split the seven grouped Fermín precheck cards into 14 safe atomic prompts with
 natural *usted* wording, producing a 30-card exam corpus (16 driving, 14

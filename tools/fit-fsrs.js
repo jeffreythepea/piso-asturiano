@@ -38,12 +38,25 @@ function validateSave(save) {
     }
     if (!KINDS.includes(entry.k)) errors.push(`${at}.k must be obj, phr, or cmd`);
     if (![1, 2, 3, 4].includes(entry.g)) errors.push(`${at}.g must be a grade from 1 to 4`);
-    // Command reviews currently omit elapsed time; other exported entries include it.
+    // Ordinary reviews use elapsed days; instrumented command attempts use milliseconds.
     if (entry.el !== undefined && (!isFiniteNumber(entry.el) || entry.el < 0)) {
       errors.push(`${at}.el must be a non-negative number when present`);
     }
     if (!isFiniteNumber(entry.S) || entry.S < 0) {
       errors.push(`${at}.S must be a non-negative number`);
+    }
+    if (entry.k === 'cmd' && entry.scheduled !== undefined) {
+      if (!['driving', 'precheck'].includes(entry.phase)) errors.push(`${at}.phase must be driving or precheck`);
+      if (!['due', 'practice'].includes(entry.mode)) errors.push(`${at}.mode must be due or practice`);
+      for (const field of ['timed', 'first', 'scheduled', 'timeout']) {
+        if (typeof entry[field] !== 'boolean') errors.push(`${at}.${field} must be boolean`);
+      }
+      if (entry.selected !== null && (typeof entry.selected !== 'string' || !entry.selected)) {
+        errors.push(`${at}.selected must be null or a non-empty string`);
+      }
+      if (!isFiniteNumber(entry.ms) || entry.ms < 0) errors.push(`${at}.ms must be a non-negative number`);
+      if (!Number.isInteger(entry.replays) || entry.replays < 0) errors.push(`${at}.replays must be a non-negative integer`);
+      if (typeof entry.surface !== 'string' || !entry.surface) errors.push(`${at}.surface must be a non-empty string`);
     }
   });
 
@@ -87,24 +100,28 @@ function currentStreak(log, now = new Date()) {
 
 function report(save) {
   const log = save.log.slice().sort((a, b) => a.t - b.t);
+  const authoritative = log.filter(entry => entry.scheduled !== false);
+  const diagnostic = log.filter(entry => entry.scheduled === false);
   const correct = entries => entries.filter(entry => entry.g === 3).length;
 
   console.log('FSRS REVIEW REPORT');
   console.log('==================');
-  console.log(`Total reviews: ${log.length}`);
-  console.log(`Overall accuracy: ${percent(correct(log), log.length)}`);
-  const recent = log.slice(-100);
+  console.log(`Total attempts: ${log.length}`);
+  console.log(`Authoritative reviews: ${authoritative.length}`);
+  console.log(`Diagnostic command attempts: ${diagnostic.length}`);
+  console.log(`Overall authoritative accuracy: ${percent(correct(authoritative), authoritative.length)}`);
+  const recent = authoritative.slice(-100);
   console.log(`Last 100 accuracy: ${percent(correct(recent), recent.length)} (${recent.length} reviews)`);
 
   console.log('\nBy kind');
   console.log('-------');
   for (const kind of KINDS) {
-    const entries = log.filter(entry => entry.k === kind);
+    const entries = authoritative.filter(entry => entry.k === kind);
     console.log(`${kind.padEnd(3)}  ${String(entries.length).padStart(5)} reviews  ${percent(correct(entries), entries.length).padStart(6)} accuracy`);
   }
 
   const daily = new Map();
-  for (const entry of log) {
+  for (const entry of authoritative) {
     const day = localDay(entry.t);
     daily.set(day, (daily.get(day) || 0) + 1);
   }
@@ -112,7 +129,7 @@ function report(save) {
   console.log('---------------');
   if (daily.size === 0) console.log('No reviews recorded.');
   else for (const [day, count] of daily) console.log(`${day}  ${count}`);
-  const streak = currentStreak(log);
+  const streak = currentStreak(authoritative);
   console.log(`Current streak: ${streak} day${streak === 1 ? '' : 's'}`);
 
   const stabilityBuckets = [
@@ -139,7 +156,7 @@ function report(save) {
   console.log('\nTODO — FSRS PARAMETER FITTING');
   console.log('-----------------------------');
   console.log('Not implemented: fit and print a replacement FW array once 300+ real reviews are available.');
-  console.log(`Current data: ${log.length} reviews${log.length >= 300 ? ' (threshold reached)' : ` (${300 - log.length} more needed)`}.`);
+  console.log(`Current data: ${authoritative.length} authoritative reviews${authoritative.length >= 300 ? ' (threshold reached)' : ` (${300 - authoritative.length} more needed)`}.`);
 }
 
 function main() {
@@ -165,4 +182,6 @@ function main() {
   report(save);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { validateSave, report };

@@ -306,19 +306,27 @@ tú imperatives → plurals → reflexives → usted.
   instructions; fourth/fifth use its exact terminology fragments. Native SVG
   groups use the existing `answerCmd` flow and `.right`/`.wrong` classing.
   Non-rot categories keep the icon pad.
-- **Auto-graded FSRS**: correct → Good, wrong → Again (no self-grading), wrong answers
-  requeue until answered right, and the score reports first-attempt successes.
+- **Scheduling policy (v0.25)**: only untimed due review is authoritative FSRS
+  evidence (correct → Good, wrong → Again) and earns the existing completion
+  reward. Timed due and all free-practice attempts are diagnostic: they requeue
+  misses until correct within the session, but never alter card scheduling or
+  pay a reward. All modes report first-attempt session accuracy.
 - **Timed-response mode (v0.20)**: opt-in toggle on the drill start panel ("⏱️ Modo
   contrarreloj"). Once active, each card has **8 seconds** before time-up counts as a
-  miss (grade 1 Again, requeues). A color-shifting countdown badge appears next to the
-  progress indicator: green (8s) → amber (≤4s) → red (≤2s); badge shake at ≤2s. Timer
-  is stopped on answer, re-render, session end, and room-change. Per-session opt-in
-  only — not persisted in `S`. 🔊 re-listen does not reset the timer.
+  diagnostic miss and requeues. A color-shifting countdown badge appears next to
+  the progress indicator: green (8s) → amber (≤4s) → red (≤2s); badge shake at ≤2s.
+  Timer is stopped on answer, re-render, session end, and room-change. Per-session
+  opt-in only — not persisted in `S`. 🔊 re-listen does not reset the timer.
 - Command cards seed immediately on first garage visit (no stars needed) and live on
   their **own review track**: excluded from the game's SRS gate and the main Repaso,
-  so exam volume never blocks the match-3 loop. Due-session completion pays ★1 + 🔨;
-  unlimited free practice pays nothing (no farming).
-- Stats tab gains: órdenes del examen count + "aciertos al volante" (last-50 accuracy).
+  so exam volume never blocks the match-3 loop. Untimed due-session completion pays
+  ★1 + 🔨; timed and free practice pay nothing (no farming).
+- Every command attempt logs: `phase`, `mode` (`due`/`practice`), `timed`, `first`,
+  selected target id (or `null` on timeout), response `ms`, manual audio `replays`,
+  `surface`, `timeout`, and `scheduled`, alongside the legacy grade/stability fields.
+  Old log entries remain valid. JSON backup/restore preserves the additive schema.
+- Stats tab gains: órdenes del examen count + "aciertos al volante" (last-50
+  authoritative accuracy; legacy entries remain included because their mode is unknown).
 - Port note: this drill is the strongest candidate for real recorded audio (multiple
   voices, road noise) on iPad — TTS is the v1 shortcut.
 
@@ -326,9 +334,10 @@ tú imperatives → plurals → reflexives → usted.
 
 📊 tab: streak (consecutive review days), words+phrases learned, due now / next 24 h,
 recent accuracy (last 100 grades), total reviews, and a stability-distribution chart
-(aprendiendo <1 d → dominada 21+ d). Every review appends to `S.log`
-({t, id, kind, grade, elapsed, resulting stability}, capped 2000) — the dataset for
-future FSRS parameter fitting. Cooper appears at streaks ≥3.
+(aprendiendo <1 d → dominada 21+ d). Every review appends to `S.log`, capped at
+2000 entries. Ordinary review fields are `{t, id, k, g, el, S}`; command entries
+add the diagnostic fields defined above so future FSRS fitting can exclude
+non-authoritative attempts. Cooper appears at streaks ≥3.
 
 ## Open questions / v2 backlog
 

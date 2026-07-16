@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.24
+  EL PISO ASTURIANO — living spec / v0.25
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -260,7 +260,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.24</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.25</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -2263,6 +2263,47 @@ let drillQueue = [], drillMode = null, drillSize = 0, drillRight = 0, drillLock 
 let drillTimed = false;          // per-session opt-in toggle (not persisted)
 const DRILL_TIME_MS = 8000;      // 8 seconds per card in timed mode
 let drillTimerId = null, drillTimerTick = null;
+let drillCardStartedAt = 0, drillReplayCount = 0;
+
+function commandAttemptSchedules(mode, timed){
+  return mode === 'due' && !timed;
+}
+function gradeCommandCard(card, grade, mode, timed){
+  if (!commandAttemptSchedules(mode, timed)) return false;
+  fsrsReview(card, grade);
+  return true;
+}
+function drillSurfaceId(cmd){
+  if (cmd.cat === 'rot') return 'roundabout-v2';
+  if (cmd.cat === 'dir') return 'junction-v1';
+  return 'icon-grid-v1';
+}
+function commandLogEntry(cmd, card, grade, context){
+  return {
+    t: context.now, id:card.id, k:'cmd', g:grade,
+    S: +(card.S || 0).toFixed(2),
+    phase:cmd.phase, mode:context.mode, timed:context.timed,
+    first:context.first, selected:context.selected,
+    ms:context.ms, replays:context.replays,
+    surface:context.surface, scheduled:context.scheduled,
+    timeout:context.timeout
+  };
+}
+function recordCommandAttempt(cmd, card, grade, selected, timeout){
+  const now = Date.now();
+  const scheduled = gradeCommandCard(card, grade, drillMode, drillTimed);
+  const entry = commandLogEntry(cmd, card, grade, {
+    now, mode:drillMode, timed:drillTimed,
+    first:!drillMissed.has(card.id), selected,
+    ms:Math.max(0, now - drillCardStartedAt),
+    replays:drillReplayCount, surface:drillSurfaceId(cmd),
+    scheduled, timeout:!!timeout
+  });
+  S.log.push(entry);
+  if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  save();
+  return entry;
+}
 
 function seedCommands(){
   const supported = new Set(COMMANDS.map(c => c.id));
@@ -2315,11 +2356,13 @@ function renderDrill(){
         '<button class="drill-mode-toggle' + (drillTimed ? ' on' : '') + '" id="dr-timed-toggle">⏱️ Modo contrarreloj</button>' +
       '</div>' +
       '<p style="font-weight:700; color:#5c6a63; margin:4px 0">' +
-        (drillTimed ? '8 segundos por orden. Si no respondes, cuenta como error.' : 'Escucha la orden del examinador y toca la respuesta.') +
+        (drillTimed ? '8 segundos por orden. Entrenamiento de presión: no cambia tu calendario.' : 'Escucha la orden del examinador y toca la respuesta.') +
       '</p>' +
       '<div class="drill-warn">Fuente: guía de Autoescuela Fermín (2020), con ejemplos comunes; no es una transcripción exhaustiva del examinador. ' + total + ' órdenes.</div>' +
       (nd > 0
-        ? '<button class="btn btn-bien" id="dr-due">Repasar ' + nd + ' órdenes · ★1</button> '
+        ? '<button class="btn btn-bien" id="dr-due">' +
+            (drillTimed ? 'Entrenar ' + nd + ' pendientes' : 'Repasar ' + nd + ' órdenes · ★1') +
+          '</button> '
         : '<p style="font-weight:800; color:var(--verde); margin:6px 0">✓ Nada pendiente ahora</p>') +
       '<button class="btn btn-audio" id="dr-free" style="font-size:15px">Práctica libre</button>' +
     '</div>';
@@ -2497,7 +2540,9 @@ function renderDrillCard(){
       optionsHtml +
       '<div class="drill-reveal" id="dr-reveal"></div>' +
     '</div>';
-  $('dr-say').addEventListener('click', () => speak(cmd.es));
+  drillCardStartedAt = Date.now();
+  drillReplayCount = 0;
+  $('dr-say').addEventListener('click', () => { drillReplayCount++; speak(cmd.es); });
   el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => answerCmd(b, cmd, card)));
   speak(cmd.es);
   if (drillTimed) startDrillTimer(card, cmd);
@@ -2508,10 +2553,7 @@ function answerCmd(btn, cmd, card){
   drillLock = true;
   stopDrillTimer();
   const right = btn.dataset.id === cmd.id;
-  fsrsReview(card, right ? 3 : 1);
-  S.log.push({ t: Date.now(), id: card.id, k:'cmd', g: right ? 3 : 1, S: +card.S.toFixed(2) });
-  if (S.log.length > 2000) S.log = S.log.slice(-2000);
-  save();
+  recordCommandAttempt(cmd, card, right ? 3 : 1, btn.dataset.id, false);
   const reveal = $('dr-reveal');
   if (right){
     if (!drillMissed.has(card.id)) drillRight++;   // first-attempt successes only
@@ -2539,10 +2581,7 @@ function answerCmdTimedExpired(rightBtn, cmd, card){
   if (drillLock) return;
   drillLock = true;
   stopDrillTimer();
-  fsrsReview(card, 1);   // Again — time up is a miss
-  S.log.push({ t: Date.now(), id: card.id, k:'cmd', g:1, S: +card.S.toFixed(2) });
-  if (S.log.length > 2000) S.log = S.log.slice(-2000);
-  save();
+  recordCommandAttempt(cmd, card, 1, null, true);
   drillMissed.add(card.id);
   if (rightBtn) rightBtn.classList.add('right');
   const reveal = $('dr-reveal');
@@ -2562,7 +2601,7 @@ function nextDrill(){
   stopDrillTimer();
   // session complete
   let rewardTxt = '';
-  if (drillMode === 'due'){
+  if (commandAttemptSchedules(drillMode, drillTimed)){
     S.stars++;
     S.hammers = (S.hammers || 0) + 1;
     save(); refreshHUD();
@@ -2600,11 +2639,11 @@ function renderStats(){
   const dueNow = dueCards().length;
   const due24 = S.deck.filter(c => c.due <= now + DAY).length;
   const streak = calcStreak();
-  const recent = S.log.slice(-100);
+  const recent = S.log.filter(e => e.scheduled !== false).slice(-100);
   const acc = recent.length ? Math.round(100 * recent.filter(e => e.g === 3).length / recent.length) : null;
   const mastered = S.deck.filter(c => (c.S || 0) >= 21).length;
   const cmds = S.deck.filter(c => c.kind === 'cmd').length;
-  const cmdLog = S.log.filter(e => e.k === 'cmd').slice(-50);
+  const cmdLog = S.log.filter(e => e.k === 'cmd' && e.scheduled !== false).slice(-50);
   const cmdAcc = cmdLog.length ? Math.round(100 * cmdLog.filter(e => e.g === 3).length / cmdLog.length) : null;
 
   const buckets = [

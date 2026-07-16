@@ -19,19 +19,23 @@ localStorage; the version stamp is in the footer.
     node tests/core.test.js
     node tests/levels.test.js
     node tests/srs.test.js
+    node tests/commands.test.js
+    node tests/drill.test.js
+    node tests/report.test.js
 
-All three must pass before any commit. The tests extract the pure game core from
-`index.html` (between the `/*CORE-START*/` and `/*CORE-END*/` markers) and
-exercise match analysis, special pieces, combos, gravity physics, obstacles,
-droppers, and all authored level maps.
+All six must pass before any commit. The tests cover the pure game core, all
+authored level maps, FSRS behavior, the source-backed command inventory and
+migration, the exam drill's scheduling/logging policy, and exported-log
+validation.
 
 To inspect the review history in a backup exported through **copia de seguridad**:
 
     node tools/fit-fsrs.js /path/to/piso-asturiano-save.json
 
-The report validates the save and summarizes review accuracy, activity, elapsed
-time, and current deck stability. FSRS parameter fitting remains stubbed until
-at least 300 real reviews are available.
+The report validates the save and summarizes authoritative review accuracy,
+diagnostic command-attempt volume, activity, elapsed time, and current deck
+stability. FSRS parameter fitting remains stubbed until at least 300
+authoritative reviews are available.
 
 ## For AI collaborators
 

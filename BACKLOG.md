@@ -16,18 +16,7 @@ Add a three-way Garage selector: **Conducción**, **Comprobaciones**, and
 - Done when: all three queues contain the correct cards, the selection survives
   reload/export/import, and prechecks never appear in a driving-only session.
 
-## 2. Command scheduling integrity and instrumentation
-Implement the approved mode policy recorded in `PROPOSAL_REVIEW.md`:
-- Only **untimed due review** updates command FSRS scheduling.
-- Timed due sessions and all free-practice sessions log results but do not
-  reschedule cards or pay an additional reward.
-- Command logs record phase, due/practice mode, timed state, first-attempt
-  status, selected target, elapsed time, audio replay count, and response
-  surface/layout id while preserving backup/restore compatibility.
-- Done when: tests prove the scheduling boundary, exported logs distinguish
-  every current mode, and existing saves migrate cleanly.
-
-## 3. Vehicle-specific precheck practice  ← blocked on Fermín
+## 2. Vehicle-specific precheck practice  ← blocked on Fermín
 After Fermín supplies the training/test car make and model and confirms the
 actual controls and procedures, add engine-bay and dashboard response diagrams.
 - Validate component names, locations, controls, and required actions against
@@ -38,9 +27,10 @@ actual controls and procedures, add engine-bay and dashboard response diagrams.
 - Done when: the diagrams and expected responses are instructor-validated and
   usable on iPad without `foreignObject`.
 
-## 4. Exam-focused product mode
-After items 1–3 have been used in Safari, make the exam the primary working
-experience without duplicating the app into a separate HTML product.
+## 3. Exam-focused product mode
+After the drill modes and v0.25 instrumentation have been used in Safari, make
+the exam the primary working experience without duplicating the app into a
+separate HTML product.
 - Open into the last-used tab or Garage, and evaluate an optional Exam Focus
   presentation that hides unrelated tabs without deleting their progress.
 - Reassess extracting a standalone exam app only after several weeks of actual
@@ -49,23 +39,23 @@ experience without duplicating the app into a separate HTML product.
   decision to keep or separate the broader game is supported by usage rather
   than architecture speculation.
 
-## 5. FSRS parameter fitting
+## 4. FSRS parameter fitting
 `S.log` records every review. Once ~300+ entries exist, fit FSRS weights to
 Jeffrey's data (a `tools/fit-fsrs.js` script reading an exported log; output:
 a `FW` array to paste in). Don't change the scheduler API.
 - Done when: script exists, documented in README, and produces a plausible
   weight set from the real log.
 
-## 6. Rotating phrase variants
+## 5. Rotating phrase variants
 Second/third action phrase per object, rotating on task completion or as new
 task tiers. Grammar target: present tense statements after imperatives.
 
-## 7. Level difficulty tuning pass
+## 6. Level difficulty tuning pass
 Jeffrey's play feedback drives this; collect specific complaints first
 (moves, targets, obstacle counts). Don't tune speculatively.
 
-## 8. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
+## 7. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
 
-## 9. iPad port (SwiftUI/SpriteKit)
+## 8. iPad port (SwiftUI/SpriteKit)
 The endgame. SPEC.md is the design record; the CORE and SRS marked blocks and
 the FX event stream port 1:1. Recorded audio replaces TTS here.
