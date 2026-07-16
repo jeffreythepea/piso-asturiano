@@ -11,8 +11,10 @@ grind is and the *game* where the fun is:
 
 - **Match-3 stays pure fun.** No vocabulary inside the puzzle mechanic (rejected Option A:
   match-3 rewards pattern-speed, which fights recall).
-- **SRS is the gate and a star source.** Due cards block new levels (hard gate at ≥3 due,
-  soft prompt at 1–2). Completing a due-review session earns ★1.
+- **SRS is a soft prompt and a star source.** At every positive due-card count,
+  entering match-3 visibly offers **Repasar ahora** and **Jugar igual**. Reviews
+  remain valuable without blocking ordinary play or pressuring self-grading.
+  Completing a due-review session earns ★1.
 - **The house is the vocabulary.** Every purchasable object is a Spanish word, learned
   image-first (Fluent Forever). The furnished room is a visible memory palace: tap any
   object to hear its name.

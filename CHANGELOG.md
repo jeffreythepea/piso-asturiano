@@ -4,6 +4,12 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.30 — Honestly soft ordinary-review prompt
+Entering match-3 with any number of ordinary cards due now visibly offers both
+**Repasar ahora** and **Jugar igual**. The old three-card threshold no longer
+hides the bypass or describes review as mandatory. Review completion keeps its
+existing ★1 + 🔨 incentive; scheduling and rewards are otherwise unchanged.
+
 ## v0.29 — Diagnose incorrect exam answers
 Wrong exam-drill selections and timeouts now offer an optional six-choice
 reflection before **Continuar**, separating hearing, meaning, action/control

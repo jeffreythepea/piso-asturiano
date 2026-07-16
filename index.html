@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.29
+  EL PISO ASTURIANO — living spec / v0.30
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -284,7 +284,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.29</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.30</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -2211,23 +2211,16 @@ function onEnterJuego(){
   else if (pendingPreview) showPreview();
 }
 
-/* SRS gate before play */
+/* SRS soft prompt before play */
 function maybeGate(){
   const n = dueCards().length;
-  if (n >= 3){
-    showModal(
-      '<div class="em">📖</div><h2>Repasa primero</h2>' +
-      '<p>' + n + ' palabras te esperan. Repásalas y gana ★1 + 🔨.</p>' +
-      '<button class="btn btn-bien" onclick="closeModal(); switchTab(\'repaso\');">Repasar ahora</button>'
-    );
-  } else if (n > 0){
-    showModal(
-      '<div class="em">📖</div><h2>' + n + (n === 1 ? ' palabra espera' : ' palabras esperan') + '</h2>' +
-      '<p>Un repaso corto vale ★1 + 🔨.</p>' +
-      '<button class="btn btn-bien" onclick="closeModal(); switchTab(\'repaso\');">Repasar</button> ' +
-      '<button class="btn btn-audio" onclick="closeModal()">Jugar igual</button>'
-    );
-  }
+  if (n <= 0) return;
+  showModal(
+    '<div class="em">📖</div><h2>' + n + (n === 1 ? ' palabra espera' : ' palabras esperan') + '</h2>' +
+    '<p>Un repaso corto vale ★1 + 🔨.</p>' +
+    '<button class="btn btn-bien" onclick="closeModal(); switchTab(\'repaso\');">Repasar ahora</button> ' +
+    '<button class="btn btn-audio" onclick="closeModal()">Jugar igual</button>'
+  );
 }
 
 /* ============================================================

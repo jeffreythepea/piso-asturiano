@@ -39,20 +39,7 @@ into a separate HTML product.
 - Done when: Jeffrey confirms the focused entry removes the friction and the
   decision to keep or separate the broader game is supported by actual use.
 
-## 3. Make the ordinary-review gate honestly soft
-The current match-3 entry prompt offers **Jugar igual** for one or two due
-cards, but hides that choice at three or more even though Jeffrey chose a soft,
-explicitly bypassable review prompt.
-- At every nonzero due count, visibly offer both **Repasar ahora** and
-  **Jugar igual**; backdrop dismissal must not be the only bypass.
-- Keep reviews valuable through their existing ★1 + 🔨 reward, without making
-  ordinary play unavailable or encouraging dishonest self-grading.
-- Update `SPEC.md` so it describes one consistent soft-prompt policy rather
-  than a hard gate at three cards.
-- Done when: both choices work at every due count and tests cover the review
-  and bypass paths.
-
-## 4. Personal vocabulary intake spike
+## 3. Personal vocabulary intake spike
 Test whether the broader game can become an ongoing personal Spanish tool
 without prematurely building a rich-media importer.
 - First inspect one real vocabulary source/export supplied by Jeffrey; do not
@@ -70,14 +57,14 @@ without prematurely building a rich-media importer.
   export/import, handles duplicates and deletion, and Jeffrey finds the intake
   effort useful enough to justify broader vocabulary work.
 
-## 5. FSRS parameter fitting
+## 4. FSRS parameter fitting
 `S.log` records every review. Once ~300+ entries exist, fit FSRS weights to
 Jeffrey's data (a `tools/fit-fsrs.js` script reading an exported log; output:
 a `FW` array to paste in). Don't change the scheduler API.
 - Done when: script exists, documented in README, and produces a plausible
   weight set from the real log.
 
-## 6. Targeted phrase and word-form expansion
+## 5. Targeted phrase and word-form expansion
 The blanket two-tier phrase ramp already shipped in v0.21: every object has an
 imperative card and a separate first-person present card. Do not automatically
 create another 72-card tier.
@@ -90,7 +77,7 @@ create another 72-card tier.
 - Done when: an evidence-backed target batch is defined, added without a card
   explosion, and independently scheduled and tested.
 
-## 7. Evidence-led match-3 tuning and depth
+## 6. Evidence-led match-3 tuning and depth
 Jeffrey's play feedback drives this; collect specific complaints first. Decide
 whether the problem is level balance or genuine mechanical repetition.
 - If the issue is balance, tune existing moves, targets, and obstacle counts
@@ -108,8 +95,8 @@ whether the problem is level balance or genuine mechanical repetition.
 - Done when: a written play problem justifies one bounded change, its reusable
   rule is recorded in `SPEC.md`, and measured play feedback shows improvement.
 
-## 8. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
+## 7. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
 
-## 9. iPad port (SwiftUI/SpriteKit)
+## 8. iPad port (SwiftUI/SpriteKit)
 The endgame. SPEC.md is the design record; the CORE and SRS marked blocks and
 the FX event stream port 1:1. Recorded audio replaces TTS here.
