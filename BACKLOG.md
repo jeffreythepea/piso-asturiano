@@ -39,41 +39,23 @@ into a separate HTML product.
 - Done when: Jeffrey confirms the focused entry removes the friction and the
   decision to keep or separate the broader game is supported by actual use.
 
-## 3. Diagnose incorrect exam answers
-After an incorrect exam-drill response, offer an optional, low-friction reason
-selector so the diagnostic log can distinguish:
-- heard the Spanish incorrectly;
-- understood the audio but confused the meaning;
-- could not map the command to the correct control, road action, or location;
-- interface or answer-target difficulty;
-- accidental or premature input; and
-- other / unknown.
-
-Keep this reflection separate from answer grading. It must not change FSRS
-scheduling, rewards, correctness, or the timing of the required Continue step.
-Store the selected reason with the existing attempt diagnostics; allow the
-learner to skip it without friction.
-- Done when: wrong-answer diagnostics can optionally record a miss reason, the
-  exported log includes it, old saves remain compatible, and tests cover the
-  new log field and skip path.
-
-## 4. FSRS parameter fitting
+## 3. FSRS parameter fitting
 `S.log` records every review. Once ~300+ entries exist, fit FSRS weights to
 Jeffrey's data (a `tools/fit-fsrs.js` script reading an exported log; output:
 a `FW` array to paste in). Don't change the scheduler API.
 - Done when: script exists, documented in README, and produces a plausible
   weight set from the real log.
 
-## 5. Rotating phrase variants
+## 4. Rotating phrase variants
 Second/third action phrase per object, rotating on task completion or as new
 task tiers. Grammar target: present tense statements after imperatives.
 
-## 6. Level difficulty tuning pass
+## 5. Level difficulty tuning pass
 Jeffrey's play feedback drives this; collect specific complaints first
 (moves, targets, obstacle counts). Don't tune speculatively.
 
-## 7. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
+## 6. Typing / speech recall input  (deferred by Jeffrey — don't build unasked)
 
-## 8. iPad port (SwiftUI/SpriteKit)
+## 7. iPad port (SwiftUI/SpriteKit)
 The endgame. SPEC.md is the design record; the CORE and SRS marked blocks and
 the FX event stream port 1:1. Recorded audio replaces TTS here.

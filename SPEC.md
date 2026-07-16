@@ -257,7 +257,7 @@ board; selection/hint are soft golden circles, specials glow via drop-shadow.
   stock) — camera integration is the killer feature the HTML can't do well: photograph
   *your own* sofa in Calle Magdalena, attach it to `el sofá`.
 
-## El garaje & El examen de Cooper (v0.14, command set v0.24, modes v0.26, vehicle baseline v0.27)
+## El garaje & El examen de Cooper (v0.14, command set v0.24, modes v0.26, vehicle baseline v0.27, miss diagnosis v0.29)
 
 **Purpose**: Jeffrey's DGT practical driving exam. The exam skill is the inverse of the
 rest of the game — *hear Spanish under pressure → act instantly* — so it gets its own
@@ -374,6 +374,14 @@ tú imperatives → plurals → reflexives → usted.
   the Spanish command, English meaning, and any vehicle-specific note. Both
   correct and incorrect answers remain on screen until the learner presses
   **Continuar**; there is no automatic advance after a correct selection.
+- **Miss diagnosis (v0.29)**: after a wrong selection or timeout, the answer
+  reveal offers six optional reasons: hearing, meaning, command-to-action/control
+  mapping, answer-target finding, accidental input, and other/unknown. Selecting
+  one stores the stable `missReason` id on that attempt's existing log entry;
+  pressing **Continuar** without choosing leaves the additive field absent.
+  Diagnosis never changes correctness, FSRS scheduling, rewards, requeueing, or
+  Continue pacing. Correct selections do not show it, even when a Spanish hint
+  made their scheduling grade Again.
 
 ## Progreso & review log (v0.10)
 

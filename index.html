@@ -6,7 +6,7 @@
 <title>El Piso Asturiano</title>
 <!--
   ============================================================
-  EL PISO ASTURIANO — living spec / v0.28
+  EL PISO ASTURIANO — living spec / v0.29
   ============================================================
   Loop: match-3 wins + SRS reviews earn estrellas -> buy furniture
   -> each object learned in Spanish (image-first) -> room = memory palace.
@@ -180,6 +180,12 @@
   .drill-reveal{margin-top:12px; font-weight:800;}
   .drill-reveal .es{font-family:'Fraunces',serif; font-size:20px;}
   .drill-reveal .en{font-size:12px; color:#9aa49c;}
+  .miss-reasons{max-width:430px; margin:12px auto 0; padding:10px; background:#FBF8F0; border:1px solid var(--linea); border-radius:12px;}
+  .miss-reasons-title{font-size:13px; color:#4f5e54; margin-bottom:7px;}
+  .miss-reasons-title span{font-size:11px; font-weight:700; color:#8a958c;}
+  .miss-reasons-grid{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .miss-reason{font:700 12px 'Nunito',sans-serif; line-height:1.2; min-height:38px; padding:6px 8px; color:#5c6a63; background:#fff; border:1.5px solid var(--linea); border-radius:9px; cursor:pointer;}
+  .miss-reason.on{color:#fff; background:var(--verde); border-color:var(--verde);}
 
   /* ---------- PROGRESO ---------- */
   .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
@@ -278,7 +284,7 @@
 </main>
 
 <footer>
-  <span><strong>v0.28</strong> · <span id="save-note">guardado en este dispositivo</span></span>
+  <span><strong>v0.29</strong> · <span id="save-note">guardado en este dispositivo</span></span>
   <span><button id="btn-data">copia de seguridad</button> · <button id="btn-reset">reiniciar todo</button></span>
 </footer>
 
@@ -2341,6 +2347,30 @@ function drillPhaseResultHtml(results, phase){
   ).join('');
 }
 
+const COMMAND_MISS_REASONS = [
+  { id:'hearing', label:'No distinguí el audio' },
+  { id:'meaning', label:'Confundí el significado' },
+  { id:'mapping', label:'No supe qué acción o control' },
+  { id:'target', label:'No encontré la respuesta' },
+  { id:'accidental', label:'Toqué demasiado pronto' },
+  { id:'other', label:'Otro / no sé' }
+];
+function commandMissReasonValid(reason){
+  return COMMAND_MISS_REASONS.some(item => item.id === reason);
+}
+function setCommandMissReason(entry, reason){
+  if (!entry || entry.k !== 'cmd' || entry.g !== 1 || !commandMissReasonValid(reason)) return false;
+  entry.missReason = reason;
+  return true;
+}
+function commandMissReasonHtml(){
+  return '<div class="miss-reasons" id="dr-miss-reasons">' +
+    '<div class="miss-reasons-title">¿Qué falló? <span>Opcional; puedes continuar.</span></div>' +
+    '<div class="miss-reasons-grid">' + COMMAND_MISS_REASONS.map(reason =>
+      '<button class="miss-reason" data-reason="' + reason.id + '" aria-pressed="false">' + reason.label + '</button>'
+    ).join('') + '</div></div>';
+}
+
 function commandAttemptSchedules(mode, timed){
   return mode === 'due' && !timed;
 }
@@ -2387,6 +2417,18 @@ function recordCommandAttempt(cmd, card, grade, selected, timeout){
   if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save();
   return entry;
+}
+function bindCommandMissReason(entry){
+  const buttons = Array.from(document.querySelectorAll('#dr-miss-reasons .miss-reason'));
+  buttons.forEach(button => button.addEventListener('click', () => {
+    if (!setCommandMissReason(entry, button.dataset.reason)) return;
+    buttons.forEach(other => {
+      const selected = other === button;
+      other.classList.toggle('on', selected);
+      other.setAttribute('aria-pressed', String(selected));
+    });
+    save();
+  }));
 }
 
 function seedCommands(){
@@ -2741,7 +2783,7 @@ function answerCmd(btn, cmd, card){
   drillLock = true;
   stopDrillTimer();
   const right = btn.dataset.id === cmd.id;
-  recordCommandAttempt(cmd, card, right && !drillHinted ? 3 : 1, btn.dataset.id, false);
+  const entry = recordCommandAttempt(cmd, card, right && !drillHinted ? 3 : 1, btn.dataset.id, false);
   const reveal = $('dr-reveal');
   if (right){
     if (!drillMissed.has(card.id)){
@@ -2760,9 +2802,11 @@ function answerCmd(btn, cmd, card){
     SFX.otra();
     document.querySelectorAll('.opt').forEach(b => { if (b.dataset.id === cmd.id) b.classList.add('right'); });
     reveal.innerHTML = '<div class="es">' + cmd.es + '</div><div class="en">' + cmd.en + '</div>' + vehicleAnswerHtml(cmd) +
+      commandMissReasonHtml() +
       '<button class="btn btn-bien" id="dr-next" style="margin-top:10px">Continuar</button>';
     speak(cmd.es);
     drillQueue.push(drillQueue.shift());     // requeue until answered right
+    bindCommandMissReason(entry);
     $('dr-next').addEventListener('click', nextDrill);
   }
 }
@@ -2773,7 +2817,7 @@ function answerCmdTimedExpired(rightBtn, cmd, card){
   if (drillLock) return;
   drillLock = true;
   stopDrillTimer();
-  recordCommandAttempt(cmd, card, 1, null, true);
+  const entry = recordCommandAttempt(cmd, card, 1, null, true);
   drillMissed.add(card.id);
   if (rightBtn) rightBtn.classList.add('right');
   const reveal = $('dr-reveal');
@@ -2782,9 +2826,11 @@ function answerCmdTimedExpired(rightBtn, cmd, card){
     '<div class="es">¡Se acabó el tiempo!</div>' +
     '<div class="es" style="margin-top:4px">' + cmd.es + '</div>' +
     '<div class="en">' + cmd.en + '</div>' + vehicleAnswerHtml(cmd) +
+    commandMissReasonHtml() +
     '<button class="btn btn-bien" id="dr-next" style="margin-top:10px">Continuar</button>';
   speak(cmd.es);
   drillQueue.push(drillQueue.shift());     // requeue
+  bindCommandMissReason(entry);
   $('dr-next').addEventListener('click', nextDrill);
 }
 

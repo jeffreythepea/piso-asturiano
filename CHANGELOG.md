@@ -4,6 +4,15 @@ Versions are stamped in the footer of `index.html`. Bump on any game-behavior
 change; docs-only changes don't bump. One line here per version, added in the
 same commit.
 
+## v0.29 — Diagnose incorrect exam answers
+Wrong exam-drill selections and timeouts now offer an optional six-choice
+reflection before **Continuar**, separating hearing, meaning, action/control
+mapping, answer-target finding, premature input, and other/unknown causes. A
+selection is stored as the additive `missReason` field on the existing attempt
+log entry and survives save export; skipping leaves old and new logs compatible.
+The reflection does not affect grading, FSRS scheduling, rewards, requeueing,
+or answer pacing, and correct selections never show it.
+
 ## v0.28 — Exam-focused product mode
 Added a persisted, reversible **Enfocar examen** mode in the Garage. It opens
 directly into Cooper's drill, hides the apartment rooms and unrelated bottom

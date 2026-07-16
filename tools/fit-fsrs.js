@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const KINDS = ['obj', 'phr', 'cmd'];
 const GRADE_LABELS = { 1: 'Again', 2: 'Hard', 3: 'Good', 4: 'Easy' };
+const COMMAND_MISS_REASONS = ['hearing', 'meaning', 'mapping', 'target', 'accidental', 'other'];
 
 function fail(message) {
   console.error(`Error: ${message}`);
@@ -60,6 +61,9 @@ function validateSave(save) {
       if (!isFiniteNumber(entry.ms) || entry.ms < 0) errors.push(`${at}.ms must be a non-negative number`);
       if (!Number.isInteger(entry.replays) || entry.replays < 0) errors.push(`${at}.replays must be a non-negative integer`);
       if (typeof entry.surface !== 'string' || !entry.surface) errors.push(`${at}.surface must be a non-empty string`);
+      if (entry.missReason !== undefined && !COMMAND_MISS_REASONS.includes(entry.missReason)) {
+        errors.push(`${at}.missReason must be a recognized reason when present`);
+      }
     }
   });
 

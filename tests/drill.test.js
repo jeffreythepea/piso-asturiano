@@ -16,7 +16,8 @@ const sampleCommands = {
 const helpers = Function('fsrsReview', 'cmdOf',
   `${html.slice(helpersStart, helpersEnd)}; return {` +
   'commandInDrillPhase, commandCardsForPhase, drillPhaseLabel, drillPhaseResultHtml,' +
-  'commandAttemptSchedules, gradeCommandCard, drillSurfaceId, commandLogEntry};'
+  'commandAttemptSchedules, gradeCommandCard, drillSurfaceId, commandLogEntry,' +
+  'commandMissReasonValid, setCommandMissReason, commandMissReasonHtml};'
 )((card, grade) => {
   fsrsCalls++;
   card.S = grade === 3 ? 2.5 : 0.5;
@@ -75,6 +76,16 @@ assert.deepStrictEqual(entry, {
 });
 assert.deepStrictEqual(JSON.parse(JSON.stringify({log:[entry]})).log[0], entry,
   'instrumented command logs must survive JSON backup/restore');
+assert.strictEqual(Object.hasOwn(entry, 'missReason'), false,
+  'skipping optional miss diagnosis must leave the additive field absent');
+assert.strictEqual(helpers.setCommandMissReason(entry, 'hearing'), true,
+  'a recognized reason should attach to a missed command attempt');
+assert.strictEqual(entry.missReason, 'hearing');
+assert.strictEqual(helpers.setCommandMissReason(entry, 'invented'), false,
+  'unknown reason values must be rejected');
+assert.strictEqual(entry.missReason, 'hearing', 'an invalid update must not overwrite the reason');
+assert(helpers.commandMissReasonHtml().includes('Opcional; puedes continuar.'),
+  'the diagnosis UI must make its optional skip path explicit');
 
 const optionsStart = html.indexOf('function drillOptions(');
 const optionsEnd = html.indexOf('\nfunction renderDrill(', optionsStart);
@@ -143,6 +154,13 @@ assert(!answerPaths.includes('setTimeout(nextDrill'),
   'correct answers must not disappear on an automatic timer');
 assert(answerPaths.includes("$('dr-next').addEventListener('click', nextDrill);"),
   'revealed answers should advance only through the Continue control');
+assert.strictEqual((answerPaths.match(/commandMissReasonHtml\(\)/g) || []).length, 2,
+  'wrong taps and timeouts should offer miss diagnosis');
+assert.strictEqual((answerPaths.match(/bindCommandMissReason\(entry\)/g) || []).length, 2,
+  'both incorrect paths should persist an optional selected reason');
+const correctPath = answerPaths.slice(answerPaths.indexOf('if (right){'), answerPaths.indexOf('} else {'));
+assert(!correctPath.includes('commandMissReasonHtml()'),
+  'correct selections must not ask for a miss reason');
 
 const cardStart = html.indexOf('function renderDrillCard(');
 const cardEnd = html.indexOf('\nfunction answerCmd(', cardStart);
