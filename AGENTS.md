@@ -79,3 +79,16 @@ within its category. Cards auto-seed on next garage visit.
 - Level maps: never author a full-width wall of blockers — leave feed gaps.
 - Reviews are the source of hammers; learning stays the strongest tactical
   resource in the game.
+
+<!-- context7 -->
+Use Context7 MCP to fetch current documentation whenever the user asks about a
+library, framework, SDK, API, CLI tool, or cloud service. This includes API
+syntax, configuration, version migration, library-specific debugging, setup
+instructions, and CLI tool usage. Use whenever the answer is version-specific,
+involves a library updated in the last two years, or you have any uncertainty.
+Skip only for stable, foundational APIs you are certain about.
+Prefer Context7 over web search for library docs. If Context7 cannot resolve a
+library or the release is too recent to be indexed, fall back to the official
+docs via web fetch.
+Do not use for: refactoring, writing scripts from scratch, debugging business
+logic, code review, general programming concepts, or unindexed libraries.
